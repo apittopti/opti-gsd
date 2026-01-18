@@ -2,7 +2,7 @@
 description: Resume work from last session.
 ---
 
-# /opti-gsd:resume
+# resume
 
 Resume work from last session.
 

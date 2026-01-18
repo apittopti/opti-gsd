@@ -2,7 +2,7 @@
 description: Switch workflow execution mode.
 ---
 
-# /opti-gsd:mode [interactive|yolo]
+# mode [interactive|yolo]
 
 Switch workflow execution mode.
 

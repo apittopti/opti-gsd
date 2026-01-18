@@ -2,7 +2,7 @@
 description: Add a new phase to the end of the roadmap.
 ---
 
-# /opti-gsd:add-phase [title]
+# add-phase [title]
 
 Add a new phase to the end of the roadmap.
 

@@ -2,7 +2,7 @@
 description: Complete the current milestone and prepare for release.
 ---
 
-# /opti-gsd:complete-milestone
+# complete-milestone
 
 Complete the current milestone and prepare for release.
 

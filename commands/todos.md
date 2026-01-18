@@ -2,7 +2,7 @@
 description: Manage captured todos.
 ---
 
-# /opti-gsd:todos [action] [args...]
+# todos [action] [args...]
 
 Manage captured todos.
 

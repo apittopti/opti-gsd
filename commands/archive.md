@@ -2,7 +2,7 @@
 description: Archive a completed phase to save context.
 ---
 
-# /opti-gsd:archive [phase]
+# archive [phase]
 
 Archive a completed phase to save context.
 

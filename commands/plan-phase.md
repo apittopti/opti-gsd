@@ -2,7 +2,7 @@
 description: Generate an executable plan for phase N with XML-structured tasks.
 ---
 
-# /opti-gsd:plan-phase [N]
+# plan-phase [N]
 
 Generate an executable plan for phase N with XML-structured tasks.
 

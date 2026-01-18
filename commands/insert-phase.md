@@ -2,7 +2,7 @@
 description: Insert a new phase at a specific position, renumbering subsequent phases.
 ---
 
-# /opti-gsd:insert-phase [position] [title]
+# insert-phase [position] [title]
 
 Insert a new phase at a specific position, renumbering subsequent phases.
 

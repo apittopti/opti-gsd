@@ -2,7 +2,7 @@
 description: Start or resume a systematic debugging session.
 ---
 
-# /opti-gsd:debug [issue-id]
+# debug [issue-id]
 
 Start or resume a systematic debugging session.
 

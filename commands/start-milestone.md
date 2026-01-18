@@ -2,7 +2,7 @@
 description: Start a new milestone branch.
 ---
 
-# /opti-gsd:start-milestone [name]
+# start-milestone [name]
 
 Start a new milestone branch.
 

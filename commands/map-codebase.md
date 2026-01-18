@@ -2,7 +2,7 @@
 description: Analyze an existing codebase to understand its structure before starting work.
 ---
 
-# /opti-gsd:map-codebase
+# map-codebase
 
 Analyze an existing codebase to understand its structure before starting work.
 

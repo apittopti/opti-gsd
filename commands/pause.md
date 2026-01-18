@@ -2,7 +2,7 @@
 description: Pause work with context save for later resumption.
 ---
 
-# /opti-gsd:pause
+# pause
 
 Pause work with context save for later resumption.
 

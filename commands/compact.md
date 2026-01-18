@@ -2,7 +2,7 @@
 description: Reduce context footprint of all project files.
 ---
 
-# /opti-gsd:compact
+# compact
 
 Reduce context footprint of all project files.
 

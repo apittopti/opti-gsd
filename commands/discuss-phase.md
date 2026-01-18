@@ -2,7 +2,7 @@
 description: Capture implementation decisions and constraints before planning a phase.
 ---
 
-# /opti-gsd:discuss-phase [phase]
+# discuss-phase [phase]
 
 Capture implementation decisions and constraints before planning a phase.
 

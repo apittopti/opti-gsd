@@ -2,7 +2,7 @@
 description: Execute the current phase plan with wave-based parallelization and fresh context
 ---
 
-# /opti-gsd:execute
+# execute
 
 Execute the current phase plan with wave-based parallelization and fresh context per task.
 
