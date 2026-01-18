@@ -7,29 +7,28 @@
 - Standardize tool declarations across all 11 agents
 
 **Success Criteria:**
-- [ ] All agents have consistent tool declarations
-- [ ] MCP tools (`mcp__*`) declared where needed
-- [ ] Browser tools only on agents that need browser access
-- [ ] Tool permissions match agent responsibilities
+- [x] All agents have consistent tool declarations
+- [x] MCP tools (`mcp__*`) declared where needed
+- [x] Browser tools only on agents that need browser access
+- [x] Tool permissions match agent responsibilities
 
 **Files:** `agents/*.md`
 
 ---
 
 ### Phase 2: Error Handling Standardization
-- [ ] Not started
+- [x] Complete
 - Create consistent error response format across commands
 
 **Success Criteria:**
-- [ ] Error format defined and documented
-- [ ] Commands use consistent error messaging
-- [ ] Graceful handling when prerequisites missing (e.g., no .gsd/, no STATE.md)
-- [ ] Clear next-step suggestions on errors
+- [x] Error format defined and documented
+- [x] Commands use consistent error messaging
+- [x] Graceful handling when prerequisites missing (e.g., no .gsd/, no STATE.md)
+- [x] Clear next-step suggestions on errors
 
-**Files:** `commands/*.md`
+**Files:** `commands/*.md`, `docs/ERROR-HANDLING.md`
 
 ---
 
-Progress: 1/2 phases complete (50%)
-Current: Phase 1 complete
-Next action: /opti-gsd:plan-phase 2
+Progress: 2/2 phases complete (100%)
+Milestone v0.3.0 complete!
