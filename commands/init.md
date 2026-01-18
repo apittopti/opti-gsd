@@ -44,6 +44,14 @@ Read `package.json` (or equivalent) and detect:
 | commander | Commander | cli |
 | yargs | Yargs | cli |
 
+**Also detect non-npm project types:**
+| Indicator | Framework | app_type |
+|-----------|-----------|----------|
+| .claude-plugin/ | Claude Code Plugin | claude-code-plugin |
+| Cargo.toml | Rust | cli or lib |
+| go.mod | Go | cli or lib |
+| pyproject.toml | Python | cli or lib |
+
 If no match or ambiguous, ask user to confirm app_type.
 
 ### Step 2b: Detect CI/CD Toolchain
@@ -189,11 +197,12 @@ discovery:
   default_level: 1
   force_research: false
 
-# Browser Testing
-browser:
-  enabled: {true if web/desktop else false}
+# Testing
+testing:
+  type: {terminal if cli/claude-code-plugin else browser}
+  browser: {true if web/desktop else false}
   headless: false
-  viewport: [1280, 720]
+  viewport: [1280, 720]  # only if browser: true
 
 # Skills
 skills:
@@ -207,7 +216,7 @@ mcps:
 
 # Verification
 verification:
-  browser: native  # claude-in-chrome is built into Claude Code
+  type: {terminal if cli/claude-code-plugin else browser}
   github: {MCP_DOCKER if available else null}
 ---
 ```

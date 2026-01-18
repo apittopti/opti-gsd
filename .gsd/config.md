@@ -47,11 +47,10 @@ discovery:
   default_level: 1
   force_research: false
 
-# Browser Testing
-browser:
-  enabled: false
-  headless: false
-  viewport: [1280, 720]
+# Testing
+testing:
+  type: terminal  # Claude Code plugin - tested via CLI
+  browser: false
 
 # Skills
 skills:
@@ -66,6 +65,6 @@ mcps:
 
 # Verification
 verification:
-  browser: native  # claude-in-chrome is built into Claude Code
+  type: terminal  # Test commands in Claude Code CLI
   github: MCP_DOCKER
 ---
