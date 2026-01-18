@@ -161,3 +161,29 @@ Recommended flow per phase:
 ```
 
 For detailed status and next actions, run `/opti-gsd:status`
+
+---
+
+## Error Messages
+
+opti-gsd uses standardized error messages with next-step suggestions:
+
+```
+⚠️ {Error Title}
+─────────────────────────────────────
+{Brief explanation}
+
+→ {Suggested action}
+```
+
+**Common errors:**
+
+| Error | Meaning | Solution |
+|-------|---------|----------|
+| `opti-gsd Not Initialized` | No `.gsd/` directory | Run `/opti-gsd:init` or `/opti-gsd:new-project` |
+| `Project State Missing` | `.gsd/STATE.md` not found | Run `/opti-gsd:init` to reinitialize |
+| `No Roadmap Found` | `.gsd/ROADMAP.md` not found | Run `/opti-gsd:roadmap` to create one |
+| `No Plan Found` | Phase plan missing | Run `/opti-gsd:plan-phase N` |
+| `Phase Not Executed` | Trying to verify unexecuted phase | Run `/opti-gsd:execute` first |
+
+See `docs/ERROR-HANDLING.md` for the complete error reference
