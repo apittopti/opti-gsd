@@ -126,7 +126,8 @@ Based on current state, show the most relevant actions:
 | Phase not planned | `/opti-gsd:plan-phase {N}` | `/opti-gsd:discuss-phase {N}` (optional) |
 | Phase planned, not started | `/opti-gsd:execute` | `/opti-gsd:discuss-phase` (refine) |
 | Tasks in progress | `/opti-gsd:execute` (resume) | `/opti-gsd:execute-task {N}` (specific) |
-| Phase complete, not verified | `/opti-gsd:verify {N}` | `/opti-gsd:plan-phase {N+1}` |
+| Phase complete, not pushed | `/opti-gsd:push` | `/opti-gsd:verify {N}` (local only) |
+| Phase complete, pushed, not verified | `/opti-gsd:verify {N}` | Test preview URL manually first |
 | Phase verified, more phases | `/opti-gsd:plan-phase {N+1}` | `/opti-gsd:archive {N}` |
 | All phases complete & verified | `/opti-gsd:complete-milestone` | — |
 

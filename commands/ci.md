@@ -189,9 +189,11 @@ If user runs `/opti-gsd:ci configure`, ask:
 4. "What's your production URL?" (default: "none")
 
 **Deployment Questions:**
-1. "Where do you deploy?" (Vercel / AWS / Docker / Kubernetes / Other / None)
+1. "Where do you deploy?" (Vercel / Netlify / Railway / Render / AWS / Docker / Other / None)
 2. "Do you use CI/CD?" (GitHub Actions / GitLab CI / CircleCI / None)
 3. "What branch deploys to production?" (default: main)
+4. "Does your platform auto-deploy branches for preview?" (Yes / No)
+5. If yes: "What's your preview URL pattern?" (e.g., `https://{project}-{branch}.vercel.app`)
 
 ### Step 6: Update config.md
 
@@ -211,8 +213,12 @@ ci:
 urls:
   local: http://localhost:3000
   api: http://localhost:3000/api
+  preview: null  # Auto-populated by /push when branch deploys
   staging: https://staging.example.com
   production: https://example.com
+
+# Preview URL Pattern (for auto-detection)
+preview_pattern: https://{project}-{branch}-{team}.vercel.app
 
 # Verification MCPs
 verification_mcps:

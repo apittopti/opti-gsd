@@ -74,20 +74,46 @@ CI Checks Passed!
 
 If `ci.e2e` is configured AND browser MCP is available:
 
+**Determine target URL:**
+1. Check `STATE.md` for `preview_url` (set by `/push`)
+2. If preview available, use it (tests against real deployment)
+3. Otherwise, use `urls.local` (tests against local dev server)
+
+```
+E2E Test Target:
+──────────────────────────────────────────────────────────────
+{If preview_url exists:}
+[✓] Preview deployment: https://myapp-gsd-v1-0.vercel.app
+    Testing against LIVE preview deployment
+
+{If no preview_url:}
+[○] No preview deployment. Testing locally.
+    Run /opti-gsd:push first to test against real deployment.
+──────────────────────────────────────────────────────────────
+```
+
+**If using local:**
 1. Start the dev server (if not running):
    ```bash
-   # Run in background
    {package_manager} run dev &
    ```
-
 2. Wait for server to be ready (check `urls.local`)
 
-3. Run E2E tests:
-   ```bash
-   {ci.e2e}
-   ```
+**If using preview:**
+1. Verify preview URL is accessible
+2. No need to start local server
 
-4. If browser MCP available, can also run visual verification via browser automation.
+**Run E2E tests:**
+```bash
+# Set BASE_URL for test framework
+BASE_URL={preview_url || urls.local} {ci.e2e}
+```
+
+**Browser MCP verification (optional):**
+If browser MCP available, can also run visual verification:
+- Navigate to preview/local URL
+- Check key pages render correctly
+- Verify critical user flows
 
 ### Step 4: Spawn Verifier
 

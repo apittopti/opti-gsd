@@ -61,7 +61,8 @@ Project: Not initialized
 |---------|-------------|
 | `/opti-gsd:execute` | Execute current phase plan |
 | `/opti-gsd:execute-task [N]` | Execute single task N from current phase |
-| `/opti-gsd:verify [phase]` | Verify phase completion |
+| `/opti-gsd:push` | Push branch to trigger preview deployment |
+| `/opti-gsd:verify [phase]` | Verify phase completion (uses preview URL if pushed) |
 | `/opti-gsd:debug [issue-id]` | Start or resume debugging session |
 
 ### Milestones
@@ -146,10 +147,15 @@ These commands are read-only or non-destructive:
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│  INIT → ROADMAP → [RESEARCH] → PLAN → EXECUTE → VERIFY     │
+│  INIT → ROADMAP → [RESEARCH] → PLAN → EXECUTE → PUSH →     │
 │    ↓                                              ↓         │
-│  Setup project    Repeat for each phase      RELEASE        │
+│  Setup project    Repeat for each phase      VERIFY →      │
+│                                                  ↓          │
+│                                              RELEASE        │
 └─────────────────────────────────────────────────────────────┘
+
+Recommended flow per phase:
+  execute → push → (preview deploys) → verify
 ```
 
 For detailed status and next actions, run `/opti-gsd:status`

@@ -245,7 +245,34 @@ git add .gsd/ROADMAP.md
 git commit -m "docs: complete phase {N}"
 ```
 
-### Step 9: Report
+### Step 9: Offer Push for Preview Deployment
+
+Check if deployment platform is configured in `.gsd/config.md`:
+
+If `deploy.target` is set (vercel, netlify, etc.):
+
+```markdown
+## Phase {N} Complete!
+
+**Tasks:** {count}/{count} completed
+**Commits:** {commit_list}
+
+### Push for Preview Deployment?
+
+Your project is configured to deploy to {deploy.target}.
+Pushing now will create a preview deployment you can verify against.
+
+> Push to trigger preview deployment? (y/n)
+```
+
+If user confirms:
+1. Run `/opti-gsd:push` logic
+2. Wait for preview URL
+3. Store preview URL in STATE.md
+
+If no deployment configured, skip this step.
+
+### Step 10: Report
 
 ```markdown
 ## Phase {N} Complete!
@@ -257,8 +284,12 @@ git commit -m "docs: complete phase {N}"
 **Auto-Fixes:** {count if any}
 **Issues Found:** {count if any}
 
+{If pushed and preview deployed:}
+**Preview:** {preview_url}
+
 Next steps:
-→ /opti-gsd:verify {N}       — Verify phase completion
+→ /opti-gsd:verify {N}       — Verify phase completion {against preview if pushed}
+→ /opti-gsd:push             — Push to trigger preview deployment {if not pushed yet}
 → /opti-gsd:plan-phase {N+1} — Plan next phase
 → /opti-gsd:archive {N}      — Archive phase to free context
 
