@@ -11,9 +11,12 @@
   "plugins": [
     {
       "name": "opti-gsd",
-      "source": "./",
+      "source": {
+        "source": "github",
+        "repo": "apittopti/optio-gsd"
+      },
       "description": "Spec-driven development with fresh context execution",
-      "version": "0.2.0",
+      "version": "0.2.1",
       "author": {
         "name": "apittopti"
       }
