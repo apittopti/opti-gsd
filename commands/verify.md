@@ -15,13 +15,81 @@ Verify phase completion with goal-backward analysis and integration checking.
 ### Step 1: Load Context
 
 Read:
-- `.gsd/config.md`
+- `.gsd/config.md` — for CI commands and URLs
 - `.gsd/STATE.md`
 - `.gsd/ROADMAP.md` — for phase goals
 - `.gsd/plans/phase-{N}/plan.md` — for task details
 - `.gsd/plans/phase-{N}/summary.md` — for execution results
 
-### Step 2: Spawn Verifier
+### Step 2: Run CI Commands
+
+Read CI configuration from `.gsd/config.md` and run in order:
+
+```
+Running CI checks...
+──────────────────────────────────────────────────────────────
+[1/4] Lint:      {ci.lint}
+[2/4] Typecheck: {ci.typecheck}
+[3/4] Test:      {ci.test}
+[4/4] Build:     {ci.build}
+──────────────────────────────────────────────────────────────
+```
+
+**Execution order** (fail-fast):
+1. **Lint** (`ci.lint`) — Quick style/syntax check
+2. **Typecheck** (`ci.typecheck`) — Type safety
+3. **Test** (`ci.test`) — Unit/integration tests
+4. **Build** (`ci.build`) — Compilation/bundling
+
+If any command fails, report and stop:
+
+```
+CI Check Failed: Lint
+──────────────────────────────────────────────────────────────
+Command: npm run lint
+Exit code: 1
+
+Output:
+  src/components/Button.tsx:15:5
+    error: 'unused' is defined but never used
+
+──────────────────────────────────────────────────────────────
+Fix the issues and run /opti-gsd:verify again.
+```
+
+If all pass:
+```
+CI Checks Passed!
+──────────────────────────────────────────────────────────────
+[✓] Lint:      passed (2.1s)
+[✓] Typecheck: passed (4.3s)
+[✓] Test:      passed (12.5s) — 47 tests, 0 failures
+[✓] Build:     passed (8.2s)
+──────────────────────────────────────────────────────────────
+```
+
+**Skip missing commands:** If a CI command is `null` in config, skip it.
+
+### Step 3: Run E2E Tests (if configured)
+
+If `ci.e2e` is configured AND browser MCP is available:
+
+1. Start the dev server (if not running):
+   ```bash
+   # Run in background
+   {package_manager} run dev &
+   ```
+
+2. Wait for server to be ready (check `urls.local`)
+
+3. Run E2E tests:
+   ```bash
+   {ci.e2e}
+   ```
+
+4. If browser MCP available, can also run visual verification via browser automation.
+
+### Step 4: Spawn Verifier
 
 Spawn opti-gsd-verifier agent with:
 - Phase goals from ROADMAP.md
@@ -42,7 +110,7 @@ The verifier performs three-level artifact verification:
 - Are they imported and used?
 - Do key links work? (Component → API → Database)
 
-### Step 3: Integration Check
+### Step 5: Integration Check
 
 If gaps found, spawn opti-gsd-integration-checker to verify:
 - Export/import mapping
@@ -50,7 +118,7 @@ If gaps found, spawn opti-gsd-integration-checker to verify:
 - Auth protection on sensitive routes
 - E2E flow tracing
 
-### Step 4: Generate Report
+### Step 6: Generate Report
 
 Write `.gsd/plans/phase-{N}/VERIFICATION.md`:
 
@@ -58,6 +126,15 @@ Write `.gsd/plans/phase-{N}/VERIFICATION.md`:
 # Verification Report: Phase {N}
 
 ## Status: {passed | gaps_found | human_needed}
+
+## CI Checks
+| Check | Status | Time | Notes |
+|-------|--------|------|-------|
+| Lint | PASS | 2.1s | - |
+| Typecheck | PASS | 4.3s | - |
+| Test | PASS | 12.5s | 47 tests, 0 failures |
+| Build | PASS | 8.2s | - |
+| E2E | SKIP | - | Not configured |
 
 ## Observable Truths
 | Truth | Status | Evidence |
@@ -92,7 +169,7 @@ Write `.gsd/plans/phase-{N}/VERIFICATION.md`:
 - [ ] Behavior: Auth redirect works correctly
 ```
 
-### Step 5: Handle Result
+### Step 7: Handle Result
 
 **passed:**
 ```markdown
@@ -143,7 +220,7 @@ Please verify manually and confirm:
 > "Verified" or "Issues found: {description}"
 ```
 
-### Step 6: Commit
+### Step 8: Commit
 
 ```bash
 git add .gsd/plans/phase-{N}/VERIFICATION.md

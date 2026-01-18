@@ -46,6 +46,54 @@ Read `package.json` (or equivalent) and detect:
 
 If no match or ambiguous, ask user to confirm app_type.
 
+### Step 2b: Detect CI/CD Toolchain
+
+**Detect package manager:**
+```bash
+if [ -f "pnpm-lock.yaml" ]; then echo "pnpm"
+elif [ -f "yarn.lock" ]; then echo "yarn"
+elif [ -f "bun.lockb" ]; then echo "bun"
+elif [ -f "package-lock.json" ]; then echo "npm"
+elif [ -f "Cargo.toml" ]; then echo "cargo"
+elif [ -f "go.mod" ]; then echo "go"
+elif [ -f "pyproject.toml" ]; then echo "poetry"
+elif [ -f "requirements.txt" ]; then echo "pip"
+elif [ -f "*.csproj" ]; then echo "dotnet"
+fi
+```
+
+**Detect scripts from package.json:**
+
+Read `scripts` object and map to CI commands:
+| Script Name | CI Config Key |
+|-------------|---------------|
+| `build` | ci.build |
+| `test` | ci.test |
+| `lint` | ci.lint |
+| `typecheck`, `type-check`, `tsc` | ci.typecheck |
+| `test:e2e`, `e2e`, `cypress` | ci.e2e |
+
+**For non-Node.js projects:**
+
+| Project Type | Default Commands |
+|--------------|------------------|
+| Cargo.toml | build: `cargo build`, test: `cargo test`, lint: `cargo clippy` |
+| go.mod | build: `go build ./...`, test: `go test ./...`, lint: `golangci-lint run` |
+| pyproject.toml | test: `pytest`, lint: `ruff check .` |
+| *.csproj | build: `dotnet build`, test: `dotnet test` |
+
+**Detect default URLs:**
+
+Based on framework, set default local URL:
+| Framework | Default URL |
+|-----------|-------------|
+| Next.js, Nuxt, SvelteKit | http://localhost:3000 |
+| Vite | http://localhost:5173 |
+| Create React App | http://localhost:3000 |
+| Angular | http://localhost:4200 |
+| Express/Fastify/Hono | http://localhost:3000 |
+| ASP.NET | http://localhost:5000 |
+
 ### Step 3: Detect Skills and MCPs
 
 ```bash
@@ -96,7 +144,6 @@ Write `.gsd/config.md`:
 # Project Configuration
 app_type: {detected_app_type}
 framework: {detected_framework}
-base_url: {default_base_url}
 
 # Git Workflow
 branching: milestone
@@ -114,6 +161,28 @@ budgets:
   executor: 50
   planner: 60
   researcher: 70
+
+# CI/CD & Toolchain
+ci:
+  package_manager: {detected_package_manager}
+  build: {detected_build_command}
+  test: {detected_test_command}
+  lint: {detected_lint_command}
+  typecheck: {detected_typecheck_command}
+  e2e: {detected_e2e_command}
+
+# URLs
+urls:
+  local: {detected_local_url}
+  api: {detected_api_url}
+  staging: null
+  production: null
+
+# Deployment
+deploy:
+  target: null
+  ci_system: {github-actions if .github/workflows exists else null}
+  production_branch: {detected_base_branch}
 
 # Discovery Defaults
 discovery:
@@ -135,6 +204,11 @@ skills:
 # MCP Integrations
 mcps:
   {detected_mcps}
+
+# Verification MCPs
+verification_mcps:
+  browser: {claude-in-chrome if available else null}
+  github: {MCP_DOCKER if available else null}
 ---
 ```
 
@@ -193,10 +267,22 @@ Suggest next commands:
 opti-gsd initialized!
 
 Detected:
-  Framework: Next.js (web)
-  Base branch: main
+  Framework:        Next.js (web)
+  Base branch:      main
+  Package manager:  npm
+
+Toolchain:
+  Build:      npm run build
+  Test:       npm test
+  Lint:       npm run lint
+
+URLs:
+  Local:      http://localhost:3000
+
+MCPs:
   Skills: 3 available
-  MCPs: supabase, stripe
+  Integrations: supabase, stripe
+  Verification: browser, github
 
 Created:
   .gsd/config.md
@@ -204,6 +290,7 @@ Created:
 
 Next steps:
 → /opti-gsd:new-project  — Define your project
+→ /opti-gsd:ci configure — Customize CI/CD settings (optional)
 → /opti-gsd:research     — Research best practices (optional)
 → /opti-gsd:roadmap      — Create roadmap (if PROJECT.md exists)
 

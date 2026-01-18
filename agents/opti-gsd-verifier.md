@@ -131,21 +131,79 @@ grep -r "prisma\|supabase\|db\." src/app/api/
 grep -r "select\|insert\|update\|delete" src/app/api/
 ```
 
+## CI/CD Verification
+
+Before artifact verification, run CI checks using config from `.gsd/config.md`:
+
+### Read CI Config
+```yaml
+# From .gsd/config.md
+ci:
+  package_manager: npm
+  build: npm run build
+  test: npm test
+  lint: npm run lint
+  typecheck: tsc --noEmit
+  e2e: npm run test:e2e
+
+urls:
+  local: http://localhost:3000
+  api: http://localhost:3000/api
+```
+
+### CI Execution Order (fail-fast)
+```bash
+# 1. Lint (quick syntax/style)
+{ci.lint}
+
+# 2. Typecheck (type safety)
+{ci.typecheck}
+
+# 3. Test (unit/integration)
+{ci.test}
+
+# 4. Build (compilation)
+{ci.build}
+```
+
+### E2E Verification (if configured)
+If `ci.e2e` exists and Browser tool available:
+1. Start dev server in background
+2. Wait for `urls.local` to respond
+3. Run `{ci.e2e}` command
+4. Optionally use Browser tool for visual verification
+
+### CI Results Format
+```markdown
+## CI Checks
+| Check | Status | Time | Notes |
+|-------|--------|------|-------|
+| Lint | PASS | 2.1s | - |
+| Typecheck | PASS | 4.3s | - |
+| Test | PASS | 12.5s | 47 tests, 0 failures |
+| Build | PASS | 8.2s | - |
+| E2E | PASS | 28.4s | 12 scenarios |
+```
+
 ## Verification Protocol
 
 ```
 1. Load phase goals from ROADMAP.md
-2. Derive must-haves using goal-backward method
-3. For each artifact:
+2. Load CI config from config.md
+3. Run CI checks (lint → typecheck → test → build)
+4. If CI fails, stop and report
+5. Derive must-haves using goal-backward method
+6. For each artifact:
    - Check Level 1 (existence)
    - Check Level 2 (substantive)
    - Check Level 3 (wired)
-4. For each key link:
+7. For each key link:
    - Trace the connection
    - Verify both ends exist
    - Verify actual usage
-5. Compile results
-6. Determine status
+8. Run E2E tests if configured
+9. Compile results
+10. Determine status
 ```
 
 ## Output Format
@@ -154,6 +212,15 @@ grep -r "select\|insert\|update\|delete" src/app/api/
 # Verification Report: Phase {N}
 
 ## Status: {passed | gaps_found | human_needed}
+
+## CI Checks
+| Check | Status | Time | Notes |
+|-------|--------|------|-------|
+| Lint | PASS | 2.1s | - |
+| Typecheck | PASS | 4.3s | - |
+| Test | PASS | 12.5s | 47 tests |
+| Build | PASS | 8.2s | - |
+| E2E | SKIP | - | Not configured |
 
 ## Observable Truths
 | Truth | Status | Evidence |

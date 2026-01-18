@@ -69,6 +69,7 @@ Open Issues: 2 (0 critical, 1 medium, 1 low)
 ├──────────────────────────────────────────────────────────────┤
 │ → /opti-gsd:status         — Refresh this status view        │
 │ → /opti-gsd:context        — Check context usage details     │
+│ → /opti-gsd:ci             — View CI/CD configuration        │
 │ → /opti-gsd:add-todo       — Capture idea for later          │
 │ → /opti-gsd:todos          — View/manage captured todos      │
 │ → /opti-gsd:decisions      — Log or view decisions           │
@@ -136,4 +137,4 @@ Always show the "Safe Actions" section with commands that:
 - **Can be run at any point in the workflow**
 - **Help with information gathering or note-taking**
 
-These include: `status`, `context`, `add-todo`, `todos`, `decisions`, `issues`, `help`
+These include: `status`, `context`, `ci`, `add-todo`, `todos`, `decisions`, `issues`, `help`

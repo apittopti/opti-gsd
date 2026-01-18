@@ -44,6 +44,7 @@ Project: Not initialized
 | `/opti-gsd:init` | Initialize opti-gsd in an existing project |
 | `/opti-gsd:new-project` | Create a new project with guided setup |
 | `/opti-gsd:map-codebase` | Analyze existing codebase structure |
+| `/opti-gsd:ci [configure]` | View or configure CI/CD toolchain |
 
 ### Planning
 | Command | Description |
@@ -96,9 +97,13 @@ Project: Not initialized
 |---------|-------------|
 | `/opti-gsd:skills` | Discover and configure Claude skills |
 | `/opti-gsd:mcps` | Discover and configure MCP servers |
-| `/opti-gsd:mode [interactive|yolo]` | Switch workflow mode |
+| `/opti-gsd:mode [interactive\|yolo]` | Switch workflow mode (see below) |
 | `/opti-gsd:whats-new` | Check for updates and changelog |
 | `/opti-gsd:research [topic]` | Research a topic using Context7 |
+
+**Modes:**
+- `interactive` — Confirms before phases, shows plans for approval, pauses at checkpoints
+- `yolo` — Executes without confirmation, maximum velocity (still pauses on errors)
 
 ---
 
@@ -127,6 +132,7 @@ Project: Not initialized
 These commands are read-only or non-destructive:
 - `/opti-gsd:status` - View current state
 - `/opti-gsd:context` - Check context usage
+- `/opti-gsd:ci` - View CI/CD configuration
 - `/opti-gsd:help` - This help screen
 - `/opti-gsd:add-todo` - Capture ideas
 - `/opti-gsd:todos` - View todos
