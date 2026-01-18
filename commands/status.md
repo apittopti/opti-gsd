@@ -2,73 +2,67 @@
 description: Show current project state and suggest next action.
 ---
 
-# status
+Read the opti-gsd project state and display a status report with visual progress bars.
 
-Show current project state and suggest next action.
+## Your Task
 
-## Behavior
+1. Check if `.gsd/` directory exists
+2. If not, display "opti-gsd not initialized" and suggest `/opti-gsd:init`
+3. If yes, read STATE.md and ROADMAP.md
+4. Display status with progress bars as shown below
 
-### Step 1: Load State
+## Output Format
 
-Read (minimal context):
-- `.gsd/config.md`
-- `.gsd/STATE.md`
-- `.gsd/ROADMAP.md`
-- `.gsd/ISSUES.md`
+Display this format (adapt values from actual state):
 
-### Step 2: Display Status
-
-```markdown
-# opti-gsd Status
-
-## Current Position
-- **Milestone:** v1.0
-- **Phase:** 2 of 4 (Core Features)
-- **Task:** 3 of 5
-- **Branch:** gsd/v1.0
-
-## Progress
 ```
-Phase 1: Authentication    [████████████] 100% ✓
-Phase 2: Core Features     [████████░░░░]  60% ←
-Phase 3: Settings          [░░░░░░░░░░░░]   0%
-Phase 4: Payments          [░░░░░░░░░░░░]   0%
-```
+╔══════════════════════════════════════════════════════════════╗
+║                      opti-gsd Status                         ║
+╠══════════════════════════════════════════════════════════════╣
+║  Milestone: v1.0          Branch: gsd/v1.0                   ║
+║  Phase: 2 of 4            Mode: interactive                  ║
+╚══════════════════════════════════════════════════════════════╝
 
-## Session
-- **Last active:** 2 hours ago
-- **Context used:** ~80k tokens (40% of budget)
+Phase Progress:
+──────────────────────────────────────────────────────────────
+Phase 1: Auth           [████████████████████] 100% ✓ complete
+Phase 2: Core Features  [████████████░░░░░░░░]  60% ← current
+Phase 3: Settings       [░░░░░░░░░░░░░░░░░░░░]   0%   pending
+Phase 4: Payments       [░░░░░░░░░░░░░░░░░░░░]   0%   pending
+──────────────────────────────────────────────────────────────
+Overall: [████████░░░░░░░░░░░░] 40%
 
-## Open Issues
-- ISS-001 (medium): Auth redirect doesn't preserve URL
-- ISS-002 (low): API missing pagination headers
+Current Phase Tasks:
+──────────────────────────────────────────────────────────────
+[✓] Task 1: Setup database schema
+[✓] Task 2: Create API endpoints
+[▸] Task 3: Implement business logic    ← in progress
+[ ] Task 4: Add validation
+[ ] Task 5: Write tests
+──────────────────────────────────────────────────────────────
 
-## Mode
-- **Workflow:** interactive
-- **Discovery:** level 1 (quick)
+Context: ~80k tokens (40% of budget) ████████░░░░░░░░░░░░
 
-## Next Action
-→ Run `/opti-gsd:execute` to continue Phase 2, Task 3
+Open Issues: 2 (0 critical, 1 medium, 1 low)
+
+→ Next: /opti-gsd:execute to continue Task 3
 ```
 
-### Step 3: Suggest Next Action
+## Progress Bar Generation
 
-Based on state, suggest the most appropriate next command:
+Use these characters for progress bars:
+- Full block: █
+- Empty block: ░
+- Bar width: 20 characters
+- Calculate: filled = (percentage / 100) * 20
 
-| State | Suggestion |
-|-------|------------|
-| No project | `/opti-gsd:new-project` |
-| No roadmap | `/opti-gsd:roadmap` |
+## State Detection
+
+| Condition | Next Action |
+|-----------|-------------|
+| No .gsd/ folder | `/opti-gsd:init` or `/opti-gsd:new-project` |
+| No ROADMAP.md | `/opti-gsd:roadmap` |
 | Phase not planned | `/opti-gsd:plan-phase {N}` |
-| Tasks pending | `/opti-gsd:execute` |
-| Phase complete, not verified | `/opti-gsd:verify {N}` |
-| Verified, more phases | `/opti-gsd:plan-phase {N+1}` |
+| Tasks in progress | `/opti-gsd:execute` |
+| Phase done, not verified | `/opti-gsd:verify {N}` |
 | All phases complete | `/opti-gsd:complete-milestone` |
-| High context usage | `/opti-gsd:archive` or `/opti-gsd:compact` |
-| Open critical issues | `/opti-gsd:issues` |
-
----
-
-## Context Budget
-
-Minimal: ~5% (read-only operation)
