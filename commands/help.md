@@ -11,9 +11,11 @@ Display the following help information to the user. First, read `.claude-plugin/
 ║                         opti-gsd                             ║
 ║          Spec-driven development with fresh context          ║
 ╠══════════════════════════════════════════════════════════════╣
-║  Version: 0.1.0            Author: apittopti                 ║
+║  Version: {version}        Author: {author}                  ║
 ╚══════════════════════════════════════════════════════════════╝
 ```
+
+**Read version and author from `.claude-plugin/plugin.json` and substitute into the header above.**
 
 If `.gsd/` exists, show current configuration:
 
