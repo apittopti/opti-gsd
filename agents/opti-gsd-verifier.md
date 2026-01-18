@@ -6,8 +6,8 @@ tools:
   - Glob
   - Grep
   - Bash
-  - Browser
-  - mcp__*
+  - Browser  # Only when config.testing.browser: true
+  - mcp__*   # Access to project-configured MCPs
 ---
 
 # Opti-GSD Verifier Agent

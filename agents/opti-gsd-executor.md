@@ -8,8 +8,8 @@ tools:
   - Bash
   - Glob
   - Grep
-  - Browser
-  - mcp__*
+  - Browser  # Only when config.testing.browser: true
+  - mcp__*   # Access to project-configured MCPs (github, supabase, etc.)
 ---
 
 # Opti-GSD Executor Agent

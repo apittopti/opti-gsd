@@ -8,7 +8,7 @@ tools:
   - Bash
   - Glob
   - Grep
-  - Browser
+  - Browser  # Only when config.testing.browser: true
 ---
 
 # Opti-GSD Debugger Agent
