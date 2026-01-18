@@ -4,6 +4,7 @@ description: Consolidates parallel research outputs into unified SUMMARY.md
 tools:
   - Read
   - Write
+  - Glob
   - Bash
 ---
 

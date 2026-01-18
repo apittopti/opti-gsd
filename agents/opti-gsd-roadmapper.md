@@ -5,6 +5,7 @@ tools:
   - Read
   - Write
   - Glob
+  - Grep
 ---
 
 # Opti-GSD Roadmapper Agent
