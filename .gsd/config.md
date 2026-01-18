@@ -62,11 +62,10 @@ skills:
 # MCP Integrations
 mcps:
   github: MCP_DOCKER
-  browser: claude-in-chrome
   context7: MCP_DOCKER
 
-# Verification MCPs
-verification_mcps:
-  browser: claude-in-chrome
+# Verification
+verification:
+  browser: native  # claude-in-chrome is built into Claude Code
   github: MCP_DOCKER
 ---
