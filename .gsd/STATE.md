@@ -15,7 +15,7 @@ open_issues: []
 ---
 
 ## Session Context
-Project initialized. Ready for /opti-gsd:new-project or /opti-gsd:roadmap.
+Project initialized. Ready for /opti-gsd:roadmap to plan work.
 
 ## Recent Decisions
 (none yet)

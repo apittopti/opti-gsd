@@ -205,9 +205,9 @@ skills:
 mcps:
   {detected_mcps}
 
-# Verification MCPs
-verification_mcps:
-  browser: {claude-in-chrome if available else null}
+# Verification
+verification:
+  browser: native  # claude-in-chrome is built into Claude Code
   github: {MCP_DOCKER if available else null}
 ---
 ```
@@ -234,7 +234,7 @@ open_issues: []
 ---
 
 ## Session Context
-Project initialized. Ready for /opti-gsd:new-project or /opti-gsd:roadmap.
+Project initialized. Ready for /opti-gsd:roadmap to plan work.
 
 ## Recent Decisions
 (none yet)
@@ -257,9 +257,11 @@ Display summary:
 - Codebase analysis: {yes/no}
 
 Suggest next commands:
-- If PROJECT.md doesn't exist: `/opti-gsd:new-project`
-- If PROJECT.md exists: `/opti-gsd:roadmap`
+- `/opti-gsd:roadmap` — Plan work (init is for brownfield projects, so roadmap is the natural next step)
 - Optional: `/opti-gsd:research` — Get domain best practices before planning
+- Optional: `/opti-gsd:ci configure` — Customize CI/CD settings
+
+Note: `/opti-gsd:new-project` is for greenfield projects starting from scratch. Since `/opti-gsd:init` is for existing codebases, suggest roadmap instead.
 
 ## Output
 
@@ -279,20 +281,21 @@ Toolchain:
 URLs:
   Local:      http://localhost:3000
 
+Verification:
+  Browser: native (claude-in-chrome)
+  GitHub: MCP_DOCKER
+
 MCPs:
-  Skills: 3 available
   Integrations: supabase, stripe
-  Verification: browser, github
 
 Created:
   .gsd/config.md
   .gsd/STATE.md
 
 Next steps:
-→ /opti-gsd:new-project  — Define your project
+→ /opti-gsd:roadmap      — Plan your work (create phases)
 → /opti-gsd:ci configure — Customize CI/CD settings (optional)
 → /opti-gsd:research     — Research best practices (optional)
-→ /opti-gsd:roadmap      — Create roadmap (if PROJECT.md exists)
 
 💾 State saved. Safe to /compact or start new session if needed.
 ```
