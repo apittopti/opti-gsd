@@ -1,3 +1,7 @@
+---
+description: Initialize opti-gsd in an existing project (brownfield).
+---
+
 # /opti-gsd:init
 
 Initialize opti-gsd in an existing project (brownfield).

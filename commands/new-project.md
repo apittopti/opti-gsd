@@ -1,3 +1,7 @@
+---
+description: Create a new project with guided setup, research, and roadmap generation.
+---
+
 # /opti-gsd:new-project
 
 Create a new project with guided setup, research, and roadmap generation.

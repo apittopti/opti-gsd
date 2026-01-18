@@ -1,3 +1,7 @@
+---
+description: Show current context usage and budget status with optimization suggestions.
+---
+
 # /opti-gsd:context
 
 Show current context usage and budget status with optimization suggestions.

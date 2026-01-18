@@ -1,3 +1,7 @@
+---
+description: Analyze an existing codebase to understand its structure before starting work.
+---
+
 # /opti-gsd:map-codebase
 
 Analyze an existing codebase to understand its structure before starting work.

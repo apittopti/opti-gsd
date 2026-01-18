@@ -1,3 +1,7 @@
+---
+description: Manage architectural decisions.
+---
+
 # /opti-gsd:decisions [action] [args...]
 
 Manage architectural decisions.

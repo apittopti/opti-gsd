@@ -1,3 +1,7 @@
+---
+description: Discover and configure MCP servers for the project.
+---
+
 # /opti-gsd:mcps [action] [args...]
 
 Discover and configure MCP servers for the project.

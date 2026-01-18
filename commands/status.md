@@ -1,3 +1,7 @@
+---
+description: Show current project state and suggest next action.
+---
+
 # /opti-gsd:status
 
 Show current project state and suggest next action.

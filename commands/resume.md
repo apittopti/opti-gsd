@@ -1,3 +1,7 @@
+---
+description: Resume work from last session.
+---
+
 # /opti-gsd:resume
 
 Resume work from last session.

@@ -1,3 +1,7 @@
+---
+description: Check for updates and show recent changes to opti-gsd.
+---
+
 # /opti-gsd:whats-new
 
 Check for updates and show recent changes to opti-gsd.

@@ -1,3 +1,7 @@
+---
+description: Capture an idea or task for later without interrupting current work.
+---
+
 # /opti-gsd:add-todo [description]
 
 Capture an idea or task for later without interrupting current work.

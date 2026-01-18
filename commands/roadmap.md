@@ -1,3 +1,7 @@
+---
+description: Create or view the project roadmap.
+---
+
 # /opti-gsd:roadmap
 
 Create or view the project roadmap.

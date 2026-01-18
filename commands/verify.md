@@ -1,3 +1,7 @@
+---
+description: Verify phase completion with goal-backward analysis and integration checking.
+---
+
 # /opti-gsd:verify [phase]
 
 Verify phase completion with goal-backward analysis and integration checking.

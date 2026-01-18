@@ -1,3 +1,7 @@
+---
+description: Track and manage project issues.
+---
+
 # /opti-gsd:issues [action] [args...]
 
 Track and manage project issues.

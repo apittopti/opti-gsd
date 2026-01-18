@@ -1,3 +1,7 @@
+---
+description: Execute a single task from the current phase plan.
+---
+
 # /opti-gsd:execute-task [N]
 
 Execute a single task from the current phase plan.

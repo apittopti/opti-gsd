@@ -1,3 +1,7 @@
+---
+description: Display all available opti-gsd commands with descriptions.
+---
+
 # /opti-gsd:help
 
 Display all available opti-gsd commands with descriptions.

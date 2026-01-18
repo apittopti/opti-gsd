@@ -1,3 +1,7 @@
+---
+description: Remove a future phase from the roadmap and renumber subsequent phases.
+---
+
 # /opti-gsd:remove-phase [phase]
 
 Remove a future phase from the roadmap and renumber subsequent phases.

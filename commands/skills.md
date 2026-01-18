@@ -1,3 +1,7 @@
+---
+description: Discover and configure Claude Code skills for the project.
+---
+
 # /opti-gsd:skills [action] [args...]
 
 Discover and configure Claude Code skills for the project.
