@@ -1,26 +1,26 @@
 ---
 milestone: v0.6.0
 phase: 1
-task: null
+task: 0/7
 branch: master
 
 last_active: 2026-01-19
 session_tokens: 0
 
 phases_complete: []
-phases_in_progress: []
-phases_pending: [1]
+phases_in_progress: [1]
+phases_pending: []
 
 open_issues: []
 ---
 
 ## Session Context
-Phase 1 discussed: Loop mechanism for execute and verify.
-Ready for planning.
+Phase 1 planned: Loop mechanism with 7 tasks in 3 waves.
+Ready for execution.
 
 ## Recent Decisions
-- Loop integrated into verify (knows what's broken)
-- Loop integrated into execute (retry failed tasks)
+- Loop is DEFAULT behavior (mode controls prompts)
+- Execute loop: retry failed tasks (max 3)
+- Verify loop: fix gaps and re-verify (max 20)
 - Stop hook intercepts exit when loop incomplete
-- Completion = verification passes (not phrase matching)
-- Max retries: 3 per task, Max iterations: 20 for verify
+- Cross-platform hooks (Windows + Unix)
