@@ -51,6 +51,20 @@ Spawn opti-gsd-integration-checker for cross-phase integration:
 - No orphaned code
 - E2E flows working
 
+### Step 2.5: Update Version Files
+
+Update version in plugin manifest files to match the milestone version:
+
+1. **`.claude-plugin/plugin.json`** — Update `version` field
+2. **`.claude-plugin/marketplace.json`** — Update `version` field in plugins array
+
+```bash
+# Example: Update version to match milestone (e.g., v0.8.0 → "0.8.0")
+# Strip the 'v' prefix for semver format
+```
+
+**Important:** Both files must have matching versions for marketplace updates to work correctly.
+
 ### Step 3: Generate Changelog
 
 Compile from phase summaries:
