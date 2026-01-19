@@ -1,4 +1,4 @@
-# Roadmap: opti-gsd v0.6.0
+# Roadmap: opti-gsd v0.6.0 [COMPLETE]
 
 ## Milestone Goal
 Add self-referential loop mechanism for resilient execution and verification.
