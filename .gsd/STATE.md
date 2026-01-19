@@ -29,7 +29,9 @@ loop:
 ---
 
 ## Session Context
-Started milestone v0.8.0. Ready to create roadmap.
+Phase 1 discussed. Key decisions captured.
 
 ## Recent Decisions
 - Implement I003: Push before verify, PR before merge
+- Verify warns (not blocks) if not pushed
+- Complete-milestone always creates PR
