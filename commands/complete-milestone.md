@@ -6,7 +6,21 @@ description: Complete the current milestone and prepare for release.
 
 Complete the current milestone and prepare for release.
 
+## Arguments
+
+- `--finalize` — Run post-merge steps (tag, archive) after PR is merged
+- `--force` — Complete even if phases incomplete
+
 ## Behavior
+
+### Step 0: Check Finalize Flag
+
+If `--finalize` flag provided:
+1. Verify PR has been merged (check if milestone branch still exists or has been deleted, or check if base branch contains the commits)
+2. Skip directly to Step 6 (Tag Release)
+3. Continue through remaining steps (Archive, Reset, Report)
+
+If no flag, continue to Step 1 normally.
 
 ### Step 1: Verify All Phases Complete
 
@@ -81,45 +95,34 @@ Write to `.gsd/CHANGELOG-{milestone}.md`.
 ...
 ```
 
-### Step 5: Merge or Create PR
+### Step 5: Push Branch and Create PR
 
-Read `workflow` from `.gsd/config.md` (defaults to `solo`).
+1. Ensure branch is pushed:
+   ```bash
+   git push -u origin {branch}
+   ```
 
-**If workflow = solo (default):**
+2. Create PR using gh CLI (if available):
+   ```bash
+   gh pr create \
+     --title "Release: {milestone}" \
+     --body "$(cat .gsd/CHANGELOG-{milestone}.md)"
+   ```
 
-Merge directly to base branch:
-```bash
-git checkout {base}
-git merge {branch} --no-ff -m "release({milestone}): merge milestone {milestone}"
-git push origin {base}
-```
+3. If gh not available, provide manual instructions:
+   ```markdown
+   ## Create Pull Request
 
-**If workflow = team:**
+   Please create a PR manually:
+   - **From:** {branch}
+   - **To:** {base}
+   - **Title:** Release: {milestone}
+   - **Body:** See .gsd/CHANGELOG-{milestone}.md
 
-Push branch and create PR:
-```bash
-git push -u origin {branch}
-```
+   After merging, run `/opti-gsd:complete-milestone --finalize` to tag and archive.
+   ```
 
-If `gh` available:
-```bash
-gh pr create \
-  --title "Release: {milestone}" \
-  --body "$(cat .gsd/CHANGELOG-{milestone}.md)"
-```
-
-If `gh` not available:
-```markdown
-## Create Pull Request
-
-Please create a PR manually:
-- **From:** {branch}
-- **To:** {base}
-- **Title:** Release: {milestone}
-- **Body:** See .gsd/CHANGELOG-{milestone}.md
-
-After merging, run `/opti-gsd:complete-milestone --finalize` to tag and archive.
-```
+4. Report PR URL and stop (don't merge automatically)
 
 ### Step 6: Tag Release
 
@@ -169,40 +172,29 @@ git add .gsd/
 git commit -m "chore: complete milestone {name}"
 ```
 
-**If workflow = solo:**
+**After PR created (first run):**
+
 ```markdown
-## Milestone Complete!
+## PR Created
 
 **Milestone:** {name}
-**Phases:** {count} completed
+**PR:** {pr_url}
+**Branch:** {branch} → {base}
 
-**Artifacts:**
-- Tag: {milestone}
-- Changelog: .gsd/CHANGELOG-{milestone}.md
-- Archive: .gsd/milestones/{milestone}/
-
-Code merged to {base} branch.
-
-**Next:**
-→ /opti-gsd:start-milestone {next}
+Next:
+1. Review and merge the PR
+2. Run `/opti-gsd:complete-milestone --finalize` to tag and archive
 ```
 
-**If workflow = team:**
+**After finalize (second run):**
+
 ```markdown
-## Milestone Complete!
+## Milestone Finalized!
 
-**Milestone:** {name}
-**Phases:** {count} completed
+**Tag:** {milestone}
+**Archive:** .gsd/milestones/{milestone}/
 
-**Artifacts:**
-- Branch: {branch}
-- PR: {pr_url if created}
-- Tag: {milestone}
-- Changelog: .gsd/CHANGELOG-{milestone}.md
-- Archive: .gsd/milestones/{milestone}/
-
-**Next:**
-→ Merge the PR
+Ready for next milestone.
 → /opti-gsd:start-milestone {next}
 ```
 

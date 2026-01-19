@@ -29,6 +29,48 @@ Verification progress is tracked through 7 stages. Each stage writes to `.gsd/pl
 
 ## Behavior
 
+### Step 0: Check Push Status
+
+Before validating prerequisites, check if the branch should be pushed for deployment testing.
+
+**1. Check deploy target configuration:**
+Read `.gsd/config.md` and look for `deploy.target` setting.
+
+**2. If deploy is configured, check branch push status:**
+```bash
+git rev-parse --abbrev-ref --symbolic-full-name @{u} 2>/dev/null
+```
+
+**3. If no upstream (branch not pushed), show warning:**
+```
+Warning: Branch Not Pushed
+---------------------------------------------
+Deploy target is configured ({deploy.target}) but branch
+{current_branch} has not been pushed yet.
+
+Pushing now allows you to verify against a preview deployment.
+
+-> Run /opti-gsd:push first (recommended)
+-> Or continue with local-only verification
+```
+
+**4. Interactive mode behavior:**
+Ask: "Push now? [Y/n]"
+- If **yes**: Execute `/opti-gsd:push` logic, then continue to Step 1
+- If **no**: Continue to Step 1 with local-only verification
+
+**5. Yolo mode behavior:**
+- Show the warning message
+- Continue to Step 1 automatically (do not auto-push)
+
+**6. If deploy is NOT configured:**
+- Skip this step silently
+- Continue to Step 1
+
+**7. If branch IS already pushed:**
+- Skip the warning
+- Continue to Step 1
+
 ### Step 1: Validate Prerequisites
 
 Check for required files and report standardized errors:
