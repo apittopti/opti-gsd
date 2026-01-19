@@ -140,6 +140,8 @@ mkdir -p .gsd/plans
 mkdir -p .gsd/archive
 mkdir -p .gsd/summaries
 mkdir -p .gsd/codebase
+mkdir -p .gsd/stories
+mkdir -p .gsd/issues
 mkdir -p .gsd/debug
 ```
 
@@ -158,6 +160,7 @@ branching: milestone
 prefix: gsd/
 base: {detected_base_branch}
 commits: conventional
+workflow: solo  # solo = merge directly, team = create PR
 
 # Execution Mode
 mode: interactive
