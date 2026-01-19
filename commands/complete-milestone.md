@@ -6,7 +6,21 @@ description: Complete the current milestone and prepare for release.
 
 Complete the current milestone and prepare for release.
 
+## Arguments
+
+- `--finalize` — Run post-merge steps (tag, archive) after PR is merged
+- `--force` — Complete even if phases incomplete
+
 ## Behavior
+
+### Step 0: Check Finalize Flag
+
+If `--finalize` flag provided:
+1. Verify PR has been merged (check if milestone branch still exists or has been deleted, or check if base branch contains the commits)
+2. Skip directly to Step 6 (Tag Release)
+3. Continue through remaining steps (Archive, Reset, Report)
+
+If no flag, continue to Step 1 normally.
 
 ### Step 1: Verify All Phases Complete
 
@@ -158,20 +172,29 @@ git add .gsd/
 git commit -m "chore: complete milestone {name}"
 ```
 
+**After PR created (first run):**
+
 ```markdown
-## Milestone Ready for Release!
+## PR Created
 
 **Milestone:** {name}
-**Phases:** {count} completed
+**PR:** {pr_url}
+**Branch:** {branch} → {base}
 
-**Artifacts:**
-- Branch: {branch}
-- PR: {pr_url if created}
-- Changelog: .gsd/CHANGELOG-{milestone}.md
+Next:
+1. Review and merge the PR
+2. Run `/opti-gsd:complete-milestone --finalize` to tag and archive
+```
 
-**Next:**
-→ Review and merge the PR
-→ Run `/opti-gsd:complete-milestone --finalize` to tag and archive
+**After finalize (second run):**
+
+```markdown
+## Milestone Finalized!
+
+**Tag:** {milestone}
+**Archive:** .gsd/milestones/{milestone}/
+
+Ready for next milestone.
 → /opti-gsd:start-milestone {next}
 ```
 
