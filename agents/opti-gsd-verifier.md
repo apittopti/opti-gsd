@@ -207,6 +207,96 @@ If `ci.e2e` exists and Browser tool available:
 10. Determine status
 ```
 
+## Checkpoint Protocol
+
+Verification can be interrupted by context resets. Use checkpoint files to persist progress and enable seamless resumption.
+
+### Progress File
+
+Location: `.gsd/plans/phase-{N}/VERIFICATION-PROGRESS.md`
+
+Write timing: **After EACH stage completes** (not batched at end). This ensures no work is lost on context reset.
+
+### Checkpoint Stages
+
+| Stage | Order | Description |
+|-------|-------|-------------|
+| CI-lint | 1 | Lint check completed |
+| CI-typecheck | 2 | Type checking completed |
+| CI-test | 3 | Unit/integration tests completed |
+| CI-build | 4 | Build compilation completed |
+| Artifacts | 5 | Three-level artifact verification completed |
+| Key-Links | 6 | Connection tracing completed |
+| E2E | 7 | End-to-end tests completed (if configured) |
+
+### Progress Format
+
+```markdown
+# Verification Progress: Phase {N}
+
+## Status: in_progress
+
+## Completed Checks
+- [ ] CI-lint
+- [ ] CI-typecheck
+- [ ] CI-test
+- [ ] CI-build
+- [ ] Artifacts
+- [ ] Key-Links
+- [ ] E2E
+
+## Partial Results
+| Stage | Status | Time | Notes |
+|-------|--------|------|-------|
+| CI-lint | PASS | 2.1s | - |
+| CI-typecheck | PASS | 4.3s | - |
+| CI-test | PASS | 12.5s | 47 tests |
+
+## Resume Point
+{stage name to continue from, e.g., "CI-build" or "Artifacts"}
+
+## Session Info
+| Field | Value |
+|-------|-------|
+| Started | {ISO timestamp} |
+| Last Updated | {ISO timestamp} |
+| Session Count | {number of sessions} |
+```
+
+### Atomic Write Protocol
+
+To prevent corruption on crash or context reset, always write progress files atomically:
+
+1. Write to temporary file: `.gsd/plans/phase-{N}/VERIFICATION-PROGRESS.md.tmp`
+2. Rename temp file to final: `.gsd/plans/phase-{N}/VERIFICATION-PROGRESS.md`
+
+This ensures the progress file is never in a partially-written state.
+
+### Resume Protocol
+
+If context resets mid-verification (mirrors debugger's Context Survival pattern):
+
+1. Read `.gsd/plans/phase-{N}/VERIFICATION-PROGRESS.md`
+2. Review completed stages (don't re-run passed checks)
+3. Continue from current stage or next pending stage
+4. Append new results to progress file
+
+### Resume Semantics
+
+```
+ON RESUME:
+  1. Load progress file
+  2. Parse completed_stages list
+  3. FOR each stage in execution_order:
+       IF stage in completed_stages:
+         SKIP (already passed)
+       ELSE:
+         RESUME from this stage
+         BREAK
+  4. Continue normal verification flow
+  5. Update progress file after each stage
+```
+
 ## Output Format
 
 ```markdown
