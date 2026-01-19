@@ -1,7 +1,8 @@
 # Issue 001: Verifier Agent Lacks Checkpoint Protocol
 
 **Severity:** medium
-**Status:** open
+**Status:** resolved
+**Resolved:** v0.4.0
 **Created:** 2026-01-18
 
 ## Problem

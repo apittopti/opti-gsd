@@ -1,6 +1,6 @@
 # Roadmap
 
-## Milestone: v0.4.0 - Verifier Checkpoint Protocol
+## Milestone: v0.4.0 - Verifier Checkpoint Protocol [COMPLETE]
 
 ### Phase 1: Add Checkpoint Protocol to Verifier
 - [x] Complete
