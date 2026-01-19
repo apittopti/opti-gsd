@@ -1,5 +1,5 @@
 ---
-description: Verify phase completion with goal-backward analysis and integration checking.
+description: Verify phase completion with goal-backward analysis, integration checking, and automatic gap fixing
 ---
 
 # verify [phase]
@@ -383,6 +383,9 @@ A) Run `/opti-gsd:plan-phase {N} --gaps` to create gap closure plan
 B) Fix manually and re-verify
 
 Recommended: Option A for systematic closure
+
+**With Loop Enabled (default):**
+Proceed to Step 7a for automatic gap fixing.
 ```
 
 **human_needed:**
@@ -396,6 +399,76 @@ Code verification passed, but these need human verification:
 
 Please verify manually and confirm:
 > "Verified" or "Issues found: {description}"
+```
+
+### Step 7a: Verify Loop - Fix Gaps and Re-verify
+
+When verification reports `gaps_found`, the verify loop automatically attempts to close gaps.
+
+**Check Loop Settings:**
+- Read `loop.auto_loop` from config (default: true)
+- Read `loop.verify_max_iterations` from config (default: 20)
+- Check current iteration in STATE.md `loop.iteration`
+
+**Mode-Based Behavior:**
+- **interactive mode**: Ask before fix attempt
+  > "Verification found {N} gaps. Attempt automatic fix? ({iteration}/{max}) [Y/n]"
+- **yolo mode**: Auto-fix without prompting
+
+**Gap-to-Task Generation:**
+
+Parse `<gaps>` from VERIFICATION.md and generate fix tasks:
+
+| Gap Type | Fix Strategy |
+|----------|--------------|
+| orphan | Add import + usage to parent |
+| broken_link | Fix path/typo in reference |
+| stub | Implement real functionality |
+| missing_export | Add export statement |
+| wrong_import | Correct import path |
+| ci_failure | Apply specific fix for error |
+
+**Verify Loop Flow:**
+```
+IF iteration < max_iterations:
+  1. Parse gaps from VERIFICATION.md
+  2. Generate fix tasks (one per gap)
+  3. Update STATE.md loop state:
+     loop:
+       active: true
+       type: verify
+       phase: {N}
+       iteration: {current + 1}
+       max_iterations: 20
+       gaps_remaining: {count}
+  4. Execute fix tasks (spawn subagents)
+  5. Commit fixes atomically
+  6. Re-run verification from Step 3
+  7. If passed: clear loop, report success
+  8. If gaps remain: loop back to step 1
+
+IF iteration >= max_iterations:
+  1. Mark loop as paused:
+     loop:
+       active: false
+       paused: true
+       pause_reason: "Max iterations (20) reached with {N} gaps remaining"
+  2. Report remaining gaps to user
+  3. Suggest manual intervention
+```
+
+**Fix Task Subagent Prompt:**
+```xml
+<gap type="{type}" iteration="{N}/{max}">
+  <file>{affected_file}</file>
+  <description>{gap_description}</description>
+  <evidence>{from VERIFICATION.md}</evidence>
+</gap>
+
+<output>
+  - GAP CLOSED: {description of fix}
+  - GAP FAILED: {reason unable to fix}
+</output>
 ```
 
 ### Step 8: Commit
@@ -415,3 +488,43 @@ git commit -m "docs: verify phase {N} - {status}"
 - Report writing: ~5%
 
 Orchestrator stays under 15%.
+
+---
+
+## Loop State Reference
+
+Verify loop tracks state in STATE.md:
+
+```yaml
+loop:
+  active: true
+  type: verify
+  phase: 1
+  iteration: 4
+  max_iterations: 20
+  gaps_remaining: 2
+  started: 2026-01-19T10:30:00
+  last_iteration: 2026-01-19T10:45:00
+  history:
+    - iteration: 1
+      result: gaps_found
+      gaps: ["orphan:StatsCard.tsx", "broken_link:Dashboard->API"]
+    - iteration: 2
+      result: gaps_found
+      gaps: ["broken_link:Dashboard->API"]
+```
+
+The stop hook (`hooks/stop-hook.sh`) reads this state to decide whether to block session exit and re-inject the verify prompt.
+
+---
+
+## Gap Types Reference
+
+| Type | Description | Auto-Fix Strategy |
+|------|-------------|-------------------|
+| orphan | File exists but not imported | Add import + usage |
+| broken_link | Connection fails | Fix path/typo |
+| stub | Placeholder implementation | Implement fully |
+| missing_export | Symbol not exported | Add export |
+| wrong_import | Import path incorrect | Fix path |
+| ci_failure | CI check failed | Apply specific fix |
