@@ -68,4 +68,10 @@ mcps:
 verification:
   type: terminal  # Test commands in Claude Code CLI
   github: MCP_DOCKER
+
+# Loop Settings
+loop:
+  execute_max_retries: 3      # Max retries per failed task
+  verify_max_iterations: 20   # Max verify-fix cycles
+  auto_loop: true             # Enable loop by default (mode controls prompts)
 ---
