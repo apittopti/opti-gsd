@@ -6,23 +6,23 @@ Add self-referential loop mechanism for resilient execution and verification.
 ---
 
 ## Phase 1: Loop Mechanism
-**Status:** DISCUSSED
+**Status:** COMPLETE
 **Goal:** Implement Ralph Wiggum-style loops in execute and verify commands
 
 ### Delivers
-- Execute loop: retry failed tasks automatically
-- Verify loop: fix gaps and re-verify until passed
-- Stop hook: intercept exit and re-inject when loop incomplete
-- Combined flow: `--loop --verify` for full cycle automation
+- Execute loop: retry failed tasks automatically (mode-controlled)
+- Verify loop: fix gaps and re-verify until passed (mode-controlled)
+- Stop hook: intercept exit when loop incomplete
+- Loop is DEFAULT behavior (controlled by mode, not flags)
+- Cross-platform hooks (Windows Git Bash + Unix)
 
-### Tasks (High-Level)
-1. Create Stop hook infrastructure (hooks.json, stop-hook.sh)
-2. Add loop state tracking to STATE.md schema
-3. Extend execute.md with --loop, --max-retries flags
-4. Extend verify.md with --loop, --max-iterations flags
-5. Implement gap-to-task generator (parse gaps, create fix tasks)
-6. Implement error analyzer (parse failures, create fix attempts)
-7. Test full loop cycle
+### Components
+1. `hooks/hooks.json` - Stop hook configuration
+2. `hooks/stop-hook.sh` - Cross-platform stop hook script
+3. `commands/execute.md` - Step 7a: Loop retry logic
+4. `commands/verify.md` - Step 7a: Loop fix logic
+5. `.gsd/config.md` - Loop settings section
+6. `.gsd/STATE.md` - Loop state tracking schema
 
 ### Dependencies
 - None (foundational feature)
