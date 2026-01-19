@@ -4,15 +4,26 @@ Quick capture for ideas to explore later.
 
 ---
 
-## Pending
+## Completed
 
 ### I001: Integrate Ralph Wiggum loop pattern into opti-gsd
 
 - **Added:** 2026-01-19
 - **Category:** feature
 - **Priority:** low
-- **Status:** in_progress (Phase 1)
+- **Status:** completed (v0.6.0)
 
-Add a self-referential loop mechanism (like the ralph-wiggum plugin) that could complement the executor agent. Uses a Stop hook to intercept session exit and resubmit the original prompt until completion criteria are met. Key components: state file tracking iterations/completion promise, stop hook returning {"decision": "block"} to continue, and max-iterations safety limit. Could be useful for tasks requiring iterative refinement where each pass builds on previous work visible via git history.
+---
+
+## Pending
+
+### I002: Enforce milestone branching
+
+- **Added:** 2026-01-19
+- **Category:** feature
+- **Priority:** medium
+- **Status:** pending
+
+Commands like plan-phase and execute should check if working on base branch when `branching: milestone` is configured, and either warn or auto-create the milestone branch. Prevents accidental commits directly to master/main.
 
 ---
