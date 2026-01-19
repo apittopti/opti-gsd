@@ -48,7 +48,13 @@ Even for small ad-hoc changes:
 
 ## Version Management
 
-When bumping versions:
-- Update `plugin.json` version
-- Update `marketplace.json` version (they must stay in sync)
-- Create a git tag for releases
+**IMPORTANT: When completing a milestone (`/opti-gsd:complete-milestone`):**
+
+Before creating the PR, update version files to match the milestone:
+
+1. `.claude-plugin/plugin.json` — Update `version` field (e.g., `"0.8.0"`)
+2. `.claude-plugin/marketplace.json` — Update `version` field in plugins array
+
+Both files **must have matching versions** for marketplace updates to work correctly.
+
+Example: For milestone `v0.9.0`, set version to `"0.9.0"` (strip the `v` prefix).
