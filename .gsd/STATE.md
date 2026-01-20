@@ -1,8 +1,8 @@
 ---
-milestone: v0.8.2
+milestone: null
 phase: null
 task: null
-branch: gsd/v0.8.2
+branch: master
 
 last_active: 2026-01-20
 session_tokens: 0
@@ -29,8 +29,9 @@ loop:
 ---
 
 ## Session Context
-Started milestone v0.8.2. Ready to create roadmap.
+Milestone v0.8.2 complete. Ready for next milestone.
 
 ## Recent Decisions
 - v0.8.0: Push before verify, PR before merge workflow
 - v0.8.1: Use ${CLAUDE_PLUGIN_ROOT} for plugin path resolution
+- v0.8.2: Use ${CLAUDE_PLUGIN_ROOT} for stop hook path
