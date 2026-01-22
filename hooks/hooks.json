@@ -5,8 +5,8 @@
         "matcher": "",
         "hooks": [
           {
-            "type": "command",
-            "command": "bash \"$CLAUDE_PLUGIN_ROOT/hooks/stop-hook.sh\""
+            "type": "prompt",
+            "prompt": "SILENT CHECK: If .gsd/STATE.md exists AND contains 'active: true' under 'loop:', output {\"decision\":\"block\",\"prompt\":\"Loop active. Continue with /opti-gsd:execute or /opti-gsd:verify\"}. Otherwise output {\"decision\":\"allow\"}. No explanation needed."
           }
         ]
       }
