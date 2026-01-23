@@ -84,6 +84,13 @@ verification:
 loop:
   tdd_max_attempts: 5         # Max GREEN phase retries inside TDD cycle (per task)
   execute_max_retries: 2      # Max orchestrator retries if subagent fails entirely
-  verify_max_iterations: 20   # Max verify-fix cycles
-  auto_loop: true             # Enable loop by default (mode controls prompts)
+  # Note: No verify loop - human judgment gates continuation (GSD philosophy)
+
+# Model Routing (cost optimization)
+# Routes tasks to appropriate models based on complexity
+models:
+  validation: haiku           # Plan validation, routine checks (92% cost savings)
+  execution: sonnet           # Standard task execution (default)
+  complex: opus               # Architecture decisions, complex debugging
+  default: sonnet             # Fallback model
 ---

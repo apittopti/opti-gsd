@@ -111,6 +111,16 @@ Read `mode` from config:
 If interactive mode:
 > "Ready to execute Phase {N}: {Title} ({task_count} tasks in {wave_count} waves). Proceed?"
 
+### Step 4b: Create Pre-Execution Checkpoint
+
+Before executing any tasks, create a Git checkpoint for rollback safety:
+
+```bash
+git tag -f "gsd/checkpoint/phase-{N}/pre" HEAD
+```
+
+This enables `/opti-gsd:rollback {N}` to revert to before the phase started.
+
 ### Step 5: Execute Waves
 
 ```
@@ -129,6 +139,7 @@ FOR each wave:
      - IF COMPLETE:
          - git add {task.files}
          - git commit -m "{type}({phase}-{task}): {description}"
+         - git tag -f "gsd/checkpoint/phase-{N}/T{task}" HEAD  ← Checkpoint after each task
          - Update STATE.md: task = {N+1}
      - IF FAILED:
          - Log failure to STATE.md
@@ -371,14 +382,12 @@ IF task_retries[task_id] >= execute_max_retries:
 
 When all tasks in all waves complete:
 
-**Clear Loop State:**
-If loop was active during execution, clear it:
-```yaml
-loop:
-  active: false
-  completed: true
-  final_iteration: {N}
+**Create Post-Execution Checkpoint:**
+```bash
+git tag -f "gsd/checkpoint/phase-{N}/post" HEAD
 ```
+
+This enables precise rollback: `pre` = before phase, `post` = after phase, `T{N}` = after each task.
 
 1. Create summary:
 ```bash
@@ -532,10 +541,9 @@ loop:
 ```
 
 **Note on TDD Loop:**
-The TDD Red-Green-Refactor loop runs INSIDE subagents and does NOT use the stop hook. It's natural control flow within the subagent's execution. The subagent only returns when:
+The TDD Red-Green-Refactor loop runs INSIDE subagents as natural control flow. The subagent only returns when:
 - Tests pass (TASK COMPLETE)
 - TDD attempts exhausted (TASK FAILED)
 
-The stop hook (`hooks/stop-hook.sh`) is only used for:
-- Ensuring phase completion before session exit
-- Verify loop (if gaps remain after execution)
+**Philosophy:** Following GSD principles, there's no stop hook forcing loop continuation.
+Human judgment gates all decisions. Use `/opti-gsd:recover` if session interrupted.
