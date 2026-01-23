@@ -157,9 +157,13 @@ You are a focused implementation agent for opti-gsd. Complete ONLY this task.
 </context>
 
 <task id="{id}" reqs="{reqs}">
-  <files>
-    {task.files}
+  <files mode="write">
+    {task.files - implementation files}
   </files>
+  <test_required>{true | false | existing}</test_required>
+  <test_files mode="dynamic">
+    {task.test_files - starts as write, becomes read-only after RED phase}
+  </test_files>
   <action>
     {task.action}
   </action>
@@ -169,6 +173,36 @@ You are a focused implementation agent for opti-gsd. Complete ONLY this task.
   </verify>
   <done>{task.done}</done>
 </task>
+
+<tdd_cycle enabled="{task.test_required == true}">
+  <max_attempts>{config.loop.tdd_max_attempts || 5}</max_attempts>
+  <test_command>{config.ci.test || "npm test" || "pytest"}</test_command>
+
+  <phase name="RED">
+    <allowed_files>{task.test_files}</allowed_files>
+    <locked_files>{task.files}</locked_files>
+    <goal>Write a failing test for: {task.done}</goal>
+    <success_condition>Test FAILS (this is correct!)</success_condition>
+    <on_complete>Lock test files, proceed to GREEN</on_complete>
+  </phase>
+
+  <phase name="GREEN">
+    <allowed_files>{task.files}</allowed_files>
+    <locked_files>{task.test_files}</locked_files>
+    <goal>Write minimal code to make test pass</goal>
+    <success_condition>Test PASSES</success_condition>
+    <on_failure>Analyze error, fix implementation, retry (do NOT modify tests)</on_failure>
+    <on_complete>Proceed to REFACTOR</on_complete>
+  </phase>
+
+  <phase name="REFACTOR">
+    <allowed_files>{task.files}</allowed_files>
+    <locked_files>{task.test_files}</locked_files>
+    <goal>Clean up implementation while keeping tests green</goal>
+    <success_condition>Test still PASSES</success_condition>
+    <on_failure>Undo refactor changes, task still complete</on_failure>
+  </phase>
+</tdd_cycle>
 
 <skills>
   {For each skill in task.skills, include full skill instructions}
@@ -196,7 +230,11 @@ You are a focused implementation agent for opti-gsd. Complete ONLY this task.
 <browser enabled="{config.browser.enabled}" base_url="{config.base_url}" />
 
 <rules>
-  <rule>Only modify files listed in files element</rule>
+  <rule>If test_required=true: Execute TDD Red-Green-Refactor cycle</rule>
+  <rule>RED phase: Only modify test files, implementation files are LOCKED</rule>
+  <rule>GREEN/REFACTOR phases: Only modify implementation files, test files are LOCKED</rule>
+  <rule>NEVER modify test files to make them pass - fix the implementation instead</rule>
+  <rule>Only modify files listed in files/test_files elements</rule>
   <rule>Follow skills exactly if provided</rule>
   <rule>If libraries listed and Context7 available, fetch current docs before implementing</rule>
   <rule>Complete ALL verification checks before reporting done</rule>
@@ -206,8 +244,8 @@ You are a focused implementation agent for opti-gsd. Complete ONLY this task.
 
 <output>
   Report exactly ONE of:
-  - TASK COMPLETE (with files modified and commit message)
-  - TASK FAILED: {reason} (with blocker details)
+  - TASK COMPLETE (with files modified, test status, and commit message)
+  - TASK FAILED: {reason} (with blocker details and attempts made)
   - CHECKPOINT: {decision needed} (for architecture/manual steps)
 
   If unrelated issues found:
@@ -264,58 +302,70 @@ B) {option 2}
 Reply with your choice to continue.
 ```
 
-### Step 7a: Execute Loop - Retry Failed Tasks
+### Step 7a: TDD Loop (Inside Subagent)
 
-When a task reports TASK FAILED, the execute loop automatically attempts recovery.
+The TDD Red-Green-Refactor loop runs INSIDE each subagent, not at the orchestrator level.
 
-**Check Loop Settings:**
-- Read `loop.auto_loop` from config (default: true)
-- Read `loop.execute_max_retries` from config (default: 3)
-- Check current retry count for this task in STATE.md `loop.task_retries`
+**How It Works:**
+- Subagent receives task with `test_required: true`
+- Subagent executes TDD cycle internally (RED → GREEN → REFACTOR)
+- Loop continues until tests pass OR `tdd_max_attempts` exhausted
+- Subagent returns only when done (COMPLETE or FAILED)
 
-**Mode-Based Behavior:**
-- **interactive mode**: Ask user before retry
-  > "Task {N} failed. Retry? ({retries}/{max_retries} attempts used) [Y/n]"
-- **yolo mode**: Auto-retry without prompting
+**No Stop Hook Needed:**
+- The loop is natural control flow inside the subagent
+- Subagent doesn't "stop" until it returns a result
+- Orchestrator simply waits for the Task tool to complete
+
+**TDD Loop Settings (in config):**
+```yaml
+loop:
+  tdd_max_attempts: 5       # Max GREEN phase retries per task
+  execute_max_retries: 2    # Orchestrator retries if subagent fails entirely
+```
+
+### Step 7b: Orchestrator Retry (Task-Level Failures)
+
+If a subagent reports TASK FAILED (after exhausting TDD attempts), the orchestrator can retry.
+
+**When This Happens:**
+- TDD loop exhausted all attempts but tests still fail
+- Unexpected error (crash, missing dependency, etc.)
+- Blocker that might be transient
 
 **Retry Flow:**
 ```
-IF task_retries[task_id] < max_retries:
-  1. Analyze failure from task output
-  2. Generate error analysis (parse error, identify root cause)
-  3. Update STATE.md loop state:
+IF task_retries[task_id] < execute_max_retries:
+  1. Analyze failure from subagent output
+  2. Update STATE.md:
      loop:
-       active: true
-       type: execute
-       phase: {N}
-       iteration: {current + 1}
        task_retries:
          T{id}: {count + 1}
        last_error: {error_summary}
-  4. Re-execute task with error context in prompt
-  5. On success: continue to next task
-  6. On failure: increment retry, loop back
+  3. Re-spawn subagent with error context:
+     <previous_attempt>
+       <error>{captured error}</error>
+       <tdd_attempts>{attempts made}</tdd_attempts>
+       <analysis>{root cause}</analysis>
+       <suggested_fix>{specific fix}</suggested_fix>
+     </previous_attempt>
+  4. On success: continue to next task
+  5. On failure: increment retry, loop back
 
-IF task_retries[task_id] >= max_retries:
+IF task_retries[task_id] >= execute_max_retries:
   1. Update STATE.md:
      loop:
-       active: false
        paused: true
-       pause_reason: "Task {N} failed after {max_retries} retries"
+       pause_reason: "Task {N} failed after {max_retries} orchestrator retries"
   2. Report to user with full error context
   3. Stop execution
 ```
 
-**Error Context for Retry:**
-Include in retry subagent prompt:
-```xml
-<previous_attempt>
-  <error>{captured error output}</error>
-  <analysis>{root cause analysis}</analysis>
-  <suggested_fix>{specific fix to try}</suggested_fix>
-  <attempt>{N} of {max_retries}</attempt>
-</previous_attempt>
-```
+**Key Distinction:**
+| Loop Level | Purpose | Max Attempts |
+|------------|---------|--------------|
+| TDD (inside subagent) | Make tests pass | tdd_max_attempts (5) |
+| Orchestrator (outside) | Recover from task failure | execute_max_retries (2) |
 
 ### Step 8: Phase Complete
 
@@ -467,22 +517,25 @@ All heavy work delegated to subagents with fresh context.
 
 ## Loop State Reference
 
-Execute loop tracks state in STATE.md:
+Execute tracks state in STATE.md:
 
 ```yaml
 loop:
-  active: true              # Loop currently running
+  active: true              # Execution currently running
   type: execute             # "execute" or "verify"
   phase: 1                  # Current phase
-  iteration: 3              # Current loop iteration
-  max_iterations: 15        # Total allowed (tasks * retries)
-  task_retries:             # Per-task retry counts
+  task_retries:             # Per-task orchestrator retry counts
     T01: 0
-    T02: 2
-    T03: 1
+    T02: 1
   last_error: "Type error in auth.ts"
   started: 2026-01-19T10:30:00
-  last_iteration: 2026-01-19T10:45:00
 ```
 
-The stop hook (`hooks/stop-hook.sh`) reads this state to decide whether to block session exit and re-inject the execute prompt.
+**Note on TDD Loop:**
+The TDD Red-Green-Refactor loop runs INSIDE subagents and does NOT use the stop hook. It's natural control flow within the subagent's execution. The subagent only returns when:
+- Tests pass (TASK COMPLETE)
+- TDD attempts exhausted (TASK FAILED)
+
+The stop hook (`hooks/stop-hook.sh`) is only used for:
+- Ensuring phase completion before session exit
+- Verify loop (if gaps remain after execution)

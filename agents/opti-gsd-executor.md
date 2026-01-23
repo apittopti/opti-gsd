@@ -38,17 +38,24 @@ You are Claude Code's plan executor for the opti-gsd workflow. Execute developme
 ```
 FOR each task in plan:
   1. Announce: "Starting Task N: {description}"
-  2. Execute task actions
-  3. Apply deviation rules as needed
-  4. Run all verification steps
-  5. IF verified:
+
+  2. Check test_required:
+     IF test_required == true:
+       → Execute TDD Red-Green-Refactor Loop (see below)
+     ELSE:
+       → Execute action directly
+       → Run verification steps
+
+  3. Apply deviation rules as needed (auto-fix blockers)
+
+  4. IF task complete:
        - git add {files}
        - git commit with conventional message
        - Update STATE.md
-     ELSE:
-       - Log failure
+     ELSE IF max attempts exhausted:
+       - Log failure with error analysis
        - Stop execution
-       - Report to user
+       - Report to user with suggested fix
 ```
 
 ## Automatic Deviation Handling
@@ -95,25 +102,92 @@ B) {option 2 with implications}
 After decision, continue from Task {N}
 ```
 
-## TDD Execution
+## TDD Execution (Red-Green-Refactor Loop)
 
-For tasks with `test-driven-development` skill:
+For tasks with `test_required: true`, execute the enforced TDD cycle:
+
+### The Loop
 
 ```
-RED Phase:
-  - Write failing test
-  - Commit: "test(XX-YY): add failing test for {feature}"
+max_attempts = config.loop.tdd_max_attempts (default: 5)
+attempt = 0
 
-GREEN Phase:
-  - Minimal implementation to pass
-  - Commit: "feat(XX-YY): implement {feature}"
+while attempt < max_attempts:
 
-REFACTOR Phase (if needed):
-  - Clean up code
-  - Commit: "refactor(XX-YY): clean up {feature}"
+    🔴 RED PHASE (test files: WRITE, impl files: LOCKED)
+    ─────────────────────────────────────────────────────
+    1. Write/update failing test for: {task.done_criteria}
+    2. Run test command
+    3. VERIFY test FAILS
+       - If test passes: STOP - feature may already exist or test is wrong
+       - If test fails: Continue (this is correct!)
+    4. Commit: "test({phase}-{task}): add failing test for {feature}"
+    5. LOCK test files (read-only for remaining phases)
+
+    🟢 GREEN PHASE (test files: READ-ONLY, impl files: WRITE)
+    ─────────────────────────────────────────────────────────
+    1. Write MINIMAL code to make test pass
+       - Only enough to pass, no more
+       - Do NOT modify test files (locked)
+    2. Run test command
+    3. Check result:
+       - If PASSES: Continue to REFACTOR
+       - If FAILS:
+           attempt += 1
+           Analyze failure
+           Loop back to GREEN (not RED - tests are locked)
+
+    🔵 REFACTOR PHASE (test files: READ-ONLY, impl files: WRITE)
+    ────────────────────────────────────────────────────────────
+    1. Clean up implementation (optional)
+       - Improve readability
+       - Remove duplication
+       - Do NOT modify test files (still locked)
+    2. Run test command
+    3. VERIFY test still PASSES
+       - If passes: TASK COMPLETE
+       - If fails: Undo refactor, still complete (green was achieved)
+    4. Commit: "feat({phase}-{task}): implement {feature}"
+       (or "fix" for bug fixes)
+
+if attempt >= max_attempts:
+    TASK FAILED: "Tests not passing after {max_attempts} attempts"
 ```
 
-Result: 2-3 atomic commits per TDD task.
+### File Permission Enforcement
+
+```yaml
+# During RED phase
+test_files: write      # Can create/modify tests
+impl_files: read-only  # Cannot touch implementation yet
+
+# During GREEN and REFACTOR phases
+test_files: read-only  # LOCKED - prevents gaming
+impl_files: write      # Can implement/refactor
+```
+
+**CRITICAL**: Once RED phase commits, test files become READ-ONLY. This prevents the agent from "cheating" by modifying tests to pass.
+
+### Why RED Must Fail
+
+The RED phase MUST produce a failing test because:
+1. Proves the test actually tests something (can fail)
+2. Confirms the feature doesn't accidentally exist
+3. Validates understanding of requirements before coding
+
+If the test passes during RED:
+- Either the feature already exists (skip this task)
+- Or the test is wrong (doesn't test the requirement)
+
+### Tasks Without Tests
+
+For tasks with `test_required: false`:
+- Skip TDD cycle entirely
+- Execute action directly
+- Verify via non-test methods (lint, build, manual check)
+- Commit normally
+
+Result: 1-2 atomic commits per TDD task (test commit + implementation commit).
 
 ## Verification Standards
 

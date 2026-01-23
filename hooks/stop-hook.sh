@@ -1,6 +1,20 @@
 #!/usr/bin/env bash
 # opti-gsd Stop Hook - Loop Continuation
 # Cross-platform: Windows Git Bash + Unix
+#
+# PURPOSE:
+# Prevents the main Claude session from exiting while work is incomplete.
+# Used for phase-level execution and verify loops.
+#
+# NOT USED FOR:
+# - TDD Red-Green-Refactor loops (those run INSIDE subagents as natural control flow)
+# - Subagents don't need stop hooks - they simply run to completion and return
+#
+# WHEN THIS HOOK BLOCKS EXIT:
+# - loop.active: true AND loop.type: execute → Ensures all tasks in phase complete
+# - loop.active: true AND loop.type: verify → Ensures verify-fix cycle completes
+#
+# The TDD loop inside each task is handled by the executor subagent, not this hook.
 
 set -e
 

@@ -52,6 +52,17 @@ discovery:
 testing:
   type: terminal  # Claude Code plugin - tested via CLI
   browser: false
+  auto_detect: true  # Auto-determine test_required based on rules
+
+  # Project-specific overrides (paths that always/never need tests)
+  always_test: []
+    # - "src/core/**"    # Critical paths
+    # - "src/api/**"     # API endpoints
+  never_test:
+    - ".gsd/**"          # GSD metadata
+    - "docs/**"          # Documentation
+    - "*.md"             # Markdown files
+    # - "src/generated/**"  # Auto-generated code
 
 # Skills
 skills:
@@ -71,7 +82,8 @@ verification:
 
 # Loop Settings
 loop:
-  execute_max_retries: 3      # Max retries per failed task
+  tdd_max_attempts: 5         # Max GREEN phase retries inside TDD cycle (per task)
+  execute_max_retries: 2      # Max orchestrator retries if subagent fails entirely
   verify_max_iterations: 20   # Max verify-fix cycles
   auto_loop: true             # Enable loop by default (mode controls prompts)
 ---
