@@ -218,6 +218,18 @@ Total: 5 issues (3 open, 2 resolved)
 
 ---
 
+## The Three Tracking Systems
+
+| Tracking | Purpose | Command | File |
+|----------|---------|---------|------|
+| **Issues** | Bugs, problems, things broken | /opti-gsd:issues | ISSUES.md |
+| **Features** | Ideas for improvements (internal) | /opti-gsd:features | FEATURES.md |
+| **Stories** | User/client requests (external) | /opti-gsd:stories | stories/ |
+
+**Note:** For feature ideas, use /opti-gsd:add-feature instead.
+
+---
+
 ## Context Budget
 
 - List: ~2%

@@ -21,11 +21,11 @@ Check for legacy files:
 
 **Legacy files found:**
 - [x] `.gsd/REQUIREMENTS.md` — Convert to stories
-- [ ] `.gsd/TODOS.md` — Rename to IDEAS.md (if exists)
+- [ ] `.gsd/TODOS.md` — Rename to FEATURES.md (if exists)
 
 **Already current:**
 - [x] `.gsd/stories/` exists
-- [x] `.gsd/IDEAS.md` exists
+- [x] `.gsd/FEATURES.md` exists
 ```
 
 ### Step 2: Migrate Requirements to Stories
@@ -88,12 +88,12 @@ Migrated from REQUIREMENTS.md (AUTH-01)
 5. Archive REQUIREMENTS.md:
    - Move to `.gsd/archive/REQUIREMENTS.md.bak`
 
-### Step 3: Migrate TODOS to IDEAS
+### Step 3: Migrate TODOS to FEATURES
 
-If `.gsd/TODOS.md` exists but `.gsd/IDEAS.md` doesn't:
+If `.gsd/TODOS.md` exists but `.gsd/FEATURES.md` doesn't:
 
-1. Rename TODOS.md to IDEAS.md
-2. Update ID format (T001 → I001)
+1. Rename TODOS.md to FEATURES.md
+2. Update ID format (T001 → F001)
 3. Update internal references
 
 ### Step 4: Commit Migration
@@ -132,7 +132,7 @@ git commit -m "chore: migrate to stories-based workflow
 - .gsd/migrations/requirements-to-stories.md
 
 Your project now uses the simplified workflow:
-- Ideas (your thoughts)
+- Features (your enhancement ideas)
 - Stories (user needs with acceptance criteria)
 - Issues (bugs/problems)
 

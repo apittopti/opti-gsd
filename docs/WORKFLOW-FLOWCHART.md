@@ -8,7 +8,7 @@
 │   ANYTIME COMMANDS (can run at any point in the workflow)                          │
 │   ─────────────────────────────────────────────────────────────────────            │
 │   /status      → See where you are + what to do next                               │
-│   /add-idea    → Capture idea for later                                            │
+│   /add-feature    → Capture feature for later                                            │
 │   /add-story   → Capture user request                                              │
 │   /debug       → Start debugging session                                           │
 │   /issues      → View/add issues                                                   │
@@ -371,9 +371,9 @@ REPEAT PATHS (iterate):
 ┌────────────────┬─────────────────────────────────────────────────┐
 │ Command        │ Purpose                                         │
 ├────────────────┼─────────────────────────────────────────────────┤
-│ /add-idea      │ Capture idea without interrupting               │
-│ /add-story     │ Capture user request or feature                 │
-│ /ideas         │ View captured ideas                             │
+│ /add-feature │ Capture feature idea without interrupting       │
+│ /add-story   │ Capture user request                            │
+│ /features    │ View captured feature ideas                     │
 │ /stories       │ View captured user stories                      │
 │ /issues        │ Track and manage issues                         │
 │ /decisions     │ Log architectural decisions                     │
@@ -553,9 +553,9 @@ ANYTIME (run at any point):
 ────────────────────────────────────────────────────────────────
   /status         ← WHERE AM I?
   /help           ← Show commands
-  /add-idea       ← Capture idea
+  /add-feature       ← Capture feature
   /add-story      ← Capture request
-  /ideas          ← View ideas
+  /features          ← View features
   /stories        ← View stories
   /issues         ← Track issues
   /decisions      ← Log decisions
@@ -641,7 +641,7 @@ RECOVERY (when things break):
 │                                                                 │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                 │
-│  ANYTIME:  /status /help /add-idea /debug /issues /context      │
+│  ANYTIME:  /status /help /add-feature /debug /issues /context      │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```

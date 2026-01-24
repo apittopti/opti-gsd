@@ -20,7 +20,7 @@ This is the opti-gsd plugin repository. When working on this codebase, always us
 | /opti-gsd:plan-phase | Generate executable plan for a phase |
 | /opti-gsd:execute | Execute current phase plan |
 | /opti-gsd:verify | Verify phase completion |
-| /opti-gsd:add-idea | Capture ideas without interrupting work |
+| /opti-gsd:add-feature | Capture features without interrupting work |
 | /opti-gsd:add-story | Capture user/client requests |
 | /opti-gsd:debug | Start systematic debugging session |
 | /opti-gsd:research | Research best practices for a topic |
@@ -42,7 +42,7 @@ Use these specialized agents for complex tasks:
 
 Even for small ad-hoc changes:
 
-1. Consider if it should be captured as an idea (/opti-gsd:add-idea) or story (/opti-gsd:add-story)
+1. Consider if it should be captured as a feature (/opti-gsd:add-feature) or story (/opti-gsd:add-story)
 2. For bug fixes, use /opti-gsd:debug for systematic investigation
 3. After changes, consider running /opti-gsd:verify to ensure nothing broke
 

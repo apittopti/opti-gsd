@@ -94,7 +94,7 @@ Project: Not initialized
 | Command | Description |
 |---------|-------------|
 | /opti-gsd:status | **Start here** — shows where you are + next action |
-| /opti-gsd:add-idea | Capture an idea without interrupting work |
+| /opti-gsd:add-feature | Capture a feature idea without interrupting work |
 | /opti-gsd:add-story | Capture a user request or feature |
 | /opti-gsd:debug | Systematic bug investigation |
 | /opti-gsd:help advanced | Show all 30+ commands |
@@ -165,7 +165,7 @@ Switch with /opti-gsd:mode yolo or /opti-gsd:mode interactive
 ### Tracking
 | Command | Description |
 |---------|-------------|
-| /opti-gsd:ideas | View captured ideas |
+| /opti-gsd:features | View captured feature ideas |
 | /opti-gsd:stories | View captured user stories |
 | /opti-gsd:issues | Track and manage project issues |
 | /opti-gsd:decisions | Log and view architectural decisions |

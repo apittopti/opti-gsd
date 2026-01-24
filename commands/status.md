@@ -76,7 +76,7 @@ Phase 2 Progress: [████████████▎░░░░░░░]
 ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
 Also relevant:
-  → /opti-gsd:add-idea — Capture something for later
+  → /opti-gsd:add-feature — Capture something for later
   → /opti-gsd:help     — See all commands
 ```
 

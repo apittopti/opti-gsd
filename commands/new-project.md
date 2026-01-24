@@ -124,7 +124,7 @@ Create one story file per major v1 feature. Keep them user-focused:
 - US003-dashboard.md
 - etc.
 
-**v2 ideas** go to `.gsd/IDEAS.md` as low-priority items.
+**v2 feature ideas** go to `.gsd/FEATURES.md` as low-priority items.
 
 ### Step 6: Generate Roadmap
 

@@ -210,6 +210,21 @@ On confirm:
 
 ---
 
+## The Three Tracking Systems
+
+| Tracking | Purpose | Command | File |
+|----------|---------|---------|------|
+| **Issues** | Bugs, problems, things broken | /opti-gsd:issues | ISSUES.md |
+| **Features** | Ideas for improvements (internal) | /opti-gsd:features | FEATURES.md |
+| **Stories** | User/client requests (external) | /opti-gsd:stories | stories/ |
+
+**Flow:**
+- Features can be promoted to Stories (via /opti-gsd:features promote)
+- Stories have formal acceptance criteria for verification
+- Issues track bugs that may be related to stories
+
+---
+
 ## Context Budget
 
 - List: ~3%

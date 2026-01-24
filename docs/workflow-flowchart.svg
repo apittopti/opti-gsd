@@ -172,7 +172,7 @@
   <text x="600" y="515" text-anchor="middle" fill="white" font-size="14" font-weight="600">Anytime Commands</text>
   <text x="440" y="555" fill="#065f46" font-size="12" font-weight="600">/status</text>
   <text x="540" y="555" fill="#78716c" font-size="11">Where am I? What's next?</text>
-  <text x="440" y="580" fill="#065f46" font-size="12" font-weight="600">/add-idea</text>
+  <text x="440" y="580" fill="#065f46" font-size="12" font-weight="600">/add-feature</text>
   <text x="540" y="580" fill="#78716c" font-size="11">Capture idea for later</text>
   <text x="440" y="605" fill="#065f46" font-size="12" font-weight="600">/add-story</text>
   <text x="540" y="605" fill="#78716c" font-size="11">Capture user request</text>
