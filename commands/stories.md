@@ -44,9 +44,9 @@ Read `.gsd/stories/` and display by status:
 **Total:** 6 stories (3 backlog, 2 planned, 1 delivered)
 
 Actions:
-- Add: `/opti-gsd:add-story {title}`
-- Plan: `/opti-gsd:roadmap` (assign to milestone)
-- View: `/opti-gsd:stories view US001`
+- Add: /opti-gsd:add-story {title}
+- Plan: /opti-gsd:roadmap (assign to milestone)
+- View: /opti-gsd:stories view US001
 ```
 
 ### View Story
@@ -79,8 +79,8 @@ Client mentioned this is blocking their quarterly reporting process.
 
 ---
 Actions:
-- Edit: `/opti-gsd:stories edit US001`
-- Mark delivered: `/opti-gsd:stories deliver US001`
+- Edit: /opti-gsd:stories edit US001
+- Mark delivered: /opti-gsd:stories deliver US001
 ```
 
 ### Edit Story
@@ -207,6 +207,21 @@ On confirm:
 | plan-phase | References stories being delivered |
 | verify | Checks story acceptance criteria |
 | complete-milestone | Reports stories delivered |
+
+---
+
+## The Three Tracking Systems
+
+| Tracking | Purpose | Command | File |
+|----------|---------|---------|------|
+| **Issues** | Bugs, problems, things broken | /opti-gsd:issues | ISSUES.md |
+| **Features** | Ideas for improvements (internal) | /opti-gsd:features | FEATURES.md |
+| **Stories** | User/client requests (external) | /opti-gsd:stories | stories/ |
+
+**Flow:**
+- Features can be promoted to Stories (via /opti-gsd:features promote)
+- Stories have formal acceptance criteria for verification
+- Issues track bugs that may be related to stories
 
 ---
 

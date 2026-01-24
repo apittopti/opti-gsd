@@ -52,6 +52,17 @@ discovery:
 testing:
   type: terminal  # Claude Code plugin - tested via CLI
   browser: false
+  auto_detect: true  # Auto-determine test_required based on rules
+
+  # Project-specific overrides (paths that always/never need tests)
+  always_test: []
+    # - "src/core/**"    # Critical paths
+    # - "src/api/**"     # API endpoints
+  never_test:
+    - ".gsd/**"          # GSD metadata
+    - "docs/**"          # Documentation
+    - "*.md"             # Markdown files
+    # - "src/generated/**"  # Auto-generated code
 
 # Skills
 skills:
@@ -71,7 +82,22 @@ verification:
 
 # Loop Settings
 loop:
-  execute_max_retries: 3      # Max retries per failed task
-  verify_max_iterations: 20   # Max verify-fix cycles
-  auto_loop: true             # Enable loop by default (mode controls prompts)
+  tdd_max_attempts: 5         # Max GREEN phase retries inside TDD cycle (per task)
+  execute_max_retries: 2      # Max orchestrator retries if subagent fails entirely
+  # Note: No verify loop - human judgment gates continuation (GSD philosophy)
+
+# Task Execution (Claude Code integration)
+tasks:
+  background: true            # Use run_in_background for parallel wave execution
+  poll_interval: 5            # Seconds between TaskOutput polls
+  persist_ids: true           # Store task_ids in STATE.md for recovery
+  # Environment: Set CLAUDE_CODE_TASK_LIST_ID to share tasks across sessions
+
+# Model Routing (cost optimization)
+# Routes tasks to appropriate models based on complexity
+models:
+  validation: haiku           # Plan validation, routine checks (92% cost savings)
+  execution: sonnet           # Standard task execution (default)
+  complex: opus               # Architecture decisions, complex debugging
+  default: sonnet             # Fallback model
 ---

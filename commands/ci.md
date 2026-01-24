@@ -185,12 +185,12 @@ Deployment:
   Prod Branch:      main
 ──────────────────────────────────────────────────────────────
 
-Run `/opti-gsd:ci configure` to modify settings.
+Run /opti-gsd:ci configure to modify settings.
 ```
 
 ### Step 5: Configure Mode (if `configure` argument)
 
-If user runs `/opti-gsd:ci configure`, ask:
+If user runs /opti-gsd:ci configure, ask:
 
 **Toolchain Questions:**
 1. "What's your build command?" (default: detected)
@@ -286,7 +286,7 @@ Next: /opti-gsd:verify to test the configuration
 
 ## Verification Integration
 
-When `/opti-gsd:verify` runs, it reads the `ci:` section and executes:
+When /opti-gsd:verify runs, it reads the `ci:` section and executes:
 
 1. **Lint** (if configured) — Fast feedback on code style
 2. **Typecheck** (if configured) — Type safety verification

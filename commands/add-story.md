@@ -81,8 +81,8 @@ Acceptance criteria:
 - {criterion 2}
 - {criterion 3}
 
-Add to milestone: `/opti-gsd:roadmap`
-View all stories: `/opti-gsd:stories`
+Add to milestone: /opti-gsd:roadmap
+View all stories: /opti-gsd:stories
 ```
 
 ---

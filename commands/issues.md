@@ -31,8 +31,8 @@ Read `.gsd/ISSUES.md` and show open issues:
 
 Open: 3 | Resolved: 2 | Total: 5
 
-View details: `/opti-gsd:issues view I003`
-Add new: `/opti-gsd:issues add`
+View details: /opti-gsd:issues view I003
+Add new: /opti-gsd:issues add
 ```
 
 ### Add Issue
@@ -215,6 +215,18 @@ Total: 5 issues (3 open, 2 resolved)
 | high | Blocks phase completion | Fix before phase end |
 | medium | Causes problems | Fix this milestone |
 | low | Minor inconvenience | Fix when convenient |
+
+---
+
+## The Three Tracking Systems
+
+| Tracking | Purpose | Command | File |
+|----------|---------|---------|------|
+| **Issues** | Bugs, problems, things broken | /opti-gsd:issues | ISSUES.md |
+| **Features** | Ideas for improvements (internal) | /opti-gsd:features | FEATURES.md |
+| **Stories** | User/client requests (external) | /opti-gsd:stories | stories/ |
+
+**Note:** For feature ideas, use /opti-gsd:add-feature instead.
 
 ---
 

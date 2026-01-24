@@ -56,7 +56,7 @@ Pushing now allows you to verify against a preview deployment.
 
 **4. Interactive mode behavior:**
 Ask: "Push now? [Y/n]"
-- If **yes**: Execute `/opti-gsd:push` logic, then continue to Step 1
+- If **yes**: Execute /opti-gsd:push logic, then continue to Step 1
 - If **no**: Continue to Step 1 with local-only verification
 
 **5. Yolo mode behavior:**
@@ -194,6 +194,50 @@ CI Checks Passed!
 ```
 
 **Skip missing commands:** If a CI command is `null` in config, skip it.
+
+### Step 3b: LSP Diagnostics (Optional Enhancement)
+
+If LSP plugins are installed, check for real-time diagnostics on changed files:
+
+```
+LSP Diagnostics (optional)
+──────────────────────────────────────────────────────────────
+Checking files modified in this phase...
+```
+
+**Check changed files:**
+1. Get list of files modified in phase from summary.md
+2. For each file, check LSP diagnostics (Ctrl+O equivalent)
+3. Report any errors or warnings
+
+**If diagnostics found:**
+```
+LSP Diagnostics: Issues Found
+──────────────────────────────────────────────────────────────
+src/components/StatsCard.tsx:
+  Line 15: Property 'data' does not exist on type 'Props'
+  Line 23: Missing import: 'formatNumber'
+
+src/api/stats.ts:
+  Line 8: 'response' is declared but never used
+
+──────────────────────────────────────────────────────────────
+These are real-time type/import issues detected by LSP.
+Fix before continuing? [Y/n]
+```
+
+**If no diagnostics:**
+```
+[✓] LSP Diagnostics: No issues found
+```
+
+**If LSP not available:**
+```
+[○] LSP Diagnostics: Skipped (no LSP plugins installed)
+    Run /opti-gsd:setup-lsp to enable real-time code intelligence
+```
+
+**Note:** LSP diagnostics are advisory. They often catch issues that CI would find later, but faster. This step never blocks verification - it just reports.
 
 **Checkpoint:** Write progress to `.gsd/plans/phase-{N}/VERIFICATION-PROGRESS.md` after CI checks complete:
 ```markdown
@@ -421,7 +465,7 @@ Mark phase as verified in STATE.md.
 2. {gap 2 description}
 
 **Options:**
-A) Run `/opti-gsd:plan-phase {N} --gaps` to create gap closure plan
+A) Run /opti-gsd:plan-phase {N} --gaps to create gap closure plan
 B) Fix manually and re-verify
 
 Recommended: Option A for systematic closure
@@ -443,75 +487,38 @@ Please verify manually and confirm:
 > "Verified" or "Issues found: {description}"
 ```
 
-### Step 7a: Verify Loop - Fix Gaps and Re-verify
+### Step 7a: Report Gaps (No Auto-Loop)
 
-When verification reports `gaps_found`, the verify loop automatically attempts to close gaps.
+When verification reports `gaps_found`, report to user and suggest next action.
 
-**Check Loop Settings:**
-- Read `loop.auto_loop` from config (default: true)
-- Read `loop.verify_max_iterations` from config (default: 20)
-- Check current iteration in STATE.md `loop.iteration`
+**Philosophy:** Human judgment gates continuation. No automatic fix loops.
 
-**Mode-Based Behavior:**
-- **interactive mode**: Ask before fix attempt
-  > "Verification found {N} gaps. Attempt automatic fix? ({iteration}/{max}) [Y/n]"
-- **yolo mode**: Auto-fix without prompting
+**Gap Report:**
+```markdown
+## Verification: Gaps Found
 
-**Gap-to-Task Generation:**
+**Phase {N} verification identified {count} gaps:**
 
-Parse `<gaps>` from VERIFICATION.md and generate fix tasks:
+| # | Type | File | Issue |
+|---|------|------|-------|
+| 1 | orphan | components/StatsCard.tsx | Not imported anywhere |
+| 2 | broken_link | Dashboard → API | Incorrect endpoint path |
 
-| Gap Type | Fix Strategy |
-|----------|--------------|
-| orphan | Add import + usage to parent |
-| broken_link | Fix path/typo in reference |
-| stub | Implement real functionality |
-| missing_export | Add export statement |
-| wrong_import | Correct import path |
-| ci_failure | Apply specific fix for error |
-
-**Verify Loop Flow:**
-```
-IF iteration < max_iterations:
-  1. Parse gaps from VERIFICATION.md
-  2. Generate fix tasks (one per gap)
-  3. Update STATE.md loop state:
-     loop:
-       active: true
-       type: verify
-       phase: {N}
-       iteration: {current + 1}
-       max_iterations: 20
-       gaps_remaining: {count}
-  4. Execute fix tasks (spawn subagents)
-  5. Commit fixes atomically
-  6. Re-run verification from Step 3
-  7. If passed: clear loop, report success
-  8. If gaps remain: loop back to step 1
-
-IF iteration >= max_iterations:
-  1. Mark loop as paused:
-     loop:
-       active: false
-       paused: true
-       pause_reason: "Max iterations (20) reached with {N} gaps remaining"
-  2. Report remaining gaps to user
-  3. Suggest manual intervention
+**Next Steps:**
+→ /opti-gsd:plan-fix {N} — Generate fix plan for these gaps
+→ Fix manually and re-run /opti-gsd:verify
+→ /opti-gsd:rollback {N} — Revert phase if fundamentally broken
 ```
 
-**Fix Task Subagent Prompt:**
-```xml
-<gap type="{type}" iteration="{N}/{max}">
-  <file>{affected_file}</file>
-  <description>{gap_description}</description>
-  <evidence>{from VERIFICATION.md}</evidence>
-</gap>
+**Gap Types Reference:**
 
-<output>
-  - GAP CLOSED: {description of fix}
-  - GAP FAILED: {reason unable to fix}
-</output>
-```
+| Gap Type | Description | Typical Fix |
+|----------|-------------|-------------|
+| orphan | File exists but not imported | Add import + usage |
+| broken_link | Connection fails | Fix path/typo |
+| stub | Placeholder implementation | Implement fully |
+| missing_export | Symbol not exported | Add export |
+| ci_failure | CI check failed | Fix specific error |
 
 ### Step 8: Commit
 
@@ -531,42 +538,3 @@ git commit -m "docs: verify phase {N} - {status}"
 
 Orchestrator stays under 15%.
 
----
-
-## Loop State Reference
-
-Verify loop tracks state in STATE.md:
-
-```yaml
-loop:
-  active: true
-  type: verify
-  phase: 1
-  iteration: 4
-  max_iterations: 20
-  gaps_remaining: 2
-  started: 2026-01-19T10:30:00
-  last_iteration: 2026-01-19T10:45:00
-  history:
-    - iteration: 1
-      result: gaps_found
-      gaps: ["orphan:StatsCard.tsx", "broken_link:Dashboard->API"]
-    - iteration: 2
-      result: gaps_found
-      gaps: ["broken_link:Dashboard->API"]
-```
-
-The stop hook (`hooks/stop-hook.sh`) reads this state to decide whether to block session exit and re-inject the verify prompt.
-
----
-
-## Gap Types Reference
-
-| Type | Description | Auto-Fix Strategy |
-|------|-------------|-------------------|
-| orphan | File exists but not imported | Add import + usage |
-| broken_link | Connection fails | Fix path/typo |
-| stub | Placeholder implementation | Implement fully |
-| missing_export | Symbol not exported | Add export |
-| wrong_import | Import path incorrect | Fix path |
-| ci_failure | CI check failed | Apply specific fix |

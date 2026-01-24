@@ -12,7 +12,7 @@ Execute a single task from the current phase plan.
 
 ## Behavior
 
-Same as `/opti-gsd:execute` but for a single task only. Useful for:
+Same as /opti-gsd:execute but for a single task only. Useful for:
 - Re-running a failed task after fixing issues
 - Testing a specific task in isolation
 - Debugging task execution

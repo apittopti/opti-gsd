@@ -18,7 +18,7 @@ This project has opti-gsd state at `.gsd/`.
 
 To re-analyze the codebase:
 - View existing map: `.gsd/CODEBASE.md`
-- Force re-scan: `/opti-gsd:map-codebase --refresh`
+- Force re-scan: /opti-gsd:map-codebase --refresh
 
 To start fresh:
 - Remove `.gsd/` and run again
@@ -146,8 +146,8 @@ src/
 View full map: `.gsd/CODEBASE.md`
 
 Next steps:
-- Initialize project: `/opti-gsd:init`
-- Or start fresh: `/opti-gsd:new-project`
+- Initialize project: /opti-gsd:init
+- Or start fresh: /opti-gsd:new-project
 ```
 
 ---

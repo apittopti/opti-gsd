@@ -34,7 +34,7 @@ If network available, check for newer version:
 
 ### What's New in 0.2.0
 
-- Added `/opti-gsd:todos` command for quick task capture
+- Added /opti-gsd:todos command for quick task capture
 - Improved context efficiency in execute phase
 - Fixed bug in phase renumbering
 - New `opti-gsd-integration-checker` agent
@@ -85,9 +85,9 @@ Display recent changes:
 ## Tips
 
 ### New in This Version
-- Use `/opti-gsd:mode yolo` for faster execution
-- Try `/opti-gsd:context` to monitor token usage
-- `/opti-gsd:compact` saves ~70% context on large projects
+- Use /opti-gsd:mode yolo for faster execution
+- Try /opti-gsd:context to monitor token usage
+- /opti-gsd:compact saves ~70% context on large projects
 
 ### Did You Know?
 - Phases can run in parallel waves
@@ -95,7 +95,7 @@ Display recent changes:
 - Archive completed phases to save tokens
 
 ### Get Help
-- All commands: `/opti-gsd:help`
+- All commands: /opti-gsd:help
 - Report issues: {github_url}
 ```
 

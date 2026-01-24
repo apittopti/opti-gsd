@@ -66,17 +66,17 @@ File breakdown:
 
 {If > 50% used}
 ⚠️ Context usage is high. Consider:
-1. Run `/opti-gsd:archive {completed_phases}` to archive completed phases
-2. Run `/opti-gsd:compact` to reduce file sizes
+1. Run /opti-gsd:archive {completed_phases} to archive completed phases
+2. Run /opti-gsd:compact to reduce file sizes
 3. Prioritize completing current phase before starting research
 
 {If unarchived completed phases}
 💡 You have {N} completed phases not yet archived.
-   Run `/opti-gsd:archive` to save ~{X}k tokens.
+   Run /opti-gsd:archive to save ~{X}k tokens.
 
 {If research files from old phases}
 💡 Old research files can be summarized.
-   Run `/opti-gsd:compact` to condense.
+   Run /opti-gsd:compact to condense.
 
 {If all good}
 ✓ Context usage is healthy. No action needed.

@@ -8,7 +8,7 @@ Execute the current phase plan with wave-based parallelization and fresh context
 
 ## Behavior
 
-This is the core execution engine. It spawns subagents for each task to maintain fresh context.
+This is the core execution engine. It uses Claude Code's **Task tool** to spawn subagents for each task, with support for **background execution** and **TaskOutput** polling.
 
 ### Step 0: Validate Branch
 
@@ -93,7 +93,7 @@ Parse:
 - XML tasks for execution
 - Wave structure for parallelization
 
-### Step 3: Determine Starting Point
+### Step 3b: Determine Starting Point
 
 If resuming (task > 0 in STATE.md):
 - Verify prior commits exist
@@ -111,7 +111,17 @@ Read `mode` from config:
 If interactive mode:
 > "Ready to execute Phase {N}: {Title} ({task_count} tasks in {wave_count} waves). Proceed?"
 
-### Step 5: Execute Waves
+### Step 4b: Create Pre-Execution Checkpoint
+
+Before executing any tasks, create a Git checkpoint for rollback safety:
+
+```bash
+git tag -f "gsd/checkpoint/phase-{N}/pre" HEAD
+```
+
+This enables /opti-gsd:rollback {N} to revert to before the phase started.
+
+### Step 5: Execute Waves with Background Tasks
 
 ```
 FOR each wave:
@@ -119,30 +129,40 @@ FOR each wave:
   2. IF interactive mode AND wave > 1:
        Ask: "Wave {W-1} complete. Continue to Wave {W}?"
 
-  3. FOR each task in wave (spawn in parallel if multiple):
+  3. FOR each task in wave:
      - Build subagent prompt (see below)
-     - Spawn opti-gsd-executor via Task tool
-     - Await completion
+     - Build description from plan: "P{phase} T{id}: {task.action[:30]}"
+     - Spawn via Task tool:
+         Task(
+           description="P{phase} T{id}: {short_title}",
+           prompt="{subagent_prompt}",
+           subagent_type="opti-gsd-executor",
+           run_in_background=true
+         )
+     - Store returned task_id for each spawned task
+     - Update STATE.md with background_tasks array
+     - User sees tasks appear in Ctrl+T task list
 
-  4. FOR each completed task:
-     - Parse result (COMPLETE | FAILED | CHECKPOINT)
-     - IF COMPLETE:
-         - git add {task.files}
-         - git commit -m "{type}({phase}-{task}): {description}"
-         - Update STATE.md: task = {N+1}
-     - IF FAILED:
-         - Log failure to STATE.md
-         - Stop execution
-         - Report failure with suggested fix
-     - IF CHECKPOINT:
-         - Present checkpoint to user
-         - Await decision
-         - Resume or abort based on response
-     - IF NEW ISSUE reported:
-         - Append to .gsd/ISSUES.md
+  4. Poll for completion using TaskOutput:
+     WHILE any tasks pending:
+       FOR each task_id in background_tasks:
+         result = TaskOutput(task_id, block=false)
+         IF result.complete:
+           - Parse result (COMPLETE | FAILED | CHECKPOINT)
+           - Process result (see Step 7)
+           - Remove from background_tasks
+       IF still waiting:
+         Brief status update to user: "Tasks running: {count}"
 
   5. All tasks in wave complete? → Next wave
 ```
+
+**Why Background Tasks:**
+- User sees real-time progress (Ctrl+T to toggle task list)
+- Parallel execution is truly parallel
+- Can continue working while tasks run (Ctrl+B)
+- TaskOutput provides clean result retrieval
+- Task state persists across session interruptions
 
 ### Step 6: Build Subagent Prompt
 
@@ -157,9 +177,13 @@ You are a focused implementation agent for opti-gsd. Complete ONLY this task.
 </context>
 
 <task id="{id}" reqs="{reqs}">
-  <files>
-    {task.files}
+  <files mode="write">
+    {task.files - implementation files}
   </files>
+  <test_required>{true | false | existing}</test_required>
+  <test_files mode="dynamic">
+    {task.test_files - starts as write, becomes read-only after RED phase}
+  </test_files>
   <action>
     {task.action}
   </action>
@@ -169,6 +193,36 @@ You are a focused implementation agent for opti-gsd. Complete ONLY this task.
   </verify>
   <done>{task.done}</done>
 </task>
+
+<tdd_cycle enabled="{task.test_required == true}">
+  <max_attempts>{config.loop.tdd_max_attempts || 5}</max_attempts>
+  <test_command>{config.ci.test || "npm test" || "pytest"}</test_command>
+
+  <phase name="RED">
+    <allowed_files>{task.test_files}</allowed_files>
+    <locked_files>{task.files}</locked_files>
+    <goal>Write a failing test for: {task.done}</goal>
+    <success_condition>Test FAILS (this is correct!)</success_condition>
+    <on_complete>Lock test files, proceed to GREEN</on_complete>
+  </phase>
+
+  <phase name="GREEN">
+    <allowed_files>{task.files}</allowed_files>
+    <locked_files>{task.test_files}</locked_files>
+    <goal>Write minimal code to make test pass</goal>
+    <success_condition>Test PASSES</success_condition>
+    <on_failure>Analyze error, fix implementation, retry (do NOT modify tests)</on_failure>
+    <on_complete>Proceed to REFACTOR</on_complete>
+  </phase>
+
+  <phase name="REFACTOR">
+    <allowed_files>{task.files}</allowed_files>
+    <locked_files>{task.test_files}</locked_files>
+    <goal>Clean up implementation while keeping tests green</goal>
+    <success_condition>Test still PASSES</success_condition>
+    <on_failure>Undo refactor changes, task still complete</on_failure>
+  </phase>
+</tdd_cycle>
 
 <skills>
   {For each skill in task.skills, include full skill instructions}
@@ -196,7 +250,11 @@ You are a focused implementation agent for opti-gsd. Complete ONLY this task.
 <browser enabled="{config.browser.enabled}" base_url="{config.base_url}" />
 
 <rules>
-  <rule>Only modify files listed in files element</rule>
+  <rule>If test_required=true: Execute TDD Red-Green-Refactor cycle</rule>
+  <rule>RED phase: Only modify test files, implementation files are LOCKED</rule>
+  <rule>GREEN/REFACTOR phases: Only modify implementation files, test files are LOCKED</rule>
+  <rule>NEVER modify test files to make them pass - fix the implementation instead</rule>
+  <rule>Only modify files listed in files/test_files elements</rule>
   <rule>Follow skills exactly if provided</rule>
   <rule>If libraries listed and Context7 available, fetch current docs before implementing</rule>
   <rule>Complete ALL verification checks before reporting done</rule>
@@ -206,8 +264,8 @@ You are a focused implementation agent for opti-gsd. Complete ONLY this task.
 
 <output>
   Report exactly ONE of:
-  - TASK COMPLETE (with files modified and commit message)
-  - TASK FAILED: {reason} (with blocker details)
+  - TASK COMPLETE (with files modified, test status, and commit message)
+  - TASK FAILED: {reason} (with blocker details and attempts made)
   - CHECKPOINT: {decision needed} (for architecture/manual steps)
 
   If unrelated issues found:
@@ -264,71 +322,81 @@ B) {option 2}
 Reply with your choice to continue.
 ```
 
-### Step 7a: Execute Loop - Retry Failed Tasks
+### Step 7a: TDD Loop (Inside Subagent)
 
-When a task reports TASK FAILED, the execute loop automatically attempts recovery.
+The TDD Red-Green-Refactor loop runs INSIDE each subagent, not at the orchestrator level.
 
-**Check Loop Settings:**
-- Read `loop.auto_loop` from config (default: true)
-- Read `loop.execute_max_retries` from config (default: 3)
-- Check current retry count for this task in STATE.md `loop.task_retries`
+**How It Works:**
+- Subagent receives task with `test_required: true`
+- Subagent executes TDD cycle internally (RED → GREEN → REFACTOR)
+- Loop continues until tests pass OR `tdd_max_attempts` exhausted
+- Subagent returns only when done (COMPLETE or FAILED)
 
-**Mode-Based Behavior:**
-- **interactive mode**: Ask user before retry
-  > "Task {N} failed. Retry? ({retries}/{max_retries} attempts used) [Y/n]"
-- **yolo mode**: Auto-retry without prompting
+**No Stop Hook Needed:**
+- The loop is natural control flow inside the subagent
+- Subagent doesn't "stop" until it returns a result
+- Orchestrator simply waits for the Task tool to complete
+
+**TDD Loop Settings (in config):**
+```yaml
+loop:
+  tdd_max_attempts: 5       # Max GREEN phase retries per task
+  execute_max_retries: 2    # Orchestrator retries if subagent fails entirely
+```
+
+### Step 7b: Orchestrator Retry (Task-Level Failures)
+
+If a subagent reports TASK FAILED (after exhausting TDD attempts), the orchestrator can retry.
+
+**When This Happens:**
+- TDD loop exhausted all attempts but tests still fail
+- Unexpected error (crash, missing dependency, etc.)
+- Blocker that might be transient
 
 **Retry Flow:**
 ```
-IF task_retries[task_id] < max_retries:
-  1. Analyze failure from task output
-  2. Generate error analysis (parse error, identify root cause)
-  3. Update STATE.md loop state:
+IF task_retries[task_id] < execute_max_retries:
+  1. Analyze failure from subagent output
+  2. Update STATE.md:
      loop:
-       active: true
-       type: execute
-       phase: {N}
-       iteration: {current + 1}
        task_retries:
          T{id}: {count + 1}
        last_error: {error_summary}
-  4. Re-execute task with error context in prompt
-  5. On success: continue to next task
-  6. On failure: increment retry, loop back
+  3. Re-spawn subagent with error context:
+     <previous_attempt>
+       <error>{captured error}</error>
+       <tdd_attempts>{attempts made}</tdd_attempts>
+       <analysis>{root cause}</analysis>
+       <suggested_fix>{specific fix}</suggested_fix>
+     </previous_attempt>
+  4. On success: continue to next task
+  5. On failure: increment retry, loop back
 
-IF task_retries[task_id] >= max_retries:
+IF task_retries[task_id] >= execute_max_retries:
   1. Update STATE.md:
      loop:
-       active: false
        paused: true
-       pause_reason: "Task {N} failed after {max_retries} retries"
+       pause_reason: "Task {N} failed after {max_retries} orchestrator retries"
   2. Report to user with full error context
   3. Stop execution
 ```
 
-**Error Context for Retry:**
-Include in retry subagent prompt:
-```xml
-<previous_attempt>
-  <error>{captured error output}</error>
-  <analysis>{root cause analysis}</analysis>
-  <suggested_fix>{specific fix to try}</suggested_fix>
-  <attempt>{N} of {max_retries}</attempt>
-</previous_attempt>
-```
+**Key Distinction:**
+| Loop Level | Purpose | Max Attempts |
+|------------|---------|--------------|
+| TDD (inside subagent) | Make tests pass | tdd_max_attempts (5) |
+| Orchestrator (outside) | Recover from task failure | execute_max_retries (2) |
 
 ### Step 8: Phase Complete
 
 When all tasks in all waves complete:
 
-**Clear Loop State:**
-If loop was active during execution, clear it:
-```yaml
-loop:
-  active: false
-  completed: true
-  final_iteration: {N}
+**Create Post-Execution Checkpoint:**
+```bash
+git tag -f "gsd/checkpoint/phase-{N}/post" HEAD
 ```
+
+This enables precise rollback: `pre` = before phase, `post` = after phase, `T{N}` = after each task.
 
 1. Create summary:
 ```bash
@@ -396,7 +464,7 @@ Pushing now will create a preview deployment you can verify against.
 ```
 
 If user confirms:
-1. Run `/opti-gsd:push` logic
+1. Run /opti-gsd:push logic
 2. Wait for preview URL
 3. Store preview URL in STATE.md
 
@@ -428,29 +496,67 @@ Next steps:
 
 ---
 
-## Parallel Execution
+## Parallel Execution with Background Tasks
 
-Tasks in the same wave execute in parallel via multiple Task tool calls:
+Tasks in the same wave execute in parallel using `run_in_background=true`:
 
 ```
 Wave 1: [Task 01, Task 02, Task 03]
          ↓         ↓         ↓
-      [Agent 1] [Agent 2] [Agent 3]  ← Parallel spawns
+      Task(       Task(       Task(
+        run_in_background=true
+      )          )           )        ← Parallel background spawns
          ↓         ↓         ↓
-      [Result]  [Result]  [Result]   ← Await all
+      task_id_1  task_id_2  task_id_3  ← Store IDs
+         ↓         ↓         ↓
+      [User sees progress via Ctrl+T]
+         ↓         ↓         ↓
+      TaskOutput  TaskOutput  TaskOutput  ← Poll for completion
          ↓         ↓         ↓
       [Commit]  [Commit]  [Commit]   ← Sequential commits
 
 Wave 2: [Task 04]
          ↓
-      [Agent 4]
+      Task(run_in_background=true)
          ↓
-      [Result]
+      TaskOutput(task_id_4, block=true)  ← Can block if single task
          ↓
       [Commit]
 ```
 
-Each agent gets fresh 100% context, preventing quality degradation.
+**Key Benefits:**
+- Each agent gets fresh 100% context
+- User sees real-time progress in Claude Code's task list (Ctrl+T)
+- Truly parallel execution, not sequential spawns
+- Tasks persist if session interrupted (use /opti-gsd:recover)
+- TaskOutput provides clean result retrieval without context bloat
+
+**Task Tool Calls:**
+```python
+# Spawn background task - description appears in Claude's task list (Ctrl+T)
+Task(
+  description="P{phase} T{task_num}: {task_title}",  # e.g., "P1 T02: Create API endpoints"
+  prompt="{subagent_prompt}",
+  subagent_type="opti-gsd-executor",
+  run_in_background=True
+)
+# Returns: task_id (e.g., "abc123") - store this for TaskOutput
+
+# Poll for result
+TaskOutput(
+  task_id="{returned_task_id}",
+  block=False  # Non-blocking check, or True to wait
+)
+```
+
+**What user sees in Ctrl+T:**
+```
+Claude Code Tasks
+─────────────────────────────────────
+[▸] P1 T01: Setup authentication     (running)
+[▸] P1 T02: Create API endpoints     (running)
+[✓] P1 T03: Add validation          (complete)
+```
 
 ---
 
@@ -467,22 +573,38 @@ All heavy work delegated to subagents with fresh context.
 
 ## Loop State Reference
 
-Execute loop tracks state in STATE.md:
+Execute tracks state in STATE.md:
 
 ```yaml
 loop:
-  active: true              # Loop currently running
+  active: true              # Execution currently running
   type: execute             # "execute" or "verify"
   phase: 1                  # Current phase
-  iteration: 3              # Current loop iteration
-  max_iterations: 15        # Total allowed (tasks * retries)
-  task_retries:             # Per-task retry counts
+  wave: 2                   # Current wave
+  background_tasks:         # Active background task IDs
+    - task_id: "abc123"
+      task_num: 1
+      status: "running"
+    - task_id: "def456"
+      task_num: 2
+      status: "running"
+  task_retries:             # Per-task orchestrator retry counts
     T01: 0
-    T02: 2
-    T03: 1
+    T02: 1
   last_error: "Type error in auth.ts"
   started: 2026-01-19T10:30:00
-  last_iteration: 2026-01-19T10:45:00
 ```
 
-The stop hook (`hooks/stop-hook.sh`) reads this state to decide whether to block session exit and re-inject the execute prompt.
+**Background Task Tracking:**
+- `background_tasks` array tracks all spawned Task tool instances
+- Each entry has `task_id` (for TaskOutput), `task_num`, and `status`
+- On session interrupt, /opti-gsd:recover uses these IDs to check TaskOutput
+- Tasks persist in Claude Code's task system across sessions
+
+**Note on TDD Loop:**
+The TDD Red-Green-Refactor loop runs INSIDE subagents as natural control flow. The subagent only returns when:
+- Tests pass (TASK COMPLETE)
+- TDD attempts exhausted (TASK FAILED)
+
+**Philosophy:** Following GSD principles, there's no stop hook forcing loop continuation.
+Human judgment gates all decisions. Use /opti-gsd:recover if session interrupted.

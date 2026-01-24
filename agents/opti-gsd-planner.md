@@ -70,6 +70,8 @@ Every task MUST include:
 ## Task N: {title}
 
 - **Files:** {exact paths to create/modify}
+- **Test Required:** {true | false | existing} (auto-detected, see rules below)
+- **Test Files:** {paths to test files - if test_required is true}
 - **Action:** {specific implementation with rationale}
 - **Skills:** {applicable skills or "none"}
 - **Verify:**
@@ -77,6 +79,88 @@ Every task MUST include:
   - {concrete verification step 2}
 - **Done:** {measurable acceptance criteria}
 ```
+
+### Test Requirement Auto-Detection
+
+The planner automatically determines `test_required` based on these rules:
+
+#### File Path Rules (highest priority)
+```yaml
+# Requires tests
+- "src/**/*.ts" → test_required: true
+- "src/**/*.tsx" → test_required: true
+- "lib/**/*.py" → test_required: true
+- "app/**/*.rb" → test_required: true
+- "**/api/**" → test_required: true
+- "**/services/**" → test_required: true
+- "**/utils/**" → test_required: true
+
+# No tests needed
+- "*.md" → test_required: false
+- "docs/**" → test_required: false
+- "*.config.*" → test_required: false
+- ".gsd/**" → test_required: false
+- "*.json" → test_required: false (unless schema validation needed)
+- "*.css" → test_required: false
+- "*.scss" → test_required: false
+
+# Is a test file itself
+- "*.test.*" → test_required: false
+- "*.spec.*" → test_required: false
+- "**/__tests__/**" → test_required: false
+```
+
+#### Action Keyword Rules
+```yaml
+# Requires tests (TDD for quality)
+- action contains "add feature" → test_required: true
+- action contains "implement" → test_required: true
+- action contains "fix bug" → test_required: true  # regression test
+- action contains "create endpoint" → test_required: true
+- action contains "add validation" → test_required: true
+
+# Tests must already exist
+- action contains "refactor" → test_required: existing
+
+# No tests needed
+- action contains "update docs" → test_required: false
+- action contains "config" → test_required: false
+- action contains "rename" → test_required: existing
+- action contains "style" → test_required: false
+- action contains "format" → test_required: false
+```
+
+#### Project Override Rules
+Check `.gsd/config.md` for project-specific patterns:
+```yaml
+testing:
+  always_test:
+    - "src/core/**"      # Critical paths always need tests
+    - "src/api/**"
+  never_test:
+    - "src/generated/**" # Auto-generated code
+    - "scripts/**"       # Build scripts
+```
+
+#### Detection Priority
+1. Project overrides (config.testing.always_test / never_test)
+2. File is a test file itself → false
+3. File path patterns
+4. Action keyword patterns
+5. Default: true for src/lib code, false for everything else
+
+### Test File Resolution
+
+When `test_required: true`, automatically determine test file path:
+
+```
+Source file: src/auth/login.ts
+Test file:   src/auth/login.test.ts  (adjacent)
+         or: src/auth/__tests__/login.test.ts (Jest convention)
+         or: tests/auth/login.test.ts (separate tests dir)
+```
+
+Use project's existing test structure convention.
 
 ### Task Sizing
 
@@ -115,14 +199,17 @@ Tasks depending on Wave 1:
 
 ## Skill Assignment
 
-| Task Type | Skills |
-|-----------|--------|
-| New feature with logic | test-driven-development |
-| Bug fix | systematic-debugging, test-driven-development |
-| Refactoring | verification-before-completion |
-| Config change | none |
-| Documentation | none |
-| Pure styling | none |
+| Task Type | Skills | Test Required |
+|-----------|--------|---------------|
+| New feature with logic | verification-before-completion | true (auto) |
+| Bug fix | systematic-debugging | true (auto) |
+| Refactoring | verification-before-completion | existing |
+| API endpoint | verification-before-completion | true (auto) |
+| Config change | none | false (auto) |
+| Documentation | none | false (auto) |
+| Pure styling | none | false (auto) |
+
+**Note**: TDD execution is now controlled by `test_required` field, not skills. The Red-Green-Refactor cycle is enforced automatically when `test_required: true`.
 
 ## Verification Assignment
 

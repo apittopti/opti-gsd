@@ -1,8 +1,12 @@
 ---
-description: Display all available opti-gsd commands with descriptions.
+description: Display available opti-gsd commands with descriptions.
 ---
 
-Display the following help information to the user. First, read `${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json` for version info. If `.gsd/` exists in the current working directory, also read `.gsd/config.md` to show current configuration.
+Display help information. First, read `${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json` for version info. If `.gsd/` exists, also read `.gsd/config.md` to show current configuration.
+
+## Arguments
+
+- `advanced` — Show all commands (default shows only essential commands)
 
 ## Output Format
 
@@ -25,7 +29,6 @@ Current Configuration:
   Project: [name from config]
   Mode: [interactive|yolo]
   Branching: [per-milestone|per-phase|none]
-  Context Budget: [tokens]k per agent
 ──────────────────────────────────────────────────────────────
 ```
 
@@ -38,75 +41,32 @@ Project: Not initialized
 
 ---
 
-## Commands
+## The Core Loop (5 commands)
 
-### Project Setup
-| Command | Description |
-|---------|-------------|
-| `/opti-gsd:init` | Initialize opti-gsd in an existing project |
-| `/opti-gsd:new-project` | Create a new project with guided setup |
-| `/opti-gsd:map-codebase` | Analyze existing codebase structure |
-| `/opti-gsd:ci [configure]` | View or configure CI/CD toolchain |
+**This is all you need to know:**
 
-### Planning
-| Command | Description |
-|---------|-------------|
-| `/opti-gsd:roadmap` | Create or view project roadmap |
-| `/opti-gsd:discuss-phase [N]` | Capture decisions before planning |
-| `/opti-gsd:plan-phase [N]` | Generate execution plan for phase N |
-| `/opti-gsd:add-phase [title]` | Add a new phase to roadmap |
-| `/opti-gsd:insert-phase [N] [title]` | Insert phase at position N |
-| `/opti-gsd:remove-phase [N]` | Remove pending phase N |
+```
+┌──────────────────────────────────────────────────────────────┐
+│                    THE opti-gsd WORKFLOW                     │
+│                                                              │
+│     ┌──────┐     ┌─────────┐     ┌──────┐     ┌─────────┐   │
+│  ──►│ PLAN │────►│ EXECUTE │────►│ PUSH │────►│ VERIFY  │   │
+│     └──────┘     └─────────┘     └──────┘     └─────────┘   │
+│         │                                          │         │
+│         └──────────── repeat per phase ◄───────────┘         │
+│                                                              │
+└──────────────────────────────────────────────────────────────┘
+```
 
-### Execution
-| Command | Description |
-|---------|-------------|
-| `/opti-gsd:execute` | Execute current phase plan |
-| `/opti-gsd:execute-task [N]` | Execute single task N from current phase |
-| `/opti-gsd:push` | Push branch to trigger preview deployment |
-| `/opti-gsd:verify [phase]` | Verify phase completion (uses preview URL if pushed) |
-| `/opti-gsd:debug [issue-id]` | Start or resume debugging session |
+| Step | Command | What it does |
+|------|---------|--------------|
+| 0 | /opti-gsd:roadmap | Define what you're building (phases) |
+| 1 | /opti-gsd:plan-phase | Generate execution plan for current phase |
+| 2 | /opti-gsd:execute | Run the plan (TDD, parallel tasks, auto-commit) |
+| 3 | /opti-gsd:push | Push to trigger preview deployment |
+| 4 | /opti-gsd:verify | Verify everything works |
 
-### Milestones
-| Command | Description |
-|---------|-------------|
-| `/opti-gsd:start-milestone [name]` | Start new milestone branch |
-| `/opti-gsd:complete-milestone` | Complete current milestone |
-
-### Session Management
-| Command | Description |
-|---------|-------------|
-| `/opti-gsd:status` | Show current state and next action |
-| `/opti-gsd:resume` | Resume from last session |
-| `/opti-gsd:pause` | Pause work with context save |
-
-### Context Management
-| Command | Description |
-|---------|-------------|
-| `/opti-gsd:context` | Show context usage and budget status |
-| `/opti-gsd:archive [phase]` | Archive completed phase to save context |
-| `/opti-gsd:compact` | Reduce context footprint of project files |
-
-### Todos & Notes
-| Command | Description |
-|---------|-------------|
-| `/opti-gsd:add-todo [desc]` | Capture idea or task for later |
-| `/opti-gsd:todos` | List and manage pending todos |
-| `/opti-gsd:decisions` | Log and view architectural decisions |
-| `/opti-gsd:issues` | Track and manage project issues |
-
-### Utilities
-| Command | Description |
-|---------|-------------|
-| `/opti-gsd:skills` | Discover and configure Claude skills |
-| `/opti-gsd:mcps` | Discover and configure MCP servers |
-| `/opti-gsd:mode [interactive\|yolo]` | Switch workflow mode (see below) |
-| `/opti-gsd:whats-new` | Check for updates and changelog |
-| `/opti-gsd:research [topic]` | Research a topic using Context7 |
-
-**Modes:**
-- `interactive` — Confirms before phases, shows plans for approval, pauses at checkpoints
-- `yolo` — Executes without confirmation, maximum velocity (still pauses on errors)
+**That's it.** Run /opti-gsd:status anytime to see where you are and what to do next.
 
 ---
 
@@ -114,53 +74,111 @@ Project: Not initialized
 
 **New Project:**
 ```
-1. /opti-gsd:new-project     # Set up project
-2. /opti-gsd:roadmap         # Define phases
-3. /opti-gsd:plan-phase 1    # Plan first phase
-4. /opti-gsd:execute         # Execute the plan
-5. /opti-gsd:verify 1        # Verify completion
+/opti-gsd:new-project     ← Interactive setup wizard
+/opti-gsd:roadmap         ← Define your phases
+/opti-gsd:plan-phase 1    ← Plan first phase
+/opti-gsd:execute         ← Execute (TDD built-in)
+/opti-gsd:verify 1        ← Verify it works
 ```
 
 **Existing Project:**
 ```
-1. /opti-gsd:map-codebase    # Understand structure
-2. /opti-gsd:init            # Initialize opti-gsd
-3. /opti-gsd:roadmap         # Plan your work
+/opti-gsd:init            ← Initialize opti-gsd
+/opti-gsd:roadmap         ← Plan your work
 ```
 
 ---
 
-## Safe Commands (run anytime)
+## Helpful Commands (safe to run anytime)
 
-These commands are read-only or non-destructive:
-- `/opti-gsd:status` - View current state
-- `/opti-gsd:context` - Check context usage
-- `/opti-gsd:ci` - View CI/CD configuration
-- `/opti-gsd:help` - This help screen
-- `/opti-gsd:add-todo` - Capture ideas
-- `/opti-gsd:todos` - View todos
-- `/opti-gsd:decisions` - View/add decisions
-- `/opti-gsd:issues` - View/add issues
-- `/opti-gsd:whats-new` - Check updates
+| Command | Description |
+|---------|-------------|
+| /opti-gsd:status | **Start here** — shows where you are + next action |
+| /opti-gsd:add-feature | Capture a feature idea without interrupting work |
+| /opti-gsd:add-story | Capture a user request or feature |
+| /opti-gsd:debug | Systematic bug investigation |
+| /opti-gsd:help advanced | Show all 30+ commands |
 
 ---
 
-## Workflow Overview
+## Recovery Commands (when things go wrong)
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│  INIT → ROADMAP → [RESEARCH] → PLAN → EXECUTE → PUSH →     │
-│    ↓                                              ↓         │
-│  Setup project    Repeat for each phase      VERIFY →      │
-│                                                  ↓          │
-│                                              RELEASE        │
-└─────────────────────────────────────────────────────────────┘
+| Command | Description |
+|---------|-------------|
+| /opti-gsd:rollback | Undo to a previous checkpoint |
+| /opti-gsd:recover | Fix interrupted execution state |
+| /opti-gsd:plan-fix | Generate fix plan for verification gaps |
 
-Recommended flow per phase:
-  execute → push → (preview deploys) → verify
-```
+---
 
-For detailed status and next actions, run `/opti-gsd:status`
+## Modes
+
+- **interactive** — Confirms before phases, shows plans for approval (default)
+- **yolo** — Executes without confirmation, maximum velocity
+
+Switch with /opti-gsd:mode yolo or /opti-gsd:mode interactive
+
+---
+
+## Advanced Commands
+
+**Only shown when running /opti-gsd:help advanced**
+
+### Project Setup
+| Command | Description |
+|---------|-------------|
+| /opti-gsd:init | Initialize opti-gsd in existing project |
+| /opti-gsd:new-project | Create new project with guided setup |
+| /opti-gsd:map-codebase | Analyze existing codebase structure |
+| /opti-gsd:ci [configure] | View or configure CI/CD toolchain |
+| /opti-gsd:migrate | Migrate from older opti-gsd version |
+
+### Planning (Advanced)
+| Command | Description |
+|---------|-------------|
+| /opti-gsd:discuss-phase [N] | Capture decisions before planning |
+| /opti-gsd:research [topic] | Research best practices before implementing |
+| /opti-gsd:add-phase [title] | Add new phase to roadmap |
+| /opti-gsd:insert-phase [N] [title] | Insert phase at position N |
+| /opti-gsd:remove-phase [N] | Remove pending phase N |
+
+### Execution (Advanced)
+| Command | Description |
+|---------|-------------|
+| /opti-gsd:execute-task [N] | Execute single task N (not whole phase) |
+
+### Milestones
+| Command | Description |
+|---------|-------------|
+| /opti-gsd:start-milestone [name] | Start new milestone branch |
+| /opti-gsd:complete-milestone | Complete current milestone, create PR |
+
+### Session & Context
+| Command | Description |
+|---------|-------------|
+| /opti-gsd:pause | Pause work with context save |
+| /opti-gsd:resume | Resume from last session |
+| /opti-gsd:context | Show context usage and budget |
+| /opti-gsd:archive [phase] | Archive completed phase to save context |
+| /opti-gsd:compact | Reduce context footprint |
+
+### Tracking
+| Command | Description |
+|---------|-------------|
+| /opti-gsd:features | View captured feature ideas |
+| /opti-gsd:stories | View captured user stories |
+| /opti-gsd:issues | Track and manage project issues |
+| /opti-gsd:decisions | Log and view architectural decisions |
+
+### Configuration
+| Command | Description |
+|---------|-------------|
+| /opti-gsd:mode [interactive\|yolo] | Switch workflow mode |
+| /opti-gsd:skills | Discover and configure Claude skills |
+| /opti-gsd:mcps | Discover and configure MCP servers |
+| /opti-gsd:setup-lsp | Detect languages and recommend LSP plugins |
+| /opti-gsd:whats-new | Check for updates and changelog |
+| /opti-gsd:statusline-setup | Configure terminal status line |
 
 ---
 
@@ -180,10 +198,8 @@ opti-gsd uses standardized error messages with next-step suggestions:
 
 | Error | Meaning | Solution |
 |-------|---------|----------|
-| `opti-gsd Not Initialized` | No `.gsd/` directory | Run `/opti-gsd:init` or `/opti-gsd:new-project` |
-| `Project State Missing` | `.gsd/STATE.md` not found | Run `/opti-gsd:init` to reinitialize |
-| `No Roadmap Found` | `.gsd/ROADMAP.md` not found | Run `/opti-gsd:roadmap` to create one |
-| `No Plan Found` | Phase plan missing | Run `/opti-gsd:plan-phase N` |
-| `Phase Not Executed` | Trying to verify unexecuted phase | Run `/opti-gsd:execute` first |
-
-See `docs/ERROR-HANDLING.md` for the complete error reference
+| `opti-gsd Not Initialized` | No `.gsd/` directory | Run /opti-gsd:init or /opti-gsd:new-project |
+| `Project State Missing` | `.gsd/STATE.md` not found | Run /opti-gsd:init to reinitialize |
+| `No Roadmap Found` | `.gsd/ROADMAP.md` not found | Run /opti-gsd:roadmap to create one |
+| `No Plan Found` | Phase plan missing | Run /opti-gsd:plan-phase N |
+| `Phase Not Executed` | Trying to verify unexecuted phase | Run /opti-gsd:execute first |

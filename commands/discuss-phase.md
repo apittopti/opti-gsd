@@ -63,7 +63,7 @@ If no phase specified:
 
 All phases are complete or in progress.
 
-Add a new phase: `/opti-gsd:add-phase {title}`
+Add a new phase: /opti-gsd:add-phase {title}
 ```
 
 ### Step 2: Load Phase Context
@@ -164,7 +164,7 @@ Write to `.gsd/plans/phase-{N}/DISCUSSION.md`:
 
 ---
 
-*This informs the planning phase. Run `/opti-gsd:plan-phase {N}` when ready.*
+*This informs the planning phase. Run /opti-gsd:plan-phase {N} when ready.*
 ```
 
 ### Step 6: Update STATE.md
@@ -205,7 +205,7 @@ Next steps:
 
 ## Integration with Planning
 
-When `/opti-gsd:plan-phase` runs, it:
+When /opti-gsd:plan-phase runs, it:
 1. Loads DISCUSSION.md if exists
 2. Incorporates decisions into plan
 3. References constraints in task definitions

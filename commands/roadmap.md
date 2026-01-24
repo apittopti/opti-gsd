@@ -87,7 +87,7 @@ Read (if they exist):
 - `.gsd/research/SUMMARY.md` for research findings (optional)
 - `.gsd/stories/` for user stories
 - `.gsd/issues/` for open issues
-- `.gsd/IDEAS.md` for ideas
+- `.gsd/FEATURES.md` for feature ideas
 
 ### Step 3: Ask About Milestones
 
@@ -118,21 +118,21 @@ Read from all input buckets and present available items:
 ☐ #001: Login fails on Safari — medium severity
 ☐ #002: Memory leak in dashboard — high severity
 
-**Ideas** ({count} pending)
-`.gsd/IDEAS.md`
-☐ I005: Add keyboard shortcuts — medium priority
-☐ I008: Refactor auth module — low priority
+**Features** ({count} pending)
+`.gsd/FEATURES.md`
+☐ F005: Add keyboard shortcuts — medium priority
+☐ F008: Refactor auth module — low priority
 
 ---
 Select items to include, or type "all" for everything.
-You can also add new stories/ideas now.
+You can also add new stories/features now.
 ```
 
 **Selection options:**
 - Select by ID: `US001, US003, #002, I005`
-- Select by category: `all stories`, `all issues`, `all ideas`
+- Select by category: `all stories`, `all issues`, `all features`
 - Select all: `all`
-- Add new: `add story: {title}` or `add idea: {title}`
+- Add new: `add story: {title}` or `add feature: {title}`
 
 ### Step 5: Define Phases for Milestone
 
@@ -189,12 +189,12 @@ If any item is orphaned, add to a phase or create new phase.
 For each phase, success criteria come from:
 1. **Story acceptance criteria** — imported from story files
 2. **Issue resolution** — the bug is fixed
-3. **Idea completion** — the enhancement works
+3. **Feature completion** — the enhancement works
 
 ```markdown
 ### Phase 1: Data Export
 
-**Delivers:** US001, I005
+**Delivers:** US001, F005
 
 **Success Criteria:** (from US001 acceptance)
 - [ ] Export button visible on dashboard
@@ -258,7 +258,7 @@ Create `.gsd/ROADMAP.md`:
 **Phase:** 2
 ```
 
-**Update ideas** (mark as promoted in `.gsd/IDEAS.md`):
+**Update features** (mark as promoted in `.gsd/FEATURES.md`):
 ```markdown
 **Status:** promoted
 **Milestone:** v1.0
@@ -303,7 +303,7 @@ mkdir -p .gsd/plans/phase-02
 ### Step 12: Commit
 
 ```bash
-git add .gsd/ROADMAP.md .gsd/STATE.md .gsd/stories/ .gsd/issues/ .gsd/IDEAS.md
+git add .gsd/ROADMAP.md .gsd/STATE.md .gsd/stories/ .gsd/issues/ .gsd/FEATURES.md
 git commit -m "docs: create roadmap with {N} phases"
 ```
 
@@ -318,10 +318,10 @@ Phases: {count}
 Items Included:
 - Stories: {count} (from users/clients)
 - Issues: {count} (bugs/problems)
-- Ideas: {count} (your enhancements)
+- Features: {count} (your enhancements)
 
 Phase Overview:
-1. {Phase 1 title} — delivers US001, I005
+1. {Phase 1 title} — delivers US001, F005
 2. {Phase 2 title} — delivers US003, #002
 3. {Phase 3 title} — delivers US002
 
