@@ -384,15 +384,21 @@ async function main() {
   const cwd = process.cwd();
   const sourceDir = getSourceDir();
 
-  // Interactive mode if no location flag provided
+  // Interactive mode if no location flag provided and TTY is available
   if (!isGlobal && !isLocal && (command === 'init' || command === 'uninstall')) {
-    const location = await selectOption('Where would you like to install?', [
-      { label: `Global ${colors.dim}(~/.claude/ - available in all projects)${colors.reset}`, value: 'global' },
-      { label: `Local ${colors.dim}(./.claude/ - this project only)${colors.reset}`, value: 'local' },
-    ]);
-    isGlobal = location === 'global';
-    isLocal = location === 'local';
-    console.log('');
+    if (process.stdin.isTTY) {
+      const location = await selectOption('Where would you like to install?', [
+        { label: `Global ${colors.dim}(~/.claude/ - available in all projects)${colors.reset}`, value: 'global' },
+        { label: `Local ${colors.dim}(./.claude/ - this project only)${colors.reset}`, value: 'local' },
+      ]);
+      isGlobal = location === 'global';
+      isLocal = location === 'local';
+      console.log('');
+    } else {
+      // Default to global when not interactive
+      isGlobal = true;
+      log.info('No TTY detected, defaulting to global install');
+    }
   }
 
   // Determine install location
