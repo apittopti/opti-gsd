@@ -4,6 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const { execSync, spawn } = require('child_process');
 const os = require('os');
+const readline = require('readline');
 
 // Colors for terminal output
 const colors = {
@@ -288,6 +289,51 @@ ${colors.blue}╔═════════════════════
 `);
 }
 
+/**
+ * Prompt user for input with a default value
+ */
+function prompt(question, defaultValue = '') {
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+  });
+
+  return new Promise((resolve) => {
+    const defaultHint = defaultValue ? ` ${colors.dim}[${defaultValue}]${colors.reset}` : '';
+    rl.question(`  ${question}${defaultHint}: `, (answer) => {
+      rl.close();
+      resolve(answer.trim() || defaultValue);
+    });
+  });
+}
+
+/**
+ * Prompt user to select from options
+ */
+async function selectOption(question, options) {
+  console.log(`\n  ${colors.yellow}${question}${colors.reset}`);
+  options.forEach((opt, i) => {
+    console.log(`    ${colors.cyan}${i + 1}${colors.reset}) ${opt.label}`);
+  });
+
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+  });
+
+  return new Promise((resolve) => {
+    rl.question(`\n  ${colors.dim}Enter choice [1-${options.length}]:${colors.reset} `, (answer) => {
+      rl.close();
+      const choice = parseInt(answer.trim(), 10);
+      if (choice >= 1 && choice <= options.length) {
+        resolve(options[choice - 1].value);
+      } else {
+        resolve(options[0].value); // Default to first option
+      }
+    });
+  });
+}
+
 function printHelp() {
   console.log(`
 ${colors.blue}opti-gsd${colors.reset} - Spec-driven development for Claude Code
@@ -323,8 +369,8 @@ async function main() {
 
   // Parse arguments
   const command = args.find(a => !a.startsWith('-')) || 'init';
-  const isGlobal = args.includes('--global');
-  const isLocal = args.includes('--local');
+  let isGlobal = args.includes('--global');
+  let isLocal = args.includes('--local');
   const skipLsp = args.includes('--skip-lsp');
   const showHelp = args.includes('--help') || args.includes('-h');
 
@@ -337,6 +383,17 @@ async function main() {
 
   const cwd = process.cwd();
   const sourceDir = getSourceDir();
+
+  // Interactive mode if no location flag provided
+  if (!isGlobal && !isLocal && (command === 'init' || command === 'uninstall')) {
+    const location = await selectOption('Where would you like to install?', [
+      { label: `Global ${colors.dim}(~/.claude/ - available in all projects)${colors.reset}`, value: 'global' },
+      { label: `Local ${colors.dim}(./.claude/ - this project only)${colors.reset}`, value: 'local' },
+    ]);
+    isGlobal = location === 'global';
+    isLocal = location === 'local';
+    console.log('');
+  }
 
   // Determine install location
   let installDir;
@@ -362,12 +419,15 @@ async function main() {
     // Copy opti-gsd files
     log.info('Copying opti-gsd files...');
 
+    // Source structure has namespace folders: commands/opti-gsd/, agents/opti-gsd/
+    // Copy directly to preserve structure: commands/opti-gsd/ -> ~/.claude/commands/opti-gsd/
     const dirsToVopy = ['commands', 'agents', 'skills', 'docs'];
     for (const dir of dirsToVopy) {
-      const srcPath = path.join(sourceDir, dir);
+      const srcPath = path.join(sourceDir, dir, 'opti-gsd');
       const destPath = path.join(installDir, dir, 'opti-gsd');
       if (fs.existsSync(srcPath)) {
         copyRecursive(srcPath, destPath);
+        log.success(`Installed ${dir}/opti-gsd`);
       }
     }
 
