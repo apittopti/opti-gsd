@@ -25,9 +25,9 @@ Installs to `./.claude/` for this project only. Useful for team sharing via git.
 ### Options
 
 ```bash
-npx github:apittopti/opti-gsd init --global     # Install globally (default)
-npx github:apittopti/opti-gsd init --local      # Install to project only
-npx github:apittopti/opti-gsd update            # Update to latest version
+npx github:apittopti/opti-gsd init              # Interactive prompt
+npx github:apittopti/opti-gsd init --global     # Install to ~/.claude/
+npx github:apittopti/opti-gsd init --local      # Install to ./.claude/
 ```
 
 ### Uninstalling
@@ -41,17 +41,13 @@ This removes opti-gsd folders and cleans CLAUDE.md.
 
 ### Updating
 
+Just run `init` again - npx always fetches the latest from GitHub:
+
 ```bash
-npx github:apittopti/opti-gsd update
+npx github:apittopti/opti-gsd init
 ```
 
-npx always fetches the latest from GitHub - no cache issues. Updates overwrite command files while preserving:
-
-| Updated | Preserved |
-|---------|-----------|
-| commands/, agents/, skills/ | .gsd/ project state |
-| docs/ | Your CLAUDE.md additions |
-| | Project settings |
+Updates overwrite command files while preserving your `.gsd/` project state.
 
 ### Private Repo Access
 

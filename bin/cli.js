@@ -106,13 +106,40 @@ function removeOptiGsdFromClaudeMd(claudeMdPath) {
   return true;
 }
 
-function printBanner() {
+function getVersion() {
+  try {
+    const pluginJsonPath = path.join(getSourceDir(), '.claude-plugin', 'plugin.json');
+    const pluginJson = JSON.parse(fs.readFileSync(pluginJsonPath, 'utf8'));
+    return pluginJson.version || 'unknown';
+  } catch {
+    return 'unknown';
+  }
+}
+
+function printBanner(version) {
   console.log(`
 ${colors.blue}╔═══════════════════════════════════════╗
 ║           ${colors.reset}opti-gsd installer${colors.blue}           ║
 ║   ${colors.dim}Spec-driven development for Claude${colors.blue}   ║
+╠═══════════════════════════════════════╣
+║   ${colors.reset}Version: ${colors.cyan}${version.padEnd(28)}${colors.blue}║
 ╚═══════════════════════════════════════╝${colors.reset}
 `);
+}
+
+async function confirmAction(question) {
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+  });
+
+  return new Promise((resolve) => {
+    rl.question(`  ${question} ${colors.dim}[Y/n]${colors.reset}: `, (answer) => {
+      rl.close();
+      const normalized = answer.trim().toLowerCase();
+      resolve(normalized === '' || normalized === 'y' || normalized === 'yes');
+    });
+  });
 }
 
 /**
@@ -166,12 +193,10 @@ ${colors.blue}opti-gsd${colors.reset} - Spec-driven development for Claude Code
 
 ${colors.yellow}Usage:${colors.reset}
   npx github:apittopti/opti-gsd init [options]
-  npx github:apittopti/opti-gsd update
   npx github:apittopti/opti-gsd uninstall [options]
 
 ${colors.yellow}Commands:${colors.reset}
-  init        Install opti-gsd to your Claude Code environment
-  update      Update opti-gsd to latest version
+  init        Install or update opti-gsd (always fetches latest)
   uninstall   Remove opti-gsd from global or local installation
 
 ${colors.yellow}Options:${colors.reset}
@@ -180,10 +205,10 @@ ${colors.yellow}Options:${colors.reset}
   --help      Show this help message
 
 ${colors.yellow}Examples:${colors.reset}
-  npx github:apittopti/opti-gsd init --global
-  npx github:apittopti/opti-gsd init --local
-  npx github:apittopti/opti-gsd update
-  npx github:apittopti/opti-gsd uninstall --global
+  npx github:apittopti/opti-gsd init           # Interactive prompt
+  npx github:apittopti/opti-gsd init --global  # Install to ~/.claude/
+  npx github:apittopti/opti-gsd init --local   # Install to ./.claude/
+  npx github:apittopti/opti-gsd uninstall      # Remove installation
 
 ${colors.yellow}Tool Detection:${colors.reset}
   After installation, run /opti-gsd:detect-tools in Claude Code
@@ -205,13 +230,14 @@ async function main() {
     process.exit(0);
   }
 
-  printBanner();
+  const version = getVersion();
+  printBanner(version);
 
   const cwd = process.cwd();
   const sourceDir = getSourceDir();
 
   // Interactive mode if no location flag provided and TTY is available
-  if (!isGlobal && !isLocal && (command === 'init' || command === 'update' || command === 'uninstall')) {
+  if (!isGlobal && !isLocal && (command === 'init' || command === 'uninstall')) {
     if (process.stdin.isTTY) {
       const location = await selectOption('Where would you like to install?', [
         { label: `Global ${colors.dim}(~/.claude/ - available in all projects)${colors.reset}`, value: 'global' },
@@ -239,7 +265,21 @@ async function main() {
     log.info(`Installing to ${colors.dim}~/.claude/${colors.reset} (global)`);
   }
 
-  if (command === 'init' || command === 'update') {
+  if (command === 'init') {
+    // Check if already installed
+    const existingInstall = fs.existsSync(path.join(installDir, 'commands', 'opti-gsd'));
+    const action = existingInstall ? 'Update' : 'Install';
+
+    // Confirm before proceeding (if TTY available)
+    if (process.stdin.isTTY) {
+      const confirmed = await confirmAction(`${action} opti-gsd v${version}?`);
+      if (!confirmed) {
+        log.warn('Installation cancelled');
+        process.exit(0);
+      }
+      console.log('');
+    }
+
     // Create install directory
     if (!fs.existsSync(installDir)) {
       fs.mkdirSync(installDir, { recursive: true });
