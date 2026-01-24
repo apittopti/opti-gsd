@@ -119,7 +119,7 @@ Write to `.gsd/CHANGELOG-{milestone}.md`.
    - **Title:** Release: {milestone}
    - **Body:** See .gsd/CHANGELOG-{milestone}.md
 
-   After merging, run `/opti-gsd:complete-milestone --finalize` to tag and archive.
+   After merging, run /opti-gsd:complete-milestone --finalize to tag and archive.
    ```
 
 4. Report PR URL and stop (don't merge automatically)
@@ -183,7 +183,7 @@ git commit -m "chore: complete milestone {name}"
 
 Next:
 1. Review and merge the PR
-2. Run `/opti-gsd:complete-milestone --finalize` to tag and archive
+2. Run /opti-gsd:complete-milestone --finalize to tag and archive
 ```
 
 **After finalize (second run):**

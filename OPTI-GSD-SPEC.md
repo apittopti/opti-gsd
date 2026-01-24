@@ -1470,9 +1470,9 @@ Orchestrator:
 | Workflow modes | None | YOLO + Interactive |
 | Discovery levels | Implicit | Explicit 0-3 scale |
 | REQ traceability | REQ-IDs | REQ-IDs with phase mapping |
-| Context command | None | `/opti-gsd:context` shows usage |
-| Archive command | None | `/opti-gsd:archive` frees context |
-| Compact command | None | `/opti-gsd:compact` bulk optimization |
+| Context command | None | /opti-gsd:context shows usage |
+| Archive command | None | /opti-gsd:archive frees context |
+| Compact command | None | /opti-gsd:compact bulk optimization |
 
 ### Agent Improvements
 

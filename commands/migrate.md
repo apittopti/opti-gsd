@@ -136,7 +136,7 @@ Your project now uses the simplified workflow:
 - Stories (user needs with acceptance criteria)
 - Issues (bugs/problems)
 
-Run `/opti-gsd:stories` to see your migrated stories.
+Run /opti-gsd:stories to see your migrated stories.
 ```
 
 ---

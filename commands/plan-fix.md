@@ -102,14 +102,14 @@ Gaps identified: {count}
 **Estimated:** Quick fixes, < 15 min total
 
 **Next Steps:**
-→ `/opti-gsd:execute` — Execute fix plan
+→ /opti-gsd:execute — Execute fix plan
 → Review fix-plan.md and edit if needed
-→ `/opti-gsd:verify {N}` — Re-verify after fixes
+→ /opti-gsd:verify {N} — Re-verify after fixes
 
 Execute fixes now? [Y/n]
 ```
 
-If user confirms (or yolo mode), run `/opti-gsd:execute` on fix plan.
+If user confirms (or yolo mode), run /opti-gsd:execute on fix plan.
 
 ### Step 6: Commit Plan
 

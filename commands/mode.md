@@ -25,7 +25,7 @@ Best for: Learning the system, complex projects, careful work.
 **yolo:** Execute without confirmation, only stop on errors/checkpoints.
 Best for: Familiar patterns, rapid iteration, trusted workflows.
 
-To switch: `/opti-gsd:mode interactive` or `/opti-gsd:mode yolo`
+To switch: /opti-gsd:mode interactive or /opti-gsd:mode yolo
 ```
 
 ### Step 2: Update Config

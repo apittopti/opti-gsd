@@ -80,7 +80,7 @@ C) Abort and resolve manually
 
 ### Step 4: Continue
 
-If user confirms, run `/opti-gsd:execute` to continue execution.
+If user confirms, run /opti-gsd:execute to continue execution.
 
 ---
 

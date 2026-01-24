@@ -36,7 +36,7 @@ Skills available in Claude Code:
 - pr-review
 - {others from claude code}
 
-Configure for project: `/opti-gsd:skills add {skill}`
+Configure for project: /opti-gsd:skills add {skill}
 ```
 
 ### Scan for Skills
@@ -60,7 +60,7 @@ Analyze project stack and suggest relevant skills:
 | test | High | Generate Vitest tests |
 | explain | Medium | Codebase onboarding |
 
-Add recommended: `/opti-gsd:skills add commit`
+Add recommended: /opti-gsd:skills add commit
 ```
 
 ### Recommend Skills
@@ -80,11 +80,11 @@ Based on project analysis:
 
 ### Essential
 1. **commit** — Enforce consistent commit messages
-   - Integrates with `/opti-gsd:pause` and phase completion
+   - Integrates with /opti-gsd:pause and phase completion
 
 2. **test** — Generate tests for new code
    - Matches your Vitest setup
-   - Useful during `/opti-gsd:execute`
+   - Useful during /opti-gsd:execute
 
 ### Recommended
 3. **explain** — Document complex code
@@ -93,9 +93,9 @@ Based on project analysis:
 
 ### Optional
 4. **pr-review** — Automated PR feedback
-   - Integrates with `/opti-gsd:complete-milestone`
+   - Integrates with /opti-gsd:complete-milestone
 
-Add with: `/opti-gsd:skills add {name}`
+Add with: /opti-gsd:skills add {name}
 ```
 
 ### Add Skill
@@ -108,9 +108,9 @@ Configure skill for project use:
 This skill will be available during opti-gsd workflows.
 
 **Integration points:**
-- `/opti-gsd:execute` — Suggest usage after task completion
-- `/opti-gsd:pause` — Include in commit workflow
-- `/opti-gsd:verify` — Reference during verification
+- /opti-gsd:execute — Suggest usage after task completion
+- /opti-gsd:pause — Include in commit workflow
+- /opti-gsd:verify — Reference during verification
 
 Added to `.gsd/config.md`.
 ```

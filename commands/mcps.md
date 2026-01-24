@@ -31,8 +31,8 @@ MCPs referenced in `.gsd/config.md`:
 | postgres | Active | Database queries |
 | github | Inactive | Not connected |
 
-Add MCP: `/opti-gsd:mcps add {name}`
-Check status: `/opti-gsd:mcps check`
+Add MCP: /opti-gsd:mcps add {name}
+Check status: /opti-gsd:mcps check
 ```
 
 ### Scan for MCPs
@@ -61,7 +61,7 @@ Analyze project for MCP opportunities:
 - No Slack integration found
 - No Stripe integration found
 
-Add detected: `/opti-gsd:mcps add postgres`
+Add detected: /opti-gsd:mcps add postgres
 ```
 
 ### Recommend MCPs
@@ -74,8 +74,8 @@ Based on project type and workflow needs:
 ### For Your Stack (Next.js + PostgreSQL)
 
 1. **postgres** — Direct database queries during debug
-   - Useful in `/opti-gsd:debug` sessions
-   - Verify data during `/opti-gsd:verify`
+   - Useful in /opti-gsd:debug sessions
+   - Verify data during /opti-gsd:verify
 
 2. **filesystem** — Extended file operations
    - Already available by default
@@ -84,15 +84,15 @@ Based on project type and workflow needs:
 ### For Development Workflow
 
 3. **github** — PR and issue management
-   - Integrates with `/opti-gsd:complete-milestone`
-   - Track issues with `/opti-gsd:issues`
+   - Integrates with /opti-gsd:complete-milestone
+   - Track issues with /opti-gsd:issues
 
 4. **browser** — UI testing and verification
-   - Screenshot verification in `/opti-gsd:verify`
+   - Screenshot verification in /opti-gsd:verify
    - E2E flow checking
 
 5. **context7** — Up-to-date library documentation
-   - Used during `/opti-gsd:execute` for current APIs
+   - Used during /opti-gsd:execute for current APIs
    - Prevents deprecated patterns
    - Only fetched when task lists specific libraries
 
@@ -103,7 +103,7 @@ Based on project type and workflow needs:
    - Alert on critical issues
 
 Install: See MCP documentation
-Configure: `/opti-gsd:mcps add {name}`
+Configure: /opti-gsd:mcps add {name}
 ```
 
 ### Add MCP

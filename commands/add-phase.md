@@ -23,7 +23,7 @@ If no milestone:
 ## No Active Milestone
 
 Start a milestone first:
-`/opti-gsd:start-milestone v1.0`
+/opti-gsd:start-milestone v1.0
 ```
 
 ### Step 2: Determine Phase Number
@@ -83,8 +83,8 @@ git commit -m "chore: add phase {N} - {title}"
 **Status:** Pending
 
 Next steps:
-- Plan this phase: `/opti-gsd:plan-phase {N}`
-- Or add more phases: `/opti-gsd:add-phase {another}`
+- Plan this phase: /opti-gsd:plan-phase {N}
+- Or add more phases: /opti-gsd:add-phase {another}
 ```
 
 ---

@@ -44,9 +44,9 @@ Read `.gsd/stories/` and display by status:
 **Total:** 6 stories (3 backlog, 2 planned, 1 delivered)
 
 Actions:
-- Add: `/opti-gsd:add-story {title}`
-- Plan: `/opti-gsd:roadmap` (assign to milestone)
-- View: `/opti-gsd:stories view US001`
+- Add: /opti-gsd:add-story {title}
+- Plan: /opti-gsd:roadmap (assign to milestone)
+- View: /opti-gsd:stories view US001
 ```
 
 ### View Story
@@ -79,8 +79,8 @@ Client mentioned this is blocking their quarterly reporting process.
 
 ---
 Actions:
-- Edit: `/opti-gsd:stories edit US001`
-- Mark delivered: `/opti-gsd:stories deliver US001`
+- Edit: /opti-gsd:stories edit US001
+- Mark delivered: /opti-gsd:stories deliver US001
 ```
 
 ### Edit Story

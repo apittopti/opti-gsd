@@ -86,6 +86,13 @@ loop:
   execute_max_retries: 2      # Max orchestrator retries if subagent fails entirely
   # Note: No verify loop - human judgment gates continuation (GSD philosophy)
 
+# Task Execution (Claude Code integration)
+tasks:
+  background: true            # Use run_in_background for parallel wave execution
+  poll_interval: 5            # Seconds between TaskOutput polls
+  persist_ids: true           # Store task_ids in STATE.md for recovery
+  # Environment: Set CLAUDE_CODE_TASK_LIST_ID to share tasks across sessions
+
 # Model Routing (cost optimization)
 # Routes tasks to appropriate models based on complexity
 models:

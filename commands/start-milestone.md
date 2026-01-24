@@ -96,8 +96,8 @@ git commit -m "chore: start milestone {name}"
 **Branch:** {prefix}{name}
 
 Next steps:
-1. Define roadmap: `/opti-gsd:roadmap`
-2. Or if roadmap exists: `/opti-gsd:plan-phase 1`
+1. Define roadmap: /opti-gsd:roadmap
+2. Or if roadmap exists: /opti-gsd:plan-phase 1
 ```
 
 ---

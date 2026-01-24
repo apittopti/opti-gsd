@@ -129,9 +129,9 @@ phases_complete: [...]  # Remove rolled-back phases
 - Task: {task}
 
 **Next steps:**
-→ `/opti-gsd:status` — Check current state
-→ `/opti-gsd:execute` — Re-execute from this point
-→ `/opti-gsd:rollback-undo` — Restore from backup if needed
+→ /opti-gsd:status — Check current state
+→ /opti-gsd:execute — Re-execute from this point
+→ /opti-gsd:rollback-undo — Restore from backup if needed
 ```
 
 ---
@@ -176,7 +176,7 @@ git tag -l "gsd/backup/*"
 git reset --hard gsd/backup/{timestamp}
 ```
 
-Or use `/opti-gsd:recover` to diagnose and fix state.
+Or use /opti-gsd:recover to diagnose and fix state.
 
 ---
 

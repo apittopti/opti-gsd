@@ -61,7 +61,7 @@ git commit -m "wip: pause at phase {N} task {M}
 Saved at: Phase {N}, Task {M}
 Context: {notes summary}
 
-To resume: Run `/opti-gsd:resume`
+To resume: Run /opti-gsd:resume
 ```
 
 ---

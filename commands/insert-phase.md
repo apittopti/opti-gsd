@@ -27,7 +27,7 @@ If position out of range:
 Position {position} is out of range.
 Valid range: 1 to {max+1}
 
-Use `/opti-gsd:add-phase {title}` to add at end.
+Use /opti-gsd:add-phase {title} to add at end.
 ```
 
 ### Step 2: Check for Conflicts
@@ -39,7 +39,7 @@ If any phase >= position is in progress or complete:
 Phase {N} is already {status}. Inserting would disrupt active work.
 
 Options:
-1. Add at end: `/opti-gsd:add-phase {title}`
+1. Add at end: /opti-gsd:add-phase {title}
 2. Complete current phase first
 3. Use `--force` to insert anyway (will renumber)
 ```
@@ -101,7 +101,7 @@ Renumbered phases {position}+ to {position+1}+"
 - ...
 
 Next steps:
-- Plan new phase: `/opti-gsd:plan-phase {position}`
+- Plan new phase: /opti-gsd:plan-phase {position}
 ```
 
 ---

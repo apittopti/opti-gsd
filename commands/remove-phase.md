@@ -26,13 +26,13 @@ Phase {N} is {status}. Only PENDING phases can be removed.
 
 {If IN_PROGRESS}
 Options:
-- Pause work: `/opti-gsd:pause`
+- Pause work: /opti-gsd:pause
 - Complete phase first
 - Use `--force` to remove anyway (will lose progress)
 
 {If COMPLETE}
 This phase is already complete. Removing it would break history.
-Consider archiving instead: `/opti-gsd:archive {N}`
+Consider archiving instead: /opti-gsd:archive {N}
 ```
 
 ### Step 2: Show Phase Details

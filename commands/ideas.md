@@ -33,9 +33,9 @@ Read `.gsd/IDEAS.md` and display pending items:
 **Pending:** 3 | **Completed:** 4 | **Total:** 7
 
 Actions:
-- Complete: `/opti-gsd:ideas complete I003`
-- Promote to issue: `/opti-gsd:ideas promote I003`
-- Add new: `/opti-gsd:add-idea {description}`
+- Complete: /opti-gsd:ideas complete I003
+- Promote to issue: /opti-gsd:ideas promote I003
+- Add new: /opti-gsd:add-idea {description}
 ```
 
 ### Show All Ideas
@@ -58,7 +58,7 @@ Actions:
 | I004 | Document env variables | 2026-01-15 |
 | I006 | Fix typo in header | 2026-01-16 |
 
-Clear completed: `/opti-gsd:ideas clear`
+Clear completed: /opti-gsd:ideas clear
 ```
 
 ### Complete Idea
@@ -101,7 +101,7 @@ On confirm:
 **I{id}** → **Issue #{NNN}**
 
 The idea is now a tracked issue.
-Add to milestone via `/opti-gsd:roadmap`
+Add to milestone via /opti-gsd:roadmap
 ```
 
 ### Delete Idea

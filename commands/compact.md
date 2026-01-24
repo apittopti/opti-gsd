@@ -15,7 +15,7 @@ Scan `.gsd/` directory and calculate token estimates for all files.
 ### Step 2: Archive Completed Phases
 
 For each completed phase not yet archived:
-- Run archive process (same as `/opti-gsd:archive`)
+- Run archive process (same as /opti-gsd:archive)
 
 ### Step 3: Summarize Research Files
 

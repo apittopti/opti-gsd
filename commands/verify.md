@@ -56,7 +56,7 @@ Pushing now allows you to verify against a preview deployment.
 
 **4. Interactive mode behavior:**
 Ask: "Push now? [Y/n]"
-- If **yes**: Execute `/opti-gsd:push` logic, then continue to Step 1
+- If **yes**: Execute /opti-gsd:push logic, then continue to Step 1
 - If **no**: Continue to Step 1 with local-only verification
 
 **5. Yolo mode behavior:**
@@ -421,7 +421,7 @@ Mark phase as verified in STATE.md.
 2. {gap 2 description}
 
 **Options:**
-A) Run `/opti-gsd:plan-phase {N} --gaps` to create gap closure plan
+A) Run /opti-gsd:plan-phase {N} --gaps to create gap closure plan
 B) Fix manually and re-verify
 
 Recommended: Option A for systematic closure
@@ -461,9 +461,9 @@ When verification reports `gaps_found`, report to user and suggest next action.
 | 2 | broken_link | Dashboard → API | Incorrect endpoint path |
 
 **Next Steps:**
-→ `/opti-gsd:plan-fix {N}` — Generate fix plan for these gaps
-→ Fix manually and re-run `/opti-gsd:verify`
-→ `/opti-gsd:rollback {N}` — Revert phase if fundamentally broken
+→ /opti-gsd:plan-fix {N} — Generate fix plan for these gaps
+→ Fix manually and re-run /opti-gsd:verify
+→ /opti-gsd:rollback {N} — Revert phase if fundamentally broken
 ```
 
 **Gap Types Reference:**

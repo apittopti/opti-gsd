@@ -31,8 +31,8 @@ Read `.gsd/ISSUES.md` and show open issues:
 
 Open: 3 | Resolved: 2 | Total: 5
 
-View details: `/opti-gsd:issues view I003`
-Add new: `/opti-gsd:issues add`
+View details: /opti-gsd:issues view I003
+Add new: /opti-gsd:issues add
 ```
 
 ### Add Issue

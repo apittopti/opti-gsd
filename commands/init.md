@@ -269,11 +269,11 @@ Display summary:
 - Codebase analysis: {yes/no}
 
 Suggest next commands:
-- `/opti-gsd:roadmap` — Plan work (init is for brownfield projects, so roadmap is the natural next step)
-- Optional: `/opti-gsd:research` — Get domain best practices before planning
-- Optional: `/opti-gsd:ci configure` — Customize CI/CD settings
+- /opti-gsd:roadmap — Plan work (init is for brownfield projects, so roadmap is the natural next step)
+- Optional: /opti-gsd:research — Get domain best practices before planning
+- Optional: /opti-gsd:ci configure — Customize CI/CD settings
 
-Note: `/opti-gsd:new-project` is for greenfield projects starting from scratch. Since `/opti-gsd:init` is for existing codebases, suggest roadmap instead.
+Note: /opti-gsd:new-project is for greenfield projects starting from scratch. Since /opti-gsd:init is for existing codebases, suggest roadmap instead.
 
 ## Output
 

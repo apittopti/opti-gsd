@@ -12,7 +12,7 @@ This command guides the user through complete project setup. Stay conversational
 
 ### Step 1: Check Prerequisites
 
-If `.gsd/` doesn't exist, run `/opti-gsd:init` first.
+If `.gsd/` doesn't exist, run /opti-gsd:init first.
 
 ### Step 2: Deep Questioning
 

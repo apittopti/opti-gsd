@@ -8,7 +8,7 @@ Execute the current phase plan with wave-based parallelization and fresh context
 
 ## Behavior
 
-This is the core execution engine. It spawns subagents for each task to maintain fresh context.
+This is the core execution engine. It uses Claude Code's **Task tool** to spawn subagents for each task, with support for **background execution** and **TaskOutput** polling.
 
 ### Step 0: Validate Branch
 
@@ -93,7 +93,7 @@ Parse:
 - XML tasks for execution
 - Wave structure for parallelization
 
-### Step 3: Determine Starting Point
+### Step 3b: Determine Starting Point
 
 If resuming (task > 0 in STATE.md):
 - Verify prior commits exist
@@ -119,9 +119,9 @@ Before executing any tasks, create a Git checkpoint for rollback safety:
 git tag -f "gsd/checkpoint/phase-{N}/pre" HEAD
 ```
 
-This enables `/opti-gsd:rollback {N}` to revert to before the phase started.
+This enables /opti-gsd:rollback {N} to revert to before the phase started.
 
-### Step 5: Execute Waves
+### Step 5: Execute Waves with Background Tasks
 
 ```
 FOR each wave:
@@ -129,31 +129,32 @@ FOR each wave:
   2. IF interactive mode AND wave > 1:
        Ask: "Wave {W-1} complete. Continue to Wave {W}?"
 
-  3. FOR each task in wave (spawn in parallel if multiple):
+  3. FOR each task in wave:
      - Build subagent prompt (see below)
-     - Spawn opti-gsd-executor via Task tool
-     - Await completion
+     - Spawn via Task tool with run_in_background=true (parallel)
+     - Store task_id for each spawned task
+     - Update STATE.md with background_tasks array
 
-  4. FOR each completed task:
-     - Parse result (COMPLETE | FAILED | CHECKPOINT)
-     - IF COMPLETE:
-         - git add {task.files}
-         - git commit -m "{type}({phase}-{task}): {description}"
-         - git tag -f "gsd/checkpoint/phase-{N}/T{task}" HEAD  ← Checkpoint after each task
-         - Update STATE.md: task = {N+1}
-     - IF FAILED:
-         - Log failure to STATE.md
-         - Stop execution
-         - Report failure with suggested fix
-     - IF CHECKPOINT:
-         - Present checkpoint to user
-         - Await decision
-         - Resume or abort based on response
-     - IF NEW ISSUE reported:
-         - Append to .gsd/ISSUES.md
+  4. Poll for completion using TaskOutput:
+     WHILE any tasks pending:
+       FOR each task_id in background_tasks:
+         result = TaskOutput(task_id, block=false)
+         IF result.complete:
+           - Parse result (COMPLETE | FAILED | CHECKPOINT)
+           - Process result (see Step 7)
+           - Remove from background_tasks
+       IF still waiting:
+         Brief status update to user: "Tasks running: {count}"
 
   5. All tasks in wave complete? → Next wave
 ```
+
+**Why Background Tasks:**
+- User sees real-time progress (Ctrl+T to toggle task list)
+- Parallel execution is truly parallel
+- Can continue working while tasks run (Ctrl+B)
+- TaskOutput provides clean result retrieval
+- Task state persists across session interruptions
 
 ### Step 6: Build Subagent Prompt
 
@@ -455,7 +456,7 @@ Pushing now will create a preview deployment you can verify against.
 ```
 
 If user confirms:
-1. Run `/opti-gsd:push` logic
+1. Run /opti-gsd:push logic
 2. Wait for preview URL
 3. Store preview URL in STATE.md
 
@@ -487,29 +488,57 @@ Next steps:
 
 ---
 
-## Parallel Execution
+## Parallel Execution with Background Tasks
 
-Tasks in the same wave execute in parallel via multiple Task tool calls:
+Tasks in the same wave execute in parallel using `run_in_background=true`:
 
 ```
 Wave 1: [Task 01, Task 02, Task 03]
          ↓         ↓         ↓
-      [Agent 1] [Agent 2] [Agent 3]  ← Parallel spawns
+      Task(       Task(       Task(
+        run_in_background=true
+      )          )           )        ← Parallel background spawns
          ↓         ↓         ↓
-      [Result]  [Result]  [Result]   ← Await all
+      task_id_1  task_id_2  task_id_3  ← Store IDs
+         ↓         ↓         ↓
+      [User sees progress via Ctrl+T]
+         ↓         ↓         ↓
+      TaskOutput  TaskOutput  TaskOutput  ← Poll for completion
          ↓         ↓         ↓
       [Commit]  [Commit]  [Commit]   ← Sequential commits
 
 Wave 2: [Task 04]
          ↓
-      [Agent 4]
+      Task(run_in_background=true)
          ↓
-      [Result]
+      TaskOutput(task_id_4, block=true)  ← Can block if single task
          ↓
       [Commit]
 ```
 
-Each agent gets fresh 100% context, preventing quality degradation.
+**Key Benefits:**
+- Each agent gets fresh 100% context
+- User sees real-time progress in Claude Code's task list (Ctrl+T)
+- Truly parallel execution, not sequential spawns
+- Tasks persist if session interrupted (use /opti-gsd:recover)
+- TaskOutput provides clean result retrieval without context bloat
+
+**Task Tool Calls:**
+```python
+# Spawn background task
+Task(
+  description="Execute phase-1 task-01",
+  prompt="{subagent_prompt}",
+  subagent_type="opti-gsd-executor",
+  run_in_background=True
+)
+
+# Poll for result
+TaskOutput(
+  task_id="{returned_task_id}",
+  block=False  # Non-blocking check, or True to wait
+)
+```
 
 ---
 
@@ -533,6 +562,14 @@ loop:
   active: true              # Execution currently running
   type: execute             # "execute" or "verify"
   phase: 1                  # Current phase
+  wave: 2                   # Current wave
+  background_tasks:         # Active background task IDs
+    - task_id: "abc123"
+      task_num: 1
+      status: "running"
+    - task_id: "def456"
+      task_num: 2
+      status: "running"
   task_retries:             # Per-task orchestrator retry counts
     T01: 0
     T02: 1
@@ -540,10 +577,16 @@ loop:
   started: 2026-01-19T10:30:00
 ```
 
+**Background Task Tracking:**
+- `background_tasks` array tracks all spawned Task tool instances
+- Each entry has `task_id` (for TaskOutput), `task_num`, and `status`
+- On session interrupt, /opti-gsd:recover uses these IDs to check TaskOutput
+- Tasks persist in Claude Code's task system across sessions
+
 **Note on TDD Loop:**
 The TDD Red-Green-Refactor loop runs INSIDE subagents as natural control flow. The subagent only returns when:
 - Tests pass (TASK COMPLETE)
 - TDD attempts exhausted (TASK FAILED)
 
 **Philosophy:** Following GSD principles, there's no stop hook forcing loop continuation.
-Human judgment gates all decisions. Use `/opti-gsd:recover` if session interrupted.
+Human judgment gates all decisions. Use /opti-gsd:recover if session interrupted.

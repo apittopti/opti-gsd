@@ -36,7 +36,7 @@ Then spawn `opti-gsd-research-synthesizer` to consolidate into `.gsd/research/SU
 
 ### Phase Research
 
-For `/opti-gsd:research phase 2`:
+For /opti-gsd:research phase 2:
 
 Spawn `opti-gsd-phase-researcher` with:
 - Phase goals from ROADMAP.md
@@ -54,7 +54,7 @@ Output: `.gsd/plans/phase-{N}/RESEARCH.md`
 
 ### Topic Research
 
-For `/opti-gsd:research topic "authentication with OAuth"`:
+For /opti-gsd:research topic "authentication with OAuth":
 
 Spawn single `opti-gsd-project-researcher` with:
 - Specific topic query
@@ -127,16 +127,16 @@ Next steps:
 
 | Situation | Command |
 |-----------|---------|
-| Starting existing project (after init) | `/opti-gsd:research` |
-| Before planning a complex phase | `/opti-gsd:research phase N` |
-| Unsure about a technical decision | `/opti-gsd:research topic "..."` |
-| Want to validate approach | `/opti-gsd:research` |
+| Starting existing project (after init) | /opti-gsd:research |
+| Before planning a complex phase | /opti-gsd:research phase N |
+| Unsure about a technical decision | /opti-gsd:research topic "..." |
+| Want to validate approach | /opti-gsd:research |
 
 ---
 
 ## Integration with Planning
 
-When `/opti-gsd:plan-phase` runs:
+When /opti-gsd:plan-phase runs:
 1. Checks for `.gsd/research/SUMMARY.md`
 2. Checks for `.gsd/plans/phase-{N}/RESEARCH.md`
 3. Incorporates findings into task planning

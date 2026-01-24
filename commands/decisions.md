@@ -30,8 +30,8 @@ Read `.gsd/DECISIONS.md` and display summary:
 
 Total: 3 decisions
 
-View details: `/opti-gsd:decisions view D001`
-Add new: `/opti-gsd:decisions add`
+View details: /opti-gsd:decisions view D001
+Add new: /opti-gsd:decisions add
 ```
 
 ### Add Decision
@@ -124,7 +124,7 @@ Preview: "Use jose for JWT handling because..."
 Matched in: Context
 Preview: "Need to handle token refresh for..."
 
-View details: `/opti-gsd:decisions view D001`
+View details: /opti-gsd:decisions view D001
 ```
 
 ---

@@ -19,7 +19,7 @@ If no description:
 ## Add Idea
 
 Please provide a description:
-`/opti-gsd:add-idea Add caching layer for API responses`
+/opti-gsd:add-idea Add caching layer for API responses
 ```
 
 ### Step 2: Categorize Idea
@@ -86,7 +86,7 @@ Ideas are lightweight - no commit needed:
 **Category:** {category}
 **Priority:** {priority}
 
-View all: `/opti-gsd:ideas`
+View all: /opti-gsd:ideas
 Continue working - ideas are saved automatically.
 ```
 
