@@ -440,3 +440,55 @@ When writing summary.md, gather tool usage data:
 
 **Alternative:** Use `node scripts/analyze-tool-usage.js --format=json` for structured data,
 but prefer direct reading of tool-usage.json for task-specific filtering.
+
+## Error Learning System
+
+Build institutional memory from errors so mistakes never repeat.
+
+### learnings.md Format
+
+Store learnings in `.opti-gsd/learnings.md`:
+
+```markdown
+# Project Learnings
+
+## DEPRECATED: {tool/command}
+
+**First seen:** {date}
+**Error:** {error message}
+**Fix:** {what to do instead}
+**Prevention:** {how to avoid in future}
+
+## CI_FAILURE: {description}
+
+**First seen:** {date}
+**Error:** {error message}
+**Root cause:** {analysis}
+**Fix:** {resolution}
+**Prevention:** {steps to avoid}
+
+## FILE_NOT_FOUND: {file}
+
+**First seen:** {date}
+**Error:** {error message}
+**Root cause:** {why file was expected but missing}
+**Fix:** {what was done}
+**Prevention:** {agent/command that needs updating}
+
+## WORKFLOW_BUG: {description}
+
+**First seen:** {date}
+**Error:** {symptom}
+**Root cause:** {analysis}
+**Fix:** {resolution}
+**Agent to update:** {agent file}
+```
+
+### Error Categories
+
+| Category | Trigger | Action |
+|----------|---------|--------|
+| DEPRECATED | Tool/command deprecated warning | Log alternative, use it |
+| CI_FAILURE | Build/test/lint fails | Log root cause and fix |
+| FILE_NOT_FOUND | Expected file missing | Log as potential agent bug |
+| WORKFLOW_BUG | Unexpected workflow behavior | Log for agent update |
