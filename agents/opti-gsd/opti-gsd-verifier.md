@@ -914,3 +914,15 @@ Debt markers with issue reference are allowed - they have explicit tracking.
 Pattern: `(TODO|FIXME|HACK|XXX|DEFER)\(ISS\d{3}\):`
 
 Example: `// TODO(ISS005): add pagination` → ALLOWED (tracked)
+
+### Integration with Baseline Scanning
+
+For project-wide baseline tracking, see `/opti-gsd:map-codebase --debt` which maintains `.opti-gsd/debt-baseline.json`.
+
+- **Baseline scanning**: Tracks absolute project debt state
+- **Verification tracking**: Tracks per-phase debt delta
+
+Recommended workflow:
+1. Establish baseline at project start: `/opti-gsd:map-codebase --debt`
+2. Phase verification tracks each phase delta
+3. Re-scan periodically: `/opti-gsd:map-codebase --debt`
