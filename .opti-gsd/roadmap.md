@@ -16,12 +16,12 @@ This creates hidden technical debt and delivers zero user value.
 
 ## Success Criteria
 
-- [ ] Plans cannot contain deferral language ("can be migrated later", "ready for future use")
-- [ ] Every task requires user-observable done criteria
-- [ ] New abstractions must have at least one consumer in same phase
-- [ ] Verification checks user value (L4), not just code existence
-- [ ] Stories cannot be marked delivered with incomplete acceptance criteria
-- [ ] Errors are logged and learned from so they never repeat
+- [x] Plans cannot contain deferral language ("can be migrated later", "ready for future use")
+- [x] Every task requires user-observable done criteria
+- [x] New abstractions must have at least one consumer in same phase
+- [x] Verification checks user value (L4), not just code existence
+- [x] Stories cannot be marked delivered with incomplete acceptance criteria
+- [x] Errors are logged and learned from so they never repeat
 
 ---
 
@@ -44,17 +44,17 @@ This creates hidden technical debt and delivers zero user value.
 
 ---
 
-## Phase 2: Verifier L4 User Value Check
+## Phase 2: Verifier L4 User Value Check [COMPLETE]
 
 **Goal:** Verification must prove user value, not just code existence
 
 **Delivers:** Level 4 verification in verifier agent
 
 **Success Criteria:**
-- [ ] Verifier checks L4: User can observe the change
-- [ ] Browser/CLI/API verification required for user-facing changes
-- [ ] "Infrastructure ready" without consumer fails verification
-- [ ] Verification report shows L4 status for each task
+- [x] Verifier checks L4: User can observe the change
+- [x] Browser/CLI/API verification required for user-facing changes
+- [x] "Infrastructure ready" without consumer fails verification
+- [x] Verification report shows L4 status for each task
 
 **Implementation Notes:**
 - Add L4 column to artifact inventory
@@ -63,17 +63,17 @@ This creates hidden technical debt and delivers zero user value.
 
 ---
 
-## Phase 3: Story Completeness Gate
+## Phase 3: Story Completeness Gate [COMPLETE]
 
 **Goal:** Stories cannot be partially delivered
 
 **Delivers:** Story completion enforcement in verification
 
 **Success Criteria:**
-- [ ] All acceptance criteria must pass for story to be "delivered"
-- [ ] Partial delivery keeps story as "in_progress"
-- [ ] Verification maps each AC to evidence
-- [ ] "Pending migration" notes in stories block delivery
+- [x] All acceptance criteria must pass for story to be "delivered"
+- [x] Partial delivery keeps story as "in_progress"
+- [x] Verification maps each AC to evidence
+- [x] "Pending migration" notes in stories block delivery
 
 **Implementation Notes:**
 - Verifier loads story files and checks each AC
@@ -82,17 +82,17 @@ This creates hidden technical debt and delivers zero user value.
 
 ---
 
-## Phase 4: Debt Balance Tracking
+## Phase 4: Debt Balance Tracking [COMPLETE]
 
 **Goal:** Fixing debt should not create more debt
 
 **Delivers:** Debt balance check in verification
 
 **Success Criteria:**
-- [ ] Track debt items resolved vs created
-- [ ] Warn if fix creates more debt than it resolves
-- [ ] Require explicit issue creation for any new debt
-- [ ] Verification report shows debt balance
+- [x] Track debt items resolved vs created
+- [x] Warn if fix creates more debt than it resolves
+- [x] Require explicit issue creation for any new debt
+- [x] Verification report shows debt balance
 
 **Implementation Notes:**
 - Scan for TODO/FIXME/migration-needed language
@@ -101,18 +101,18 @@ This creates hidden technical debt and delivers zero user value.
 
 ---
 
-## Phase 5: Debt Baseline Scanning
+## Phase 5: Debt Baseline Scanning [COMPLETE]
 
 **Goal:** Establish, track, and verify complete elimination of technical debt
 
 **Delivers:** Debt scanning capability in map-codebase with baseline tracking
 
 **Success Criteria:**
-- [ ] `/opti-gsd:map-codebase --debt` scans for all debt markers (TODO, FIXME, HACK, etc.)
-- [ ] Baseline saved to `.opti-gsd/debt-baseline.json` with file, line, content
-- [ ] Re-scan compares against baseline showing resolved vs remaining
-- [ ] Verification blocks if debt increased without explicit issue creation
-- [ ] "Debt-free" state clearly reportable
+- [x] `/opti-gsd:map-codebase --debt` scans for all debt markers (TODO, FIXME, HACK, etc.)
+- [x] Baseline saved to `.opti-gsd/debt-baseline.json` with file, line, content
+- [x] Re-scan compares against baseline showing resolved vs remaining
+- [x] Verification blocks if debt increased without explicit issue creation
+- [x] "Debt-free" state clearly reportable
 
 **Implementation Notes:**
 - Scan patterns: TODO, FIXME, HACK, XXX, DEFER, "migrate later", "tech debt"
@@ -159,18 +159,18 @@ Net change: -7 (good!)
 
 ---
 
-## Phase 6: Error Learning System
+## Phase 6: Error Learning System [COMPLETE]
 
 **Goal:** Log errors and build institutional memory so mistakes never repeat
 
 **Delivers:** Self-learning error handling across all agents
 
 **Success Criteria:**
-- [ ] All errors logged to `.opti-gsd/learnings.md` with context
-- [ ] Learnings loaded at session start (via CLAUDE.md or resume)
-- [ ] Pattern matching detects similar errors and applies fixes
-- [ ] File-not-found errors flagged as potential agent/command bugs
-- [ ] Deprecated command detection with automatic alternatives
+- [x] All errors logged to `.opti-gsd/learnings.md` with context
+- [x] Learnings loaded at session start (via CLAUDE.md or resume)
+- [x] Pattern matching detects similar errors and applies fixes
+- [x] File-not-found errors flagged as potential agent/command bugs
+- [x] Deprecated command detection with automatic alternatives
 
 **Implementation Notes:**
 - Create `.opti-gsd/learnings.md` for persistent error memory
