@@ -419,6 +419,50 @@ If existing baseline provided:
 
 When current scan returns zero items, report debt-free state.
 
+### debt-baseline.json Format
+
+```json
+{
+  "created": "2026-01-20T10:30:00Z",
+  "updated": "2026-01-25T14:45:00Z",
+  "scan_root": "/path/to/project",
+  "exclude_patterns": ["node_modules", ".git", "dist"],
+  "summary": {
+    "total": 15,
+    "by_type": {
+      "TODO": 8,
+      "FIXME": 3,
+      "HACK": 2,
+      "XXX": 1,
+      "DEFERRAL": 1
+    }
+  },
+  "items": [
+    {
+      "id": "a1b2c3d4",
+      "file": "src/api/auth.ts",
+      "line": 45,
+      "type": "TODO",
+      "content": "// TODO: add rate limiting",
+      "first_seen": "2026-01-20T10:30:00Z"
+    },
+    {
+      "id": "e5f6g7h8",
+      "file": "src/utils/date.ts",
+      "line": 12,
+      "type": "FIXME",
+      "content": "// FIXME: timezone bug",
+      "first_seen": "2026-01-20T10:30:00Z"
+    }
+  ]
+}
+```
+
+**Field Descriptions:**
+- `id`: SHA256 hash of file+line+content (first 8 chars) for stable comparison
+- `first_seen`: Preserved across re-scans for tracking age
+- `summary.by_type`: Aggregated counts for reporting
+
 ## Return Format
 
 ```
