@@ -338,6 +338,7 @@ Write timing: **After EACH stage completes** (not batched at end). This ensures 
 | Key-Links | 7 | Connection tracing completed |
 | E2E | 8 | End-to-end tests completed (if configured) |
 | Story-Completeness | 9 | Story AC verification and delivery status |
+| Debt-Balance | 10 | Debt marker tracking completed |
 
 ### Progress Format
 
@@ -356,6 +357,7 @@ Write timing: **After EACH stage completes** (not batched at end). This ensures 
 - [ ] Key-Links
 - [ ] E2E
 - [ ] Story-Completeness
+- [ ] Debt-Balance
 
 ## Partial Results
 | Stage | Status | Time | Notes |
@@ -831,3 +833,40 @@ Net Change = Created - Resolved
 | Net < 0 | Debt reduced | Good - continue |
 | Net = 0 | Debt neutral | Acceptable |
 | Net > 0 | Debt increased | Warning/Block |
+
+### Debt Warning and Blocking Logic
+
+**Warning Threshold:**
+If `Net Change > 0`, show warning:
+```
+WARNING: Phase creates more debt than it resolves
+─────────────────────────────────────────────────
+Resolved: 2 markers
+Created:  5 markers
+Net:      +3 debt items
+
+New debt items:
+  - src/api/stats.ts:45 - TODO: add pagination
+  - src/hooks/useData.ts:12 - FIXME: race condition
+```
+
+**Blocking Condition:**
+New debt markers without linked issue creation BLOCK verification:
+```
+BLOCKED: New debt requires issue tracking
+─────────────────────────────────────────────────
+New debt without issue:
+  - src/api/stats.ts:45 - TODO: add pagination
+
+To proceed:
+  A) Run /opti-gsd:add-issue to create tracking issue
+  B) Fix the debt before completing phase
+  C) Add issue reference: '// TODO(ISS###): description'
+```
+
+**Justification Mechanism:**
+Debt markers with issue reference are allowed - they have explicit tracking.
+
+Pattern: `(TODO|FIXME|HACK|XXX|DEFER)\(ISS\d{3}\):`
+
+Example: `// TODO(ISS005): add pagination` → ALLOWED (tracked)
