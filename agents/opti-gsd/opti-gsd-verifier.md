@@ -304,7 +304,15 @@ If `ci.e2e` exists and Browser tool available:
    - Verify actual usage
 9. Run E2E tests if configured
 10. Compile results
-11. Determine status
+11. For each linked story in phase:
+    - Load story file from .opti-gsd/stories/
+    - Parse acceptance criteria (lines matching `- [ ] AC:` or `- [x] AC:`)
+    - Map each AC to evidence from prior checks (tests, L4, screenshots, API responses)
+    - Scan Notes section for deferral language patterns
+    - Determine story delivery status:
+      - All ACs have evidence + no deferral → can be 'delivered'
+      - Any AC missing evidence OR deferral found → stays 'in_progress'
+12. Determine status (considering CI, artifacts, links, E2E, AND story completeness)
 ```
 
 ## Checkpoint Protocol
@@ -329,6 +337,7 @@ Write timing: **After EACH stage completes** (not batched at end). This ensures 
 | L4-User-Value | 6 | User value verification completed |
 | Key-Links | 7 | Connection tracing completed |
 | E2E | 8 | End-to-end tests completed (if configured) |
+| Story-Completeness | 9 | Story AC verification and delivery status |
 
 ### Progress Format
 
@@ -346,6 +355,7 @@ Write timing: **After EACH stage completes** (not batched at end). This ensures 
 - [ ] L4-User-Value
 - [ ] Key-Links
 - [ ] E2E
+- [ ] Story-Completeness
 
 ## Partial Results
 | Stage | Status | Time | Notes |
@@ -441,6 +451,17 @@ ON RESUME:
 | Dashboard → StatsCard | OK | - |
 | StatsCard → API | BROKEN | Fetch URL incorrect |
 | API → Database | OK | - |
+
+## Story Completeness
+
+| Story | Title | Status | ACs Passed | ACs Failed | Blocked Reason |
+|-------|-------|--------|------------|------------|----------------|
+| US001 | User Login | DELIVERABLE | 3/3 | 0 | - |
+| US002 | Password Reset | BLOCKED | 2/3 | 1 | AC3: No test evidence |
+| US003 | Dashboard | BLOCKED | 3/3 | 0 | Deferral: 'pending migration' |
+
+### Deferral Findings
+- **US003**: Notes contain 'pending migration to new auth'
 
 ## Gaps (for planner)
 ```xml
