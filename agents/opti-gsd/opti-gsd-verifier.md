@@ -769,3 +769,65 @@ If artifact verification passes but Story Completeness Gate fails:
 - Phase status = `gaps_found`
 - Gaps include unchecked ACs as actionable items
 - Planner receives gap report for remediation tasks
+
+## Debt Balance Tracking
+
+Track technical debt introduced or deferred during phase implementation to maintain codebase health visibility.
+
+### Debt Marker Patterns
+
+Scan modified files for these patterns:
+
+| Pattern | Category | Description |
+|---------|----------|-------------|
+| `TODO:` | Planned | Work not yet done |
+| `FIXME:` | Bug | Known bug or problem |
+| `HACK:` | Workaround | Should be replaced |
+| `XXX:` | Attention | Needs review |
+| `DEFER:` | Deferred | Explicitly deferred |
+| `@debt` | Tagged | Tagged technical debt |
+
+**Deferral Language in Comments:**
+- 'later'
+- 'temporary'
+- 'workaround'
+- 'migrate'
+- 'tech debt'
+
+**Scan Scope:** Only files modified in the current phase (from summary.md or git diff).
+
+**Pattern Matching:**
+```
+# Case-insensitive search in comments
+grep -iE '(TODO|FIXME|HACK|XXX|DEFER|@debt)' {file}
+grep -iE '(later|temporary|workaround|migrate|tech debt)' {file}
+```
+
+### Debt Balance Calculation
+
+Compare debt markers before and after phase execution using git diff analysis.
+
+**Method:**
+```bash
+# Get modified files in phase
+git diff --name-only HEAD~{commit_count}
+
+# For each file, compare debt markers
+# Lines starting with '-' = removed (resolved)
+# Lines starting with '+' = added (created)
+git diff HEAD~{commit_count} -- {file} | grep -E '^[-+].*(TODO|FIXME|HACK|XXX|DEFER|@debt)'
+```
+
+**Balance Calculation:**
+```
+Resolved = count of debt markers in removed lines (lines starting with -)
+Created = count of debt markers in added lines (lines starting with +)
+Net Change = Created - Resolved
+```
+
+**Results Interpretation:**
+| Net Change | Status | Action |
+|------------|--------|--------|
+| Net < 0 | Debt reduced | Good - continue |
+| Net = 0 | Debt neutral | Acceptable |
+| Net > 0 | Debt increased | Warning/Block |
