@@ -109,10 +109,15 @@ git reset --hard {checkpoint_tag}
 
 Reset state.json to reflect rolled-back position:
 
-```yaml
-phase: {N}
-task: 0  # Or appropriate task number
-phases_complete: [...]  # Remove rolled-back phases
+```json
+{
+  "phase": "{N}",
+  "task": 0,
+  "status": "rolled_back",
+  "phases": {
+    "complete": ["..."]
+  }
+}
 ```
 
 ### Step 6: Report
@@ -128,11 +133,12 @@ phases_complete: [...]  # Remove rolled-back phases
 - Phase: {N}
 - Task: {task}
 
+```
+
 **Next steps:**
 → /opti-gsd:status — Check current state
 → /opti-gsd:execute — Re-execute from this point
 → /opti-gsd:rollback-undo — Restore from backup if needed
-```
 
 ---
 

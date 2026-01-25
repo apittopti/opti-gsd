@@ -9,11 +9,11 @@ Verify phase completion with goal-backward analysis and integration checking.
 ## Arguments
 
 - `phase` — Phase number to verify (optional, defaults to last completed phase)
-- `--resume` — Resume from last checkpoint if VERIFICATION-PROGRESS.md exists
+- `--resume` — Resume from last checkpoint if verification-progress.md exists
 
 ## Checkpoint Stages Reference
 
-Verification progress is tracked through 7 stages. Each stage writes to `.opti-gsd/plans/phase-{N}/VERIFICATION-PROGRESS.md` on completion.
+Verification progress is tracked through 7 stages. Each stage writes to `.opti-gsd/plans/phase-{N}/verification-progress.md` on completion.
 
 | Stage | Order | Trigger | What Gets Written |
 |-------|-------|---------|-------------------|
@@ -114,11 +114,11 @@ Read:
 
 ### Step 2.5: Check for Resume
 
-Check if `--resume` flag is provided OR `.opti-gsd/plans/phase-{N}/VERIFICATION-PROGRESS.md` exists:
+Check if `--resume` flag is provided OR `.opti-gsd/plans/phase-{N}/verification-progress.md` exists:
 
 **If resuming:**
 
-1. Load `.opti-gsd/plans/phase-{N}/VERIFICATION-PROGRESS.md`
+1. Load `.opti-gsd/plans/phase-{N}/verification-progress.md`
 2. Parse completed stages from progress file
 3. Display resume banner:
 
@@ -144,7 +144,7 @@ Continuing from: Key Link Verification
 
 **If not resuming:**
 - Continue to Step 3 normally
-- Create fresh VERIFICATION-PROGRESS.md on first checkpoint
+- Create fresh verification-progress.md on first checkpoint
 
 ### Step 3: Run CI Commands
 
@@ -239,12 +239,12 @@ Fix before continuing? [Y/n]
 **If cclsp not available:**
 ```
 [○] Code Intelligence: Skipped (cclsp not detected)
-    Run /opti-gsd:detect-tools to check available tools
+    Run /opti-gsd:tools detect to check available tools
 ```
 
 **Note:** Code intelligence diagnostics are advisory. They often catch issues that CI would find later, but faster. This step never blocks verification - it just reports.
 
-**Checkpoint:** Write progress to `.opti-gsd/plans/phase-{N}/VERIFICATION-PROGRESS.md` after CI checks complete:
+**Checkpoint:** Write progress to `.opti-gsd/plans/phase-{N}/verification-progress.md` after CI checks complete:
 ```markdown
 # Verification Progress: Phase {N}
 
@@ -309,7 +309,7 @@ If browser MCP available, can also run visual verification:
 - Check key pages render correctly
 - Verify critical user flows
 
-**Checkpoint:** Write progress to VERIFICATION-PROGRESS.md after E2E tests complete (update Completed/Pending stages and cache E2E results).
+**Checkpoint:** Write progress to verification-progress.md after E2E tests complete (update Completed/Pending stages and cache E2E results).
 
 ### Step 4: Spawn Verifier
 
@@ -332,7 +332,7 @@ The verifier performs three-level artifact verification:
 - Are they imported and used?
 - Do key links work? (Component → API → Database)
 
-**Checkpoint:** Write progress to VERIFICATION-PROGRESS.md after artifact verification complete (update stages and cache artifact inventory results).
+**Checkpoint:** Write progress to verification-progress.md after artifact verification complete (update stages and cache artifact inventory results).
 
 ### Step 5: Integration Check
 
@@ -342,7 +342,7 @@ If gaps found, spawn opti-gsd-integration-checker to verify:
 - Auth protection on sensitive routes
 - E2E flow tracing
 
-**Checkpoint:** Write progress to VERIFICATION-PROGRESS.md after key link verification complete (update stages and cache integration check results).
+**Checkpoint:** Write progress to verification-progress.md after key link verification complete (update stages and cache integration check results).
 
 ### Step 5b: Story Acceptance Criteria Check
 
@@ -432,7 +432,7 @@ Write `.opti-gsd/plans/phase-{N}/verification.md`:
 - [ ] Behavior: Auth redirect works correctly
 ```
 
-**Cleanup:** After writing verification.md, delete `.opti-gsd/plans/phase-{N}/VERIFICATION-PROGRESS.md` (progress file is no longer needed once final report exists).
+**Cleanup:** After writing verification.md, delete `.opti-gsd/plans/phase-{N}/verification-progress.md` (progress file is no longer needed once final report exists).
 
 ### Step 7: Handle Result
 
@@ -451,13 +451,14 @@ All checks passed:
 
 Phase {N} is ready for milestone completion.
 
-Next steps:
+```
+
+**Next steps:**
 → /opti-gsd:plan-phase {N+1}      — Plan next phase
 → /opti-gsd:complete-milestone    — If all phases done
 → /opti-gsd:archive {N}           — Archive to free context
 
 💾 State saved. Safe to /compact or start new session if needed.
-```
 
 Mark phase as verified in state.json.
 

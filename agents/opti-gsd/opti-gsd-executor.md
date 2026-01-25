@@ -276,9 +276,9 @@ Tool Usage: {total} calls across all tasks
   - Built-in: {count} ({percentage}%)
   - MCP: {count} ({percentage}%)
 Summary: {brief description}
-
-Next: Run /opti-gsd:plan-phase {N+1} or /opti-gsd:verify
 ```
+
+**Next:** Run /opti-gsd:plan-phase {N+1} or /opti-gsd:verify
 
 **How to calculate Tool Usage:**
 - Read `.opti-gsd/tool-usage.json`

@@ -172,8 +172,8 @@ For each task, construct this prompt for opti-gsd-executor:
 You are a focused implementation agent for opti-gsd. Complete ONLY this task.
 
 <context>
-  <project>{.opti-gsd/PROJECT.md#overview - if exists, otherwise skip}</project>
-  <conventions>{.opti-gsd/codebase/CONVENTIONS.md - if exists}</conventions>
+  <project>{.opti-gsd/project.md#overview - if exists, otherwise skip}</project>
+  <conventions>{.opti-gsd/codebase/conventions.md - if exists}</conventions>
 </context>
 
 <task id="{id}" reqs="{reqs}">
@@ -238,7 +238,7 @@ You are a focused implementation agent for opti-gsd. Complete ONLY this task.
 </context7>
 
 <known_issues>
-  {Open issues from ISSUES.md that might affect this task}
+  {Open issues from .opti-gsd/issues/ that might affect this task}
 </known_issues>
 
 <mcps>
@@ -337,11 +337,14 @@ The TDD Red-Green-Refactor loop runs INSIDE each subagent, not at the orchestrat
 - Subagent doesn't "stop" until it returns a result
 - Orchestrator simply waits for the Task tool to complete
 
-**TDD Loop Settings (in config):**
-```yaml
-loop:
-  tdd_max_attempts: 5       # Max GREEN phase retries per task
-  execute_max_retries: 2    # Orchestrator retries if subagent fails entirely
+**TDD Loop Settings (in config.json):**
+```json
+{
+  "loop": {
+    "tdd_max_attempts": 5,
+    "execute_max_retries": 2
+  }
+}
 ```
 
 ### Step 7b: Orchestrator Retry (Task-Level Failures)
@@ -423,10 +426,14 @@ This enables precise rollback: `pre` = before phase, `post` = after phase, `T{N}
 ```
 
 2. Update state.json:
-```yaml
-phases_complete: [..., {N}]
-phases_in_progress: []
-phases_pending: [{N+1}, ...]
+```json
+{
+  "phases": {
+    "complete": ["...", "{N}"],
+    "in_progress": [],
+    "pending": ["{N+1}", "..."]
+  }
+}
 ```
 
 3. Update roadmap.md:
@@ -485,14 +492,15 @@ If no deployment configured, skip this step.
 {If pushed and preview deployed:}
 **Preview:** {preview_url}
 
-Next steps:
+```
+
+**Next steps:**
 → /opti-gsd:verify {N}       — Verify phase completion {against preview if pushed}
 → /opti-gsd:push             — Push to trigger preview deployment {if not pushed yet}
 → /opti-gsd:plan-phase {N+1} — Plan next phase
 → /opti-gsd:archive {N}      — Archive phase to free context
 
 💾 State saved. Safe to /compact or start new session if needed.
-```
 
 ---
 
@@ -575,24 +583,22 @@ All heavy work delegated to subagents with fresh context.
 
 Execute tracks state in state.json:
 
-```yaml
-loop:
-  active: true              # Execution currently running
-  type: execute             # "execute" or "verify"
-  phase: 1                  # Current phase
-  wave: 2                   # Current wave
-  background_tasks:         # Active background task IDs
-    - task_id: "abc123"
-      task_num: 1
-      status: "running"
-    - task_id: "def456"
-      task_num: 2
-      status: "running"
-  task_retries:             # Per-task orchestrator retry counts
-    T01: 0
-    T02: 1
-  last_error: "Type error in auth.ts"
-  started: 2026-01-19T10:30:00
+```json
+{
+  "loop": {
+    "active": true,
+    "type": "execute",
+    "phase": 1,
+    "wave": 2,
+    "background_tasks": [
+      {"task_id": "abc123", "task_num": 1, "status": "running"},
+      {"task_id": "def456", "task_num": 2, "status": "running"}
+    ],
+    "task_retries": {"T01": 0, "T02": 1},
+    "last_error": "Type error in auth.ts",
+    "started": "2026-01-19T10:30:00"
+  }
+}
 ```
 
 **Background Task Tracking:**

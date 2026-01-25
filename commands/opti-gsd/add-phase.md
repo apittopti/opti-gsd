@@ -82,10 +82,11 @@ git commit -m "chore: add phase {N} - {title}"
 **Phase {N}:** {title}
 **Status:** Pending
 
-Next steps:
-- Plan this phase: /opti-gsd:plan-phase {N}
-- Or add more phases: /opti-gsd:add-phase {another}
 ```
+
+**Next steps:**
+→ /opti-gsd:plan-phase {N}       — Plan this phase
+→ /opti-gsd:add-phase {another}  — Or add more phases
 
 ---
 

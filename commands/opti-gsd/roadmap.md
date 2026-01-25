@@ -83,11 +83,11 @@ Ensure `.opti-gsd/` exists and is initialized.
 ### Step 2: Load Context
 
 Read (if they exist):
-- `.opti-gsd/PROJECT.md` for goals and constraints (optional)
-- `.opti-gsd/research/SUMMARY.md` for research findings (optional)
+- `.opti-gsd/project.md` for goals and constraints (optional)
+- `.opti-gsd/research/summary.md` for research findings (optional)
 - `.opti-gsd/stories/` for user stories
 - `.opti-gsd/issues/` for open issues
-- `.opti-gsd/FEATURES.md` for feature ideas
+- `.opti-gsd/features/` for feature ideas
 
 ### Step 3: Ask About Milestones
 
@@ -119,7 +119,7 @@ Read from all input buckets and present available items:
 ☐ #002: Memory leak in dashboard — high severity
 
 **Features** ({count} pending)
-`.opti-gsd/FEATURES.md`
+`.opti-gsd/features/`
 ☐ F005: Add keyboard shortcuts — medium priority
 ☐ F008: Refactor auth module — low priority
 
@@ -258,7 +258,7 @@ Create `.opti-gsd/roadmap.md`:
 **Phase:** 2
 ```
 
-**Update features** (mark as promoted in `.opti-gsd/FEATURES.md`):
+**Update features** (update `.opti-gsd/features/F{NNN}.md`):
 ```markdown
 **Status:** promoted
 **Milestone:** v1.0
@@ -268,28 +268,21 @@ Create `.opti-gsd/roadmap.md`:
 
 If state.json doesn't exist or needs updating:
 
-```yaml
----
-milestone: v1.0
-phase: 1
-task: null
-branch: null
-
-last_active: {timestamp}
-session_tokens: 0
-
-phases_complete: []
-phases_in_progress: []
-phases_pending: [1, 2, 3, ...]
-
-open_issues: []
----
-
-## Session Context
-Roadmap created with {N} phases.
-
-## Recent Decisions
-(none yet)
+```json
+{
+  "milestone": "v1.0",
+  "phase": 1,
+  "task": null,
+  "status": "roadmap_created",
+  "branch": null,
+  "last_active": "{timestamp}",
+  "phases": {
+    "complete": [],
+    "in_progress": [],
+    "pending": [1, 2, 3]
+  },
+  "context": "Roadmap created with {N} phases."
+}
 ```
 
 ### Step 11: Create Phase Directories
@@ -303,7 +296,7 @@ mkdir -p .opti-gsd/plans/phase-02
 ### Step 12: Commit
 
 ```bash
-git add .opti-gsd/roadmap.md .opti-gsd/state.json .opti-gsd/stories/ .opti-gsd/issues/ .opti-gsd/FEATURES.md
+git add .opti-gsd/roadmap.md .opti-gsd/state.json .opti-gsd/stories/ .opti-gsd/issues/ .opti-gsd/features/
 git commit -m "docs: create roadmap with {N} phases"
 ```
 
@@ -325,12 +318,13 @@ Phase Overview:
 2. {Phase 2 title} — delivers US003, #002
 3. {Phase 3 title} — delivers US002
 
-Next steps:
+```
+
+**Next steps:**
 → /opti-gsd:plan-phase 1  — Create execution plan for phase 1
 → /opti-gsd:research      — Research best practices first (optional)
 
 💾 State saved. Safe to /compact or start new session if needed.
-```
 
 ---
 

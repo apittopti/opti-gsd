@@ -49,25 +49,21 @@ git checkout -b "${prefix}${name}"
 
 ### Step 4: Update state.json
 
-```yaml
----
-milestone: {name}
-phase: null
-task: null
-branch: {prefix}{name}
-
-last_active: {timestamp}
-session_tokens: 0
-
-phases_complete: []
-phases_in_progress: []
-phases_pending: []
-
-open_issues: []
----
-
-## Session Context
-Started milestone {name}. Ready to create roadmap.
+```json
+{
+  "milestone": "{name}",
+  "phase": null,
+  "task": null,
+  "status": "milestone_started",
+  "branch": "{prefix}{name}",
+  "last_active": "{timestamp}",
+  "phases": {
+    "complete": [],
+    "in_progress": [],
+    "pending": []
+  },
+  "context": "Started milestone {name}. Ready to create roadmap."
+}
 ```
 
 ### Step 5: Update roadmap.md
@@ -95,10 +91,11 @@ git commit -m "chore: start milestone {name}"
 **Name:** {name}
 **Branch:** {prefix}{name}
 
-Next steps:
-1. Define roadmap: /opti-gsd:roadmap
-2. Or if roadmap exists: /opti-gsd:plan-phase 1
 ```
+
+**Next steps:**
+→ /opti-gsd:roadmap      — Define roadmap
+→ /opti-gsd:plan-phase 1 — Or start planning if roadmap exists
 
 ---
 

@@ -17,7 +17,7 @@ If `.opti-gsd/` already exists:
 This project has opti-gsd state at `.opti-gsd/`.
 
 To re-analyze the codebase:
-- View existing map: `.opti-gsd/codebase.md`
+- View existing map: `.opti-gsd/codebase/`
 - Force re-scan: /opti-gsd:map-codebase --refresh
 
 To start fresh:
@@ -40,7 +40,7 @@ The agent will:
 
 ### Step 3: Generate Codebase Map
 
-Write to `.opti-gsd/codebase.md`:
+Write to `.opti-gsd/codebase/` directory (multiple focus files):
 
 ```markdown
 # Codebase Map
@@ -143,12 +143,13 @@ src/
 
 **Technical Debt:** {count} items noted
 
-View full map: `.opti-gsd/codebase.md`
+View full map: `.opti-gsd/codebase/`
 
-Next steps:
-- Initialize project: /opti-gsd:init
-- Or start fresh: /opti-gsd:new-project
 ```
+
+**Next steps:**
+→ /opti-gsd:init        — Initialize project
+→ /opti-gsd:new-project — Or start fresh
 
 ---
 

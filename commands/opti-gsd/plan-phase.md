@@ -9,7 +9,7 @@ Generate an executable plan for phase N with XML-structured tasks.
 ## Arguments
 
 - `N` — Phase number (optional, defaults to current phase from state.json)
-- `--research` — Force phase research even if RESEARCH.md exists
+- `--research` — Force phase research even if research.md exists
 - `--skip-research` — Skip research, use existing knowledge
 - `--gaps` — Plan gap closure for failed verification
 
@@ -101,7 +101,7 @@ Read these files (lazy loading):
 - `.opti-gsd/roadmap.md` — phase goals and items to deliver
 - `.opti-gsd/stories/` — story details and acceptance criteria (for items in this phase)
 - `.opti-gsd/issues/` — issue details (for items in this phase)
-- `.opti-gsd/codebase/CONVENTIONS.md` — if exists, for consistency
+- `.opti-gsd/codebase/conventions.md` — if exists, for consistency
 
 **Do NOT load:**
 - Other phase plans
@@ -111,12 +111,12 @@ Read these files (lazy loading):
 ### Step 4: Research (Conditional)
 
 **Check for project-level research first:**
-- If `.opti-gsd/research/SUMMARY.md` exists, load it for context
+- If `.opti-gsd/research/summary.md` exists, load it for context
 - If missing and this is phase 1, suggest: "Run /opti-gsd:research first for domain best practices?"
 
 **Skip phase research if:**
 - `--skip-research` flag
-- `.opti-gsd/plans/phase-{N}/RESEARCH.md` already exists
+- `.opti-gsd/plans/phase-{N}/research.md` already exists
 - Discovery level 0 in config
 
 **Do phase research if:**
@@ -134,7 +134,7 @@ Items to deliver:
 - {US001}: {title} — {acceptance criteria summary}
 - {#002}: {issue title}
 
-Project context (from SUMMARY.md if exists):
+Project context (from summary.md if exists):
 - Recommended patterns: {patterns}
 - Pitfalls to avoid: {pitfalls}
 
@@ -147,7 +147,7 @@ Focus on:
 - Performance considerations if applicable
 ```
 
-Save output to `.opti-gsd/plans/phase-{N}/RESEARCH.md`.
+Save output to `.opti-gsd/plans/phase-{N}/research.md`.
 
 ### Step 5: Generate Plan
 
@@ -155,7 +155,7 @@ Spawn opti-gsd-planner agent with:
 - Phase goals from roadmap.md
 - Stories with acceptance criteria from `.opti-gsd/stories/`
 - Issues to fix from `.opti-gsd/issues/`
-- Research from RESEARCH.md (if exists)
+- Research from research.md (if exists)
 - Conventions from codebase analysis (if exists)
 - **Available MCPs from .opti-gsd/config.json** (e.g., postgres, github, browser)
 - **Available skills from .opti-gsd/config.json** (e.g., commit, review-pr)
@@ -243,24 +243,21 @@ estimated_tokens: {estimate}
 
 ### Step 8: Update state.json
 
-```yaml
----
-milestone: v1.0
-phase: {N}
-task: 0/{task_count}
-branch: {current_branch}
-
-last_active: {timestamp}
-session_tokens: {updated}
-
-phases_complete: [...]
-phases_in_progress: [{N}]
-phases_pending: [...]
----
-
-## Session Context
-Phase {N} planned with {task_count} tasks in {wave_count} waves.
-Ready for execution.
+```json
+{
+  "milestone": "v1.0",
+  "phase": "{N}",
+  "task": 0,
+  "status": "planned",
+  "branch": "{current_branch}",
+  "last_active": "{timestamp}",
+  "phases": {
+    "complete": ["..."],
+    "in_progress": ["{N}"],
+    "pending": ["..."]
+  },
+  "context": "Phase {N} planned with {task_count} tasks in {wave_count} waves. Ready for execution."
+}
 ```
 
 ### Step 9: Commit
@@ -299,12 +296,13 @@ Wave 2 (sequential): Task 04
 ### Estimated Context
 ~{tokens}k tokens ({percentage}% of budget)
 
-Next steps:
+```
+
+**Next steps:**
 → /opti-gsd:execute         — Start executing tasks
 → /opti-gsd:discuss-phase   — Refine decisions before executing (optional)
 
 💾 State saved. Safe to /compact or start new session if needed.
-```
 
 ---
 

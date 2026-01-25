@@ -150,9 +150,11 @@ Preview URL saved to config. /verify will use this for E2E tests.
 
 Store preview URL in `.opti-gsd/state.json`:
 
-```yaml
-preview_url: https://myproject-gsd-v1-0-team.vercel.app
-preview_deployed_at: {timestamp}
+```json
+{
+  "preview_url": "https://myproject-gsd-v1-0-team.vercel.app",
+  "preview_deployed_at": "{timestamp}"
+}
 ```
 
 ### Step 9: Report
@@ -184,11 +186,12 @@ Preview Deployment:
 {If unverified phases:}
 ⚠️  Phase 3 not yet verified. Run /opti-gsd:verify 3 after testing preview.
 
-Next steps:
+```
+
+**Next steps:**
 → /opti-gsd:verify        — Verify against preview deployment
 → /opti-gsd:execute       — Continue with more tasks
 → /opti-gsd:status        — Check current state
-```
 
 If no deployment platform:
 ```
@@ -203,10 +206,11 @@ Commits:     5 new commits pushed
 No preview deployment configured.
 → Run /opti-gsd:ci configure to set up deployment platform.
 
-Next steps:
+```
+
+**Next steps:**
 → /opti-gsd:verify        — Verify locally
 → /opti-gsd:execute       — Continue with more tasks
-```
 
 ---
 

@@ -169,14 +169,12 @@ Write to `.opti-gsd/plans/phase-{N}/discussion.md`:
 
 ### Step 6: Update state.json
 
-```yaml
-phase: {N}
-phase_status: discussed
-```
-
-Add to session context:
-```
-Phase {N} discussed. Key decisions captured.
+```json
+{
+  "phase": "{N}",
+  "status": "discussed",
+  "context": "Phase {N} discussed. Key decisions captured."
+}
 ```
 
 ### Step 7: Commit and Report
@@ -195,11 +193,12 @@ git commit -m "doc: capture phase {N} discussion"
 
 Saved to: `.opti-gsd/plans/phase-{N}/discussion.md`
 
-Next steps:
+```
+
+**Next steps:**
 → /opti-gsd:plan-phase {N}    — Generate/regenerate plan with these decisions
 → /opti-gsd:discuss-phase {N} — Add more notes (appends)
 → /opti-gsd:execute           — Start executing (if plan exists)
-```
 
 ---
 

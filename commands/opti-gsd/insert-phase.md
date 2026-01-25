@@ -100,9 +100,10 @@ Renumbered phases {position}+ to {position+1}+"
 - Phase {position+1} → Phase {position+2}
 - ...
 
-Next steps:
-- Plan new phase: /opti-gsd:plan-phase {position}
 ```
+
+**Next steps:**
+→ /opti-gsd:plan-phase {position} — Plan new phase
 
 ---
 

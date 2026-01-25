@@ -54,7 +54,69 @@ Read `package.json` (or equivalent) and detect:
 
 If no match or ambiguous, ask user to confirm app_type.
 
-### Step 2b: Detect CI/CD Toolchain
+### Step 2b: Detect Deployment Platform
+
+**Check for deployment config files:**
+```bash
+# Vercel
+if [ -d ".vercel" ] || [ -f "vercel.json" ]; then
+  echo "vercel"
+  # Query CLI if available
+  vercel --version 2>/dev/null && vercel inspect --json
+fi
+
+# Netlify
+if [ -d ".netlify" ] || [ -f "netlify.toml" ]; then
+  echo "netlify"
+  netlify --version 2>/dev/null && netlify status --json
+fi
+
+# Railway
+if [ -f "railway.json" ] || [ -d ".railway" ]; then
+  echo "railway"
+  railway --version 2>/dev/null && railway status
+fi
+
+# Fly.io
+if [ -f "fly.toml" ]; then
+  echo "flyio"
+  fly version 2>/dev/null && fly status --json
+fi
+
+# Render
+if [ -f "render.yaml" ]; then
+  echo "render"
+fi
+
+# Docker/Container
+if [ -f "Dockerfile" ] || [ -f "docker-compose.yml" ]; then
+  echo "docker"
+fi
+
+# PM2/VPS
+if [ -f "ecosystem.config.js" ] || [ -f "pm2.json" ]; then
+  echo "pm2"
+fi
+```
+
+**If no config files found, parse documentation:**
+- Read README.md for "deployment", "production", "hosting" sections
+- Extract URLs matching: `https?://[^\s]+\.(vercel\.app|netlify\.app|railway\.app|fly\.dev|onrender\.com)`
+- Look for domain names and environment references
+
+**Store detected deployment in config:**
+```json
+{
+  "deploy": {
+    "target": "{detected_platform}",
+    "detected_from": "{config_file | cli | documentation | unknown}",
+    "production_url": "{if detected}",
+    "preview_pattern": "{if detected}"
+  }
+}
+```
+
+### Step 2c: Detect CI/CD Toolchain
 
 **Detect package manager:**
 ```bash
@@ -102,17 +164,17 @@ Based on framework, set default local URL:
 | Express/Fastify/Hono | http://localhost:3000 |
 | ASP.NET | http://localhost:5000 |
 
-### Step 3: Detect Skills and MCPs
+### Step 4: Detect Available Tools
 
-```bash
-# Check for installed skills
-ls ~/.claude/skills/ 2>/dev/null
+Auto-detect available MCP servers and plugins by running `/opti-gsd:tools detect` logic:
 
-# Check for installed plugins
-ls ~/.claude/plugins/ 2>/dev/null
-```
+1. Probe MCP servers (cclsp, GitHub, Chrome, Context7, etc.)
+2. Scan for installed plugins
+3. Write capability manifest to `.opti-gsd/tools.json`
 
-### Step 4: Ask User About Services
+This ensures agents can dynamically use available tools from the start.
+
+### Step 5: Ask User About Services
 
 Ask which external services/MCPs the project uses:
 - Database (Supabase, Firebase, Prisma, etc.)
@@ -121,7 +183,7 @@ Ask which external services/MCPs the project uses:
 - Email (Resend, SendGrid, etc.)
 - Storage (S3, Supabase Storage, etc.)
 
-### Step 5: Analyze Codebase (Optional)
+### Step 6: Analyze Codebase (Optional)
 
 If the codebase has significant existing code, offer to run codebase mapping:
 
@@ -133,7 +195,7 @@ If yes, spawn opti-gsd-codebase-mapper agents in parallel:
 - focus: quality
 - focus: concerns
 
-### Step 6: Create Directory Structure
+### Step 7: Create Directory Structure
 
 ```bash
 mkdir -p .opti-gsd/plans
@@ -142,10 +204,11 @@ mkdir -p .opti-gsd/summaries
 mkdir -p .opti-gsd/codebase
 mkdir -p .opti-gsd/stories
 mkdir -p .opti-gsd/issues
+mkdir -p .opti-gsd/features
 mkdir -p .opti-gsd/debug
 ```
 
-### Step 7: Create config.json
+### Step 8: Create config.json
 
 Write `.opti-gsd/config.json`:
 
@@ -189,6 +252,7 @@ Write `.opti-gsd/config.json`:
     "viewport": [1280, 720]
   },
   "mcps": [],
+  "skills": [],
   "verification": {
     "type": "browser|terminal",
     "github": null
@@ -196,7 +260,7 @@ Write `.opti-gsd/config.json`:
 }
 ```
 
-### Step 8: Create Initial state.json
+### Step 9: Create Initial state.json
 
 Write `.opti-gsd/state.json`:
 
@@ -217,20 +281,19 @@ Write `.opti-gsd/state.json`:
 }
 ```
 
-### Step 9: Commit
+### Step 10: Commit
 
 ```bash
 git add .opti-gsd/
 git commit -m "chore: initialize opti-gsd"
 ```
 
-### Step 10: Report
+### Step 11: Report
 
 Display summary:
 - Detected: {framework} ({app_type})
 - Base branch: {base}
-- Skills available: {count}
-- MCPs configured: {list}
+- Tools detected: {MCP servers and plugins}
 - Codebase analysis: {yes/no}
 
 Suggest next commands:
@@ -258,21 +321,25 @@ Toolchain:
 URLs:
   Local:      http://localhost:3000
 
-Verification:
-  Browser: native (claude-in-chrome)
-  GitHub: MCP_DOCKER
+Deployment:
+  Platform:   {detected or "Not configured"}
+  Detected:   {from config file | CLI | documentation | not detected}
+  Prod URL:   {if known}
 
-MCPs:
-  Integrations: supabase, stripe
+Tools Detected:
+  MCP Servers: cclsp, GitHub, Chrome
+  Plugins: opti-gsd
 
 Created:
   .opti-gsd/config.json
   .opti-gsd/state.json
+  .opti-gsd/tools.json
 
-Next steps:
+```
+
+**Next steps:**
 → /opti-gsd:roadmap      — Plan your work (create phases)
-→ /opti-gsd:ci configure — Customize CI/CD settings (optional)
+→ /opti-gsd:tools        — View/configure available tools (optional)
 → /opti-gsd:research     — Research best practices (optional)
 
 💾 State saved. Safe to /compact or start new session if needed.
-```
