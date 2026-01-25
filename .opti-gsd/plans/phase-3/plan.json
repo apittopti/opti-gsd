@@ -1,0 +1,49 @@
+{
+  "phase": 3,
+  "title": "Executor Integration",
+  "milestone": "v2.1.0",
+  "feature": "F001",
+  "created": "2026-01-25",
+  "wave_count": 2,
+  "task_count": 2,
+  "tasks": [
+    {
+      "id": "01",
+      "wave": 1,
+      "title": "Update executor agent to report tool usage in completion messages",
+      "files": [
+        {"path": "agents/opti-gsd/opti-gsd-executor.md", "action": "modify"}
+      ],
+      "test_required": false,
+      "action": "Modify the executor agent instructions to: (1) Add tool-usage.json to Startup Sequence after reading tools.json - store initial session entry count for comparison, (2) Update TASK COMPLETE output format to add 'Tools Used: {count} calls (Read: X, Edit: Y, ...)' line - read tool-usage.json, filter entries by current task ID, count and group by tool name, (3) Update PHASE COMPLETE output format to add tool usage summary showing total calls, built-in vs MCP breakdown with percentages, (4) Add helper instructions explaining how to read and filter tool-usage.json by task ID, include top 3 tools by count.",
+      "verify": [
+        {"type": "file", "check": "agents/opti-gsd/opti-gsd-executor.md contains 'Tools Used:' in TASK COMPLETE section"},
+        {"type": "file", "check": "agents/opti-gsd/opti-gsd-executor.md contains tool usage summary in PHASE COMPLETE section"},
+        {"type": "file", "check": "agents/opti-gsd/opti-gsd-executor.md references tool-usage.json in startup sequence"}
+      ],
+      "done": "Executor agent instructions document tool usage reporting in both task and phase completion outputs"
+    },
+    {
+      "id": "02",
+      "wave": 2,
+      "depends_on": ["01"],
+      "title": "Update summary template to include tool usage per task",
+      "files": [
+        {"path": "agents/opti-gsd/opti-gsd-executor.md", "action": "modify"}
+      ],
+      "test_required": false,
+      "action": "Modify the executor agent's Artifact Commits section to include tool usage in the summary: (1) Expand summary.md table to include Tools Used column, (2) Add 'Tool Usage Summary' section template with per-task table (Task, Total Calls, Top Tools) and aggregate stats (total, built-in %, MCP %, most used tool), (3) Add instructions for gathering tool data: read tool-usage.json, filter by task ID for each task, calculate counts, identify top 3 tools per task, (4) Reference analyze-tool-usage.js as optional structured data source but prefer direct reading for task-specific filtering.",
+      "verify": [
+        {"type": "file", "check": "agents/opti-gsd/opti-gsd-executor.md Artifact Commits section describes including tools in summary"},
+        {"type": "file", "check": "agents/opti-gsd/opti-gsd-executor.md contains 'Tool Usage Summary' section template"},
+        {"type": "file", "check": "agents/opti-gsd/opti-gsd-executor.md explains filtering tool-usage.json by task ID"}
+      ],
+      "done": "Executor agent instructions include complete tool usage reporting in phase summary generation"
+    }
+  ],
+  "key_links": [
+    "Executor agent -> reads tool-usage.json -> reports in TASK COMPLETE",
+    "Executor agent -> reads tool-usage.json -> generates Tool Usage Summary in summary.md",
+    "log-tool-usage.js (Phase 1) -> tool-usage.json -> analyze-tool-usage.js (Phase 2) -> executor reporting (Phase 3)"
+  ]
+}

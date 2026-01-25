@@ -3,8 +3,8 @@
   "branch": "master",
   "phases": {
     "complete": ["1", "2"],
-    "in_progress": null,
-    "pending": ["3"]
+    "in_progress": "3",
+    "pending": []
   },
   "loop": null,
   "initialized": "2026-01-25T00:00:00Z"
