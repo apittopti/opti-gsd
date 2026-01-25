@@ -10,6 +10,37 @@ Execute the current phase plan with wave-based parallelization and fresh context
 
 This is the core execution engine. It uses Claude Code's **Task tool** to spawn subagents for each task, with support for **background execution** and **TaskOutput** polling.
 
+### Claude Code Task Integration
+
+opti-gsd integrates with Claude Code's built-in task system for real-time visual progress:
+
+```
+plan.json (persistent)          Claude Code Tasks (ephemeral)
+┌─────────────────────┐         ┌─────────────────────┐
+│ T01: Setup schema   │ ──────► │ [✓] Setup schema    │
+│ T02: Create API     │ ──────► │ [▸] Create API      │
+│ T03: Add validation │ ──────► │ [ ] Add validation  │
+└─────────────────────┘         └─────────────────────┘
+     Source of Truth              Real-time Visual UI
+```
+
+**Two-Layer Architecture:**
+- **plan.json** — Persistent source of truth, workflow history, survives sessions
+- **Claude Code Tasks** — Ephemeral visual progress, created at execution start
+
+**How It Works:**
+1. At phase start, `TaskCreate` is called for each task in plan.json
+2. Tasks appear in Claude Code's task list (Ctrl+T to view)
+3. `TaskUpdate` marks tasks as `in_progress` when starting
+4. `TaskUpdate` marks tasks as `completed` when done
+5. Subagents can use `TaskGet` to read task context
+
+**Benefits:**
+- Real-time progress visibility during execution
+- Task state shared between spawned agents
+- User can monitor via Ctrl+T while tasks run
+- Future-proof as Anthropic improves task system
+
 ### Step 0: Validate Branch
 
 If `branching: milestone` is configured in `.opti-gsd/config.json`:
