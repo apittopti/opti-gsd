@@ -101,7 +101,65 @@ This creates hidden technical debt and delivers zero user value.
 
 ---
 
-## Phase 5: Error Learning System
+## Phase 5: Debt Baseline Scanning
+
+**Goal:** Establish, track, and verify complete elimination of technical debt
+
+**Delivers:** Debt scanning capability in map-codebase with baseline tracking
+
+**Success Criteria:**
+- [ ] `/opti-gsd:map-codebase --debt` scans for all debt markers (TODO, FIXME, HACK, etc.)
+- [ ] Baseline saved to `.opti-gsd/debt-baseline.json` with file, line, content
+- [ ] Re-scan compares against baseline showing resolved vs remaining
+- [ ] Verification blocks if debt increased without explicit issue creation
+- [ ] "Debt-free" state clearly reportable
+
+**Implementation Notes:**
+- Scan patterns: TODO, FIXME, HACK, XXX, DEFER, "migrate later", "tech debt"
+- Store baseline with timestamps for tracking velocity
+- Diff view shows what's resolved since last scan
+- Integration with Phase 4 debt balance tracking
+
+**Debt Markers to Scan:**
+```
+TODO:       Planned work not yet done
+FIXME:      Known bug or problem
+HACK:       Workaround that should be replaced
+XXX:        Needs attention
+DEFER:      Explicitly deferred work
+@debt:      Tagged technical debt
+"later"     Deferral language in comments
+"migrate"   Migration debt
+"temporary" Temporary solutions
+"workaround" Known workarounds
+```
+
+**Example Output:**
+```
+Debt Scan Results
+──────────────────────────────────────────────────────────────
+Baseline: 2026-01-20 (15 items)
+Current:  2026-01-25 (8 items)
+
+Resolved: 9 items ✓
+  - src/api/auth.ts:45 (TODO: rate limiting) → Implemented
+  - src/utils/date.ts:12 (FIXME: timezone) → Fixed
+  ...
+
+Remaining: 8 items
+  - src/hooks/useQuery.ts:23 (TODO: caching)
+  ...
+
+New debt: 2 items ⚠️
+  - src/components/Modal.tsx:15 (HACK: force rerender)
+  - src/api/stats.ts:89 (TODO: pagination)
+
+Net change: -7 (good!)
+```
+
+---
+
+## Phase 6: Error Learning System
 
 **Goal:** Log errors and build institutional memory so mistakes never repeat
 
@@ -180,8 +238,10 @@ AFTER (enforces completeness):
 | 3 | `agents/opti-gsd/opti-gsd-verifier.md` | Add story AC completeness gate |
 | 4 | `agents/opti-gsd/opti-gsd-verifier.md` | Add debt balance tracking |
 | 4 | `commands/opti-gsd/verify.md` | Document debt balance in output |
-| 5 | `agents/opti-gsd/opti-gsd-executor.md` | Add error logging and learning checks |
-| 5 | `commands/opti-gsd/status.md` | Show recent learnings |
-| 5 | `commands/opti-gsd/resume.md` | Load learnings at session start |
+| 5 | `commands/opti-gsd/map-codebase.md` | Add --debt flag and baseline scanning |
+| 5 | `agents/opti-gsd/opti-gsd-codebase-mapper.md` | Add debt marker detection |
+| 6 | `agents/opti-gsd/opti-gsd-executor.md` | Add error logging and learning checks |
+| 6 | `commands/opti-gsd/status.md` | Show recent learnings |
+| 6 | `commands/opti-gsd/resume.md` | Load learnings at session start |
 
 ---
