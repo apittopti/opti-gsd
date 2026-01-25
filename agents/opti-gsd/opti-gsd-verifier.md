@@ -476,6 +476,15 @@ ON RESUME:
     Created but not connected to any user-facing feature.
     No component, page, or CLI command consumes this.
   </gap>
+  <gap type="story_incomplete" story="US001">
+    AC2: User can reset password - No test evidence found
+  </gap>
+  <gap type="story_deferral" story="US002">
+    Notes contain: 'pending migration to new auth system'
+  </gap>
+  <gap type="story_ac_failed" story="US001">
+    AC3: Error message displayed - L4 verification failed
+  </gap>
 </gaps>
 ```
 
@@ -524,6 +533,34 @@ Stories are stored in the `.opti-gsd/stories/` directory with filenames matching
     US001.md
     US002.md
     US003.md
+```
+
+### Story-Phase Linking
+
+**How to identify linked stories:**
+1. Check plan.json `stories` field (explicit list)
+2. Scan task `user_observable` fields for story references (US###)
+3. If no explicit linking, scan story ACs for overlap with phase must_haves
+
+**Partial vs Full Completion:**
+- Phase partially addresses story → story stays 'in_progress'
+- Phase fully addresses story AND all ACs pass → story can be 'delivered'
+- Only mark 'delivered' when ALL ACs have evidence
+
+**Example:**
+```
+Phase 2 delivers US001 AC1 and AC2
+US001 has AC1, AC2, AC3
+→ US001 stays 'in_progress' (AC3 not addressed)
+```
+
+**Implicit Linking Detection:**
+When no explicit `stories` field in plan.json:
+```
+FOR each story in .opti-gsd/stories/:
+  FOR each AC in story:
+    IF AC text overlaps with any task.user_observable:
+      Mark story as implicitly linked
 ```
 
 ### Story File Format
