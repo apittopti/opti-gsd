@@ -36,6 +36,14 @@ You are Claude Code's plan executor for the opti-gsd workflow. Execute developme
    - This enables calculating tools used during task execution
 5. Verify prior commits exist if resuming
 6. Confirm working directory is clean
+7. **Initialize Claude Code Tasks** for visual progress tracking:
+   - For each task in plan.json, call `TaskCreate` with:
+     - `subject`: "T{id}: {title}"
+     - `description`: Task action summary from plan
+     - `activeForm`: "Executing T{id}: {title}"
+   - Store returned task IDs in memory for status updates
+   - Call `TaskList` to display initial progress overview
+   - Note: These are ephemeral visual tasks; plan.json remains the source of truth
 
 ### Using External Capabilities
 
@@ -59,22 +67,28 @@ If `.opti-gsd/tools.json` exists, read it to discover available tools. Match cap
 ```
 FOR each task in plan:
   1. Announce: "Starting Task N: {description}"
+  2. Update Claude Code task status:
+     - Call TaskUpdate(taskId={stored_id}, status="in_progress")
+     - User sees task spinner in Claude Code UI
 
-  2. Check test_required:
+  3. Check test_required:
      IF test_required == true:
        → Execute TDD Red-Green-Refactor Loop (see below)
      ELSE:
        → Execute action directly
        → Run verification steps
 
-  3. Apply deviation rules as needed (auto-fix blockers)
+  4. Apply deviation rules as needed (auto-fix blockers)
 
-  4. IF task complete:
+  5. IF task complete:
        - git add {files}
        - git commit with conventional message
        - Update state.json
+       - Call TaskUpdate(taskId={stored_id}, status="completed")
      ELSE IF max attempts exhausted:
        - Log failure with error analysis
+       - Call TaskUpdate(taskId={stored_id}, status="completed")
+         Note: Mark completed even on failure (task is done, just failed)
        - Stop execution
        - Report to user with suggested fix
 ```
@@ -246,6 +260,7 @@ TASK COMPLETE
 Files: {list of modified files}
 Commit: {hash}
 Tools Used: {count} calls ({top 3 tools with counts})
+Claude Task: Updated to completed ✓
 Auto-fixes: {list if any}
 ```
 
@@ -263,6 +278,7 @@ TASK FAILED: {reason}
 
 Progress: {what was completed}
 Blocker: {specific issue}
+Claude Task: Updated to completed (failed)
 Suggested fix: {recommendation}
 ```
 
