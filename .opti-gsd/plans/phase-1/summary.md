@@ -1,53 +1,55 @@
-# Phase 1 Summary: Core Logging Infrastructure
+# Phase 1 Summary: Task System Integration
 
 **Completed:** 2026-01-25
-**Feature:** F001 - Structured Tool Usage Logging
+**Feature:** F002 - Claude Code Task Integration
 
 ## Completed Tasks
 
 | Task | Title | Commit |
 |------|-------|--------|
-| T01 | Create tool usage logging script | 3791b67 |
-| T02 | Initialize tool-usage.json structure | (runtime file) |
-| T03 | Configure PostToolUse hook | faf06a0 |
-| T04 | Add gitignore entry | 875674a |
+| T01 | Add TaskCreate/TaskList to executor startup | 578bc2e |
+| T02 | Add TaskUpdate to task execution flow | 578bc2e |
+| T03 | Document task integration in execute.md | 6ea2758 |
 
-## Files Created/Modified
+## Additional Fix
 
-- `scripts/log-tool-usage.js` - Node.js script that logs tool calls
-- `.opti-gsd/tool-usage.json` - Runtime log file (gitignored)
-- `hooks/hooks.json` - PostToolUse hook configuration
-- `.gitignore` - Excludes tool-usage.json
+| Fix | Description | Commit |
+|-----|-------------|--------|
+| CLI version | Read from package.json instead of plugin.json | 762506e |
+
+## Files Modified
+
+- `agents/opti-gsd/opti-gsd-executor.md` - Added TaskCreate/TaskUpdate integration
+- `commands/opti-gsd/execute.md` - Documented two-layer architecture
+- `bin/cli.js` - Fixed version reading
 
 ## Implementation Details
 
-### Logging Script Features
-- Reads tool_name from stdin (JSON from hook)
-- Reads task context from state.json (loop.current_task)
-- Session grouping (30-minute timeout for new session)
-- Atomic write pattern (temp file + rename)
-- Always exits 0 to never break hooks
+Integrated opti-gsd with Claude Code's built-in task system (TaskCreate, TaskUpdate, TaskList, TaskGet) for real-time visual progress during execution.
 
-### Hook Configuration
-```json
-{
-  "hooks": [
-    {
-      "event": "PostToolUse",
-      "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/log-tool-usage.js\" || true"
-    }
-  ]
-}
+**Architecture:**
 ```
+plan.json (persistent)          Claude Code Tasks (ephemeral)
+┌─────────────────────┐         ┌─────────────────────┐
+│ T01: Setup schema   │ ──────► │ [✓] Setup schema    │
+│ T02: Create API     │ ──────► │ [▸] Create API      │
+│ T03: Add validation │ ──────► │ [ ] Add validation  │
+└─────────────────────┘         └─────────────────────┘
+     Source of Truth              Real-time Visual UI
+```
+
+**Changes:**
+1. Executor startup creates Claude Code tasks from plan.json
+2. Tasks update to in_progress when starting, completed when done
+3. execute.md documents the two-layer architecture
 
 ## Verification Status
 
-- [x] Script created and executable
-- [x] Script handles valid JSON input
-- [x] Script handles invalid input gracefully (exits 0)
-- [x] Hook registered in hooks.json
-- [x] Tool-usage.json gitignored
+- [x] Executor contains TaskCreate instructions in startup sequence
+- [x] Executor contains TaskUpdate calls in per-task execution
+- [x] execute.md contains integration documentation with architecture diagram
+- [x] CLI reads version from package.json
 
 ## Next Phase
 
-Phase 2: Usage Reporting - Add `/opti-gsd:tools usage` command to summarize patterns
+This is a single-phase milestone. Ready for verification and release.
