@@ -492,3 +492,47 @@ Store learnings in `.opti-gsd/learnings.md`:
 | CI_FAILURE | Build/test/lint fails | Log root cause and fix |
 | FILE_NOT_FOUND | Expected file missing | Log as potential agent bug |
 | WORKFLOW_BUG | Unexpected workflow behavior | Log for agent update |
+
+### Error Logging Protocol
+
+When encountering errors during execution:
+
+1. **Detect error category** based on error message patterns:
+   - `deprecated` / `will be removed` → DEPRECATED
+   - `ENOENT` / `file not found` / `no such file` → FILE_NOT_FOUND
+   - CI command exits non-zero → CI_FAILURE
+   - Unexpected state or workflow issue → WORKFLOW_BUG
+
+2. **Check existing learnings**:
+   - Read `.opti-gsd/learnings.md` if exists
+   - Search for similar error pattern
+   - If found: apply documented fix automatically
+   - If not found: create new learning entry
+
+3. **Log new learning**:
+   ```markdown
+   ## {CATEGORY}: {brief description}
+
+   **First seen:** {YYYY-MM-DD}
+   **Error:** {exact error message}
+   **Root cause:** {analysis of why this happened}
+   **Fix:** {what was done to resolve}
+   **Prevention:** {how to avoid in future / agent to update}
+   ```
+
+4. **Apply fix and continue** if possible
+
+### Pattern Matching
+
+Before executing commands, scan learnings for relevant entries:
+
+```
+IF command matches a DEPRECATED learning:
+  → Use documented alternative instead
+  → Log: "Applied learning: using {alternative} instead of {deprecated}"
+
+IF file path matches a FILE_NOT_FOUND learning:
+  → Check if file was moved/renamed
+  → Apply documented fix
+  → Log: "Applied learning: {description}"
+```
