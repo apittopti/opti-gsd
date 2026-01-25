@@ -7,7 +7,7 @@
   "phases": {
     "complete": [],
     "in_progress": [],
-    "pending": [1, 2, 3, 4]
+    "pending": [1, 2, 3, 4, 5]
   },
   "last_active": "2026-01-25T00:00:00Z",
   "context": "Roadmap created with 4 phases. Ready to plan phase 1."

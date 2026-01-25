@@ -10,6 +10,7 @@ Current workflow allows:
 - Backend-only changes marked as "complete"
 - New abstractions without consumers (orphaned code)
 - Partial story delivery with incomplete acceptance criteria
+- Errors repeat because there's no learning from failures
 
 This creates hidden technical debt and delivers zero user value.
 
@@ -20,6 +21,7 @@ This creates hidden technical debt and delivers zero user value.
 - [ ] New abstractions must have at least one consumer in same phase
 - [ ] Verification checks user value (L4), not just code existence
 - [ ] Stories cannot be marked delivered with incomplete acceptance criteria
+- [ ] Errors are logged and learned from so they never repeat
 
 ---
 
@@ -99,6 +101,47 @@ This creates hidden technical debt and delivers zero user value.
 
 ---
 
+## Phase 5: Error Learning System
+
+**Goal:** Log errors and build institutional memory so mistakes never repeat
+
+**Delivers:** Self-learning error handling across all agents
+
+**Success Criteria:**
+- [ ] All errors logged to `.opti-gsd/learnings.md` with context
+- [ ] Learnings loaded at session start (via CLAUDE.md or resume)
+- [ ] Pattern matching detects similar errors and applies fixes
+- [ ] File-not-found errors flagged as potential agent/command bugs
+- [ ] Deprecated command detection with automatic alternatives
+
+**Implementation Notes:**
+- Create `.opti-gsd/learnings.md` for persistent error memory
+- Error categories: CI_FAILURE, FILE_NOT_FOUND, DEPRECATED, WORKFLOW_BUG
+- Each learning includes: error pattern, root cause, fix applied, prevention
+- Executor checks learnings before running commands
+- Status command shows recent learnings
+
+**Example Learnings:**
+
+```markdown
+## DEPRECATED: next lint
+
+**First seen:** 2026-01-25
+**Error:** `next lint` is deprecated and will be removed in Next.js 16
+**Fix:** Use `npx @next/codemod@canary next-lint-to-eslint-cli .` to migrate
+**Prevention:** Check project for Next.js 15+, use ESLint CLI directly
+
+## FILE_NOT_FOUND: plugin.json
+
+**First seen:** 2026-01-24
+**Error:** Cannot read plugin.json - file does not exist
+**Root cause:** Agent referenced removed file
+**Fix:** Updated to read from package.json instead
+**Prevention:** Agent opti-gsd-executor.md updated
+```
+
+---
+
 ## Architecture
 
 ```
@@ -137,5 +180,8 @@ AFTER (enforces completeness):
 | 3 | `agents/opti-gsd/opti-gsd-verifier.md` | Add story AC completeness gate |
 | 4 | `agents/opti-gsd/opti-gsd-verifier.md` | Add debt balance tracking |
 | 4 | `commands/opti-gsd/verify.md` | Document debt balance in output |
+| 5 | `agents/opti-gsd/opti-gsd-executor.md` | Add error logging and learning checks |
+| 5 | `commands/opti-gsd/status.md` | Show recent learnings |
+| 5 | `commands/opti-gsd/resume.md` | Load learnings at session start |
 
 ---
