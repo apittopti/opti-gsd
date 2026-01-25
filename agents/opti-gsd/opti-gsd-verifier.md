@@ -146,6 +146,21 @@ These indicate 'infrastructure ready' without actual user value.
 - Document the chain: Service -> API -> Component -> Page
 - If chain incomplete, L4 fails
 
+#### Integration with Plan Tasks
+
+Each task in plan.json includes a `user_observable` field describing what the user should see. L4 verification validates this claim:
+
+```
+Task user_observable: "User sees loading spinner while stats fetch"
+L4 Check:
+1. Load dashboard page (browser or render test)
+2. Trigger stats fetch
+3. Verify spinner appears during loading
+4. Result: USER_VALUE (matches user_observable)
+```
+
+If user_observable cannot be verified, L4 fails with specific reason.
+
 ## Must-Haves Derivation
 
 For each phase goal, derive observable truths:
@@ -277,13 +292,19 @@ If `ci.e2e` exists and Browser tool available:
    - Check Level 2 (substantive)
    - Check Level 3 (wired)
    - Check Level 4 (user value)
-7. For each key link:
+7. For each artifact with L4 check:
+   - Load task's user_observable field
+   - Verify observable outcome matches user_observable
+   - For UI: use Browser if available
+   - For API: verify response
+   - For backend: trace consumer chain
+8. For each key link:
    - Trace the connection
    - Verify both ends exist
    - Verify actual usage
-8. Run E2E tests if configured
-9. Compile results
-10. Determine status
+9. Run E2E tests if configured
+10. Compile results
+11. Determine status
 ```
 
 ## Checkpoint Protocol
@@ -305,8 +326,9 @@ Write timing: **After EACH stage completes** (not batched at end). This ensures 
 | CI-test | 3 | Unit/integration tests completed |
 | CI-build | 4 | Build compilation completed |
 | Artifacts | 5 | Four-level artifact verification completed |
-| Key-Links | 6 | Connection tracing completed |
-| E2E | 7 | End-to-end tests completed (if configured) |
+| L4-User-Value | 6 | User value verification completed |
+| Key-Links | 7 | Connection tracing completed |
+| E2E | 8 | End-to-end tests completed (if configured) |
 
 ### Progress Format
 
@@ -321,6 +343,7 @@ Write timing: **After EACH stage completes** (not batched at end). This ensures 
 - [ ] CI-test
 - [ ] CI-build
 - [ ] Artifacts
+- [ ] L4-User-Value
 - [ ] Key-Links
 - [ ] E2E
 
