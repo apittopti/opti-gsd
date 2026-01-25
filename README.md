@@ -66,7 +66,7 @@ npx github:apittopti/opti-gsd init
 After installation, start Claude Code and run:
 
 ```
-/opti-gsd:detect-tools   # Discover available MCP servers and plugins
+/opti-gsd:init           # Initialize project (auto-detects tools)
 /opti-gsd:status         # See current state and next action
 ```
 
@@ -100,22 +100,25 @@ Run `/opti-gsd:help` for full command reference.
 
 ## Tool Detection
 
-opti-gsd automatically discovers and uses available tools in your environment:
+opti-gsd automatically discovers available tools during `/opti-gsd:init`. To manually refresh or manage tools:
 
 ```
-/opti-gsd:detect-tools
+/opti-gsd:tools detect    # Re-detect available tools
+/opti-gsd:tools           # View all configured tools
+/opti-gsd:tools add-mcp   # Add MCP server to project
+/opti-gsd:tools add-skill # Add skill to project
 ```
 
 This detects:
 - **MCP Servers** - cclsp (code intelligence), GitHub, browser automation, etc.
-- **Installed Plugins** - Other Claude Code plugins and their skills/agents
+- **Installed Extensions** - Other Claude Code extensions and their skills/agents
 - **Available Capabilities** - What each tool can do
 
-Detected tools are written to `.opti-gsd/tools.md` so agents can dynamically use them.
+Detected tools are written to `.opti-gsd/tools.json` so agents can dynamically use them.
 
 ### How Agents Use Tools
 
-Agents read `.opti-gsd/tools.md` and match capabilities to their current task:
+Agents read `.opti-gsd/tools.json` and match capabilities to their current task:
 - Need code navigation? → Use cclsp if available
 - Need to create a PR? → Use GitHub MCP if available
 - Need browser testing? → Use chrome automation if available
@@ -137,7 +140,7 @@ git clone <your-repo>
 cd <your-repo>
 npx github:apittopti/opti-gsd init --local
 claude
-/opti-gsd:detect-tools
+/opti-gsd:init     # Auto-detects tools
 /opti-gsd:status
 ```
 

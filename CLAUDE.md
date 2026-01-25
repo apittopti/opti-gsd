@@ -1,6 +1,6 @@
 # Claude Code Instructions for opti-gsd
 
-This is the opti-gsd plugin repository. When working on this codebase, always use the opti-gsd workflow, skills, and agents.
+This is the opti-gsd repository. When working on this codebase, always use the opti-gsd workflow, skills, and agents.
 
 ## Workflow Requirements
 
@@ -24,19 +24,44 @@ This is the opti-gsd plugin repository. When working on this codebase, always us
 | /opti-gsd:add-story | Capture user/client requests |
 | /opti-gsd:debug | Start systematic debugging session |
 | /opti-gsd:research | Research best practices for a topic |
+| /opti-gsd:map-codebase | Analyze codebase with focus modes |
+| /opti-gsd:ci | Configure CI/CD and deployment |
+| /opti-gsd:push | Push branch for preview deployment |
+| /opti-gsd:stories | Manage user stories |
+| /opti-gsd:issues | Manage issues/bugs |
+| /opti-gsd:features | Manage feature ideas |
 
 ## Available Agents
 
 Use these specialized agents for complex tasks:
 
-- **opti-gsd-planner** - Creates executable phase plans
-- **opti-gsd-executor** - Autonomous plan execution with atomic commits
-- **opti-gsd-verifier** - Goal-backward verification of phase completion
+- **opti-gsd-codebase-mapper** - Analyzes existing codebases with focus modes
 - **opti-gsd-debugger** - Systematic bug investigation
-- **opti-gsd-codebase-mapper** - Analyzes existing codebases
+- **opti-gsd-executor** - Autonomous plan execution with atomic commits
 - **opti-gsd-integration-checker** - Verifies component integration
 - **opti-gsd-phase-researcher** - Investigates technical domains before planning
+- **opti-gsd-plan-checker** - Validates plans before execution
+- **opti-gsd-planner** - Creates executable phase plans
 - **opti-gsd-project-researcher** - Investigates domain ecosystems
+- **opti-gsd-research-synthesizer** - Consolidates parallel research outputs
+- **opti-gsd-roadmapper** - Transforms requirements into delivery plans
+- **opti-gsd-verifier** - Goal-backward verification of phase completion
+
+## Naming Conventions (v2.0.0)
+
+**File Naming:**
+- Use **lowercase** for all markdown files: `stack.md`, `roadmap.md`, `verification.md`
+- Use **JSON** for structured data: `config.json`, `state.json`, `plan.json`, `tools.json`
+- Exception: Standard files like `README.md`, `CLAUDE.md` remain uppercase
+
+**Directory Structure:**
+- `.opti-gsd/` - Main workflow directory
+  - `stories/` - User stories (US{NNN}.md)
+  - `issues/` - Bug tracking (ISS{NNN}.md)
+  - `features/` - Feature ideas (F{NNN}.md)
+  - `codebase/` - Codebase analysis files
+  - `plans/` - Phase execution plans
+  - `debug/` - Debug session files
 
 ## Ad-hoc Changes
 
@@ -52,9 +77,9 @@ Even for small ad-hoc changes:
 
 Before creating the PR, update version files to match the milestone:
 
-1. `.claude-plugin/plugin.json` — Update `version` field (e.g., `"0.8.0"`)
-2. `.claude-plugin/marketplace.json` — Update `version` field in plugins array
+1. `package.json` — Update `version` field (e.g., `"2.1.0"`)
+2. `.claude-plugin/plugin.json` — Update `version` field to match
 
-Both files **must have matching versions** for marketplace updates to work correctly.
+Both files **must have matching versions** for npm publish to work correctly.
 
-Example: For milestone `v0.9.0`, set version to `"0.9.0"` (strip the `v` prefix).
+Example: For milestone `v2.1.0`, set version to `"2.1.0"` (strip the `v` prefix).

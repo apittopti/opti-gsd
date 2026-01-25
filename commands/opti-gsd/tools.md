@@ -150,7 +150,7 @@ MCP Servers:
 
 Installed Plugins:
   • plugin-dev (3 skills, 2 agents)
-  • opti-gsd (this plugin)
+  • opti-gsd (this tool)
 
 Written to: .opti-gsd/tools.json
 
