@@ -1,6 +1,19 @@
 # Claude Code Instructions for opti-gsd
 
-This is the opti-gsd repository. When working on this codebase, always use the opti-gsd workflow, skills, and agents.
+This is the opti-gsd source repository. You are using opti-gsd to develop opti-gsd (bootstrapping).
+
+## Bootstrapping Model
+
+**Two versions exist:**
+
+1. **Installed version** — The stable version providing `/opti-gsd:*` commands (in `~/.claude/` or user settings)
+2. **Source version** — This repository you are modifying
+
+**Key rules:**
+- The installed version guides your workflow (commands, agents, skills)
+- The source version is what you're changing
+- After completing a milestone, the user should reinstall: `npx github:apittopti/opti-gsd init`
+- Never modify installed files directly — only modify source, then reinstall
 
 ## Workflow Requirements
 
