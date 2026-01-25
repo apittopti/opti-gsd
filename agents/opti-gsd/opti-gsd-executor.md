@@ -361,3 +361,66 @@ After all tasks:
   - Update .opti-gsd/state.json
   - Commit: "docs(XX): phase execution summary"
 ```
+
+### Summary Template
+
+When writing `summary.md`, use this template with tool usage data:
+
+```markdown
+# Phase {N} Summary
+
+**Completed:** {date}
+**Feature:** {feature_id}
+
+## Completed Tasks
+
+| Task | Title | Commit | Tools Used |
+|------|-------|--------|------------|
+| T01  | {title} | {hash} | 15 calls |
+| T02  | {title} | {hash} | 12 calls |
+
+## Tool Usage Summary
+
+| Task | Total Calls | Top Tools |
+|------|-------------|-----------|
+| T01  | 15          | Read: 8, Edit: 5, Bash: 2 |
+| T02  | 12          | Read: 6, Edit: 4, Grep: 2 |
+
+### Aggregate
+
+- **Total tool calls:** {sum across all tasks}
+- **Built-in:** {count} ({percentage}%)
+- **MCP:** {count} ({percentage}%)
+- **Most used:** {tool_name} ({count} calls)
+
+## Implementation Details
+
+{Brief summary of what was implemented}
+
+## Verification Status
+
+- [x] {verification item 1}
+- [x] {verification item 2}
+
+## Next Phase
+
+{What comes next}
+```
+
+### Generating Tool Usage Stats for Summary
+
+When writing summary.md, gather tool usage data:
+
+1. Read `.opti-gsd/tool-usage.json`
+2. For each task in the phase:
+   - Filter entries where `entry.task === "T{id}"`
+   - Count total calls
+   - Group by tool name, identify top 3
+3. Calculate aggregate stats:
+   - Sum all task totals
+   - Count MCP tools (prefix `mcp__`) vs built-in
+   - Calculate percentages
+   - Find most-used tool overall
+
+**Alternative:** Use `node scripts/analyze-tool-usage.js --format=json` for structured data,
+but prefer direct reading of tool-usage.json for task-specific filtering.
