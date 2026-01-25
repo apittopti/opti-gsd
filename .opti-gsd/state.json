@@ -2,8 +2,8 @@
   "milestone": "v2.1.0",
   "branch": "master",
   "phases": {
-    "complete": ["1", "2"],
-    "in_progress": "3",
+    "complete": ["1", "2", "3"],
+    "in_progress": null,
     "pending": []
   },
   "loop": null,
