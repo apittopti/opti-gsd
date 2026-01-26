@@ -8,6 +8,37 @@ Push current branch to remote to enable preview deployments and CI.
 
 ## Behavior
 
+### Step 0: Protected Branch Check (CRITICAL)
+
+**ALWAYS check for protected branches first:**
+
+```bash
+current_branch=$(git branch --show-current)
+```
+
+**BLOCK push on protected branches:**
+```bash
+if [[ "$current_branch" =~ ^(master|main|production|prod)$ ]]; then
+  # HARD STOP - Never push directly to protected branches
+fi
+```
+
+If on protected branch:
+```
+🛑 BLOCKED: Cannot Push to Protected Branch
+─────────────────────────────────────
+Cannot push directly to '{current_branch}'.
+
+Protected branches (master, main, production) can ONLY be updated via pull request.
+
+To deploy your changes:
+1. Ensure you're on a milestone branch: /opti-gsd:start-milestone [name]
+2. Push the milestone branch: /opti-gsd:push
+3. Create a PR: /opti-gsd:complete-milestone
+4. Merge the PR on GitHub
+```
+**STOP here. Do NOT push.**
+
 ### Step 1: Check State
 
 Read `.opti-gsd/state.json` to get current branch.

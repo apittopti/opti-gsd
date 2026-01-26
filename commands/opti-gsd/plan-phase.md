@@ -15,41 +15,57 @@ Generate an executable plan for phase N with XML-structured tasks.
 
 ## Behavior
 
-### Step 0: Validate Branch
+### Step 0: Validate Branch (CRITICAL - Protected Branch Check)
 
-If `branching: milestone` is configured in `.opti-gsd/config.json`:
+**ALWAYS check for protected branches first, regardless of config:**
 
 1. Get current branch:
    ```bash
    git branch --show-current
    ```
 
-2. Get base branch from config (default: `master`)
+2. **BLOCK planning on protected branches:**
+   ```bash
+   if [[ "$current_branch" =~ ^(master|main|production|prod)$ ]]; then
+     # HARD STOP - Never commit to protected branches
+   fi
+   ```
 
-3. If current branch == base branch:
+   If on protected branch:
+   ```
+   🛑 BLOCKED: Protected Branch
+   ─────────────────────────────────────
+   Cannot plan on '{current_branch}'. This is a protected branch.
+
+   All development work MUST happen on milestone branches.
+   Master/main can ONLY be updated via pull request.
+
+   → Run /opti-gsd:start-milestone [name] to create a milestone branch
+   → Then run /opti-gsd:plan-phase again
+   ```
+   **STOP here. Do NOT offer to continue on master.**
+
+3. If `branching: milestone` is configured in `.opti-gsd/config.json`:
 
    **If no milestone set in state.json:**
    ```
    ⚠️ No Milestone Active
    ─────────────────────────────────────
-   You're on {base} with branching: milestone configured,
-   but no milestone is active.
+   You're on {current_branch} but no milestone is active.
 
    → Run /opti-gsd:start-milestone [name] to create a milestone branch
    ```
    Stop execution here.
 
-   **If milestone is set but on base branch:**
+   **If milestone is set but on wrong branch:**
 
-   - **interactive mode**:
-     > "You're on {base} but milestone {milestone} exists. Switch to {prefix}{milestone}? [Y/n]"
+   Auto-switch to milestone branch:
+   ```bash
+   git checkout {prefix}{milestone}
+   ```
+   If branch doesn't exist: `git checkout -b {prefix}{milestone}`
 
-     If yes: `git checkout {prefix}{milestone}`
-     If no: "Continuing on {base}. Changes will be on base branch."
-
-   - **yolo mode**:
-     Auto-switch: `git checkout {prefix}{milestone}`
-     If branch doesn't exist: `git checkout -b {prefix}{milestone}`
+   Report: "Switched to milestone branch: {prefix}{milestone}"
 
 ### Step 1: Validate Prerequisites
 
