@@ -281,14 +281,91 @@ Write `.opti-gsd/state.json`:
 }
 ```
 
-### Step 10: Commit
+### Step 10: Update Project CLAUDE.md
+
+Create or update the project's `CLAUDE.md` to ensure opti-gsd workflow is always considered:
+
+**If CLAUDE.md doesn't exist, create it:**
+
+```markdown
+# Project Instructions
+
+This project uses **opti-gsd** for spec-driven development workflow.
+
+## Workflow Requirements
+
+**IMPORTANT:** All development work must follow the opti-gsd workflow:
+
+1. **Never commit directly to master/main** — These are protected branches
+2. **Always use milestone branches** — Run `/opti-gsd:start-milestone [name]` first
+3. **Check status before starting** — Run `/opti-gsd:status` to understand current state
+4. **Follow the phase workflow** — Plan → Execute → Verify
+
+## Quick Reference
+
+| Command | Purpose |
+|---------|---------|
+| `/opti-gsd:status` | Check current state and next action |
+| `/opti-gsd:start-milestone [name]` | Start a new milestone branch |
+| `/opti-gsd:roadmap` | View or create project roadmap |
+| `/opti-gsd:plan-phase [N]` | Plan a phase |
+| `/opti-gsd:execute` | Execute current phase |
+| `/opti-gsd:verify` | Verify phase completion |
+
+## Protected Branches
+
+**NEVER push or commit directly to:**
+- `master`
+- `main`
+- `production`
+- `prod`
+
+All changes to these branches MUST go through a pull request.
+
+## Before Any Code Changes
+
+Ask yourself:
+1. Is there an active milestone? (`/opti-gsd:status`)
+2. Am I on a milestone branch? (not master/main)
+3. Is there a plan for this work? (`/opti-gsd:plan-phase`)
+
+If any answer is "no", set up the workflow first.
+```
+
+**If CLAUDE.md exists, append the opti-gsd section:**
+
+Check if `## opti-gsd Workflow` section already exists. If not, append:
+
+```markdown
+
+---
+
+## opti-gsd Workflow
+
+This project uses **opti-gsd** for spec-driven development.
+
+**Before any code changes:**
+1. Check status: `/opti-gsd:status`
+2. Ensure on milestone branch (never master/main)
+3. Follow: Plan → Execute → Verify
+
+**Protected branches:** master, main, production, prod — PR only!
+
+**Key commands:** `/opti-gsd:status`, `/opti-gsd:start-milestone`, `/opti-gsd:roadmap`, `/opti-gsd:plan-phase`, `/opti-gsd:execute`, `/opti-gsd:verify`
+```
+
+### Step 11: Commit
 
 ```bash
 git add .opti-gsd/
-git commit -m "chore: initialize opti-gsd"
+git add CLAUDE.md
+git commit -m "chore: initialize opti-gsd
+
+- Created .opti-gsd/ workflow directory
+- Updated CLAUDE.md with workflow instructions"
 ```
 
-### Step 11: Report
+### Step 12: Report
 
 Display summary:
 - Detected: {framework} ({app_type})
@@ -330,10 +407,11 @@ Tools Detected:
   MCP Servers: cclsp, GitHub, Chrome
   Plugins: opti-gsd
 
-Created:
+Created/Updated:
   .opti-gsd/config.json
   .opti-gsd/state.json
   .opti-gsd/tools.json
+  CLAUDE.md (workflow instructions)
 
 ```
 

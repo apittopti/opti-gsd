@@ -236,11 +236,13 @@ mkdir -p .opti-gsd/plans/phase-02
 
 ```bash
 git add .opti-gsd/
+git add CLAUDE.md
 git commit -m "chore: initialize opti-gsd project
 
 - Created project.md with goals and constraints
 - Created {N} user stories in .opti-gsd/stories/
 - Generated roadmap.md with {N} phases
+- Updated CLAUDE.md with workflow instructions
 - Research: {yes/no}"
 ```
 
@@ -258,6 +260,7 @@ Files created:
   .opti-gsd/stories/*.md
   .opti-gsd/roadmap.md
   .opti-gsd/state.json
+  CLAUDE.md (workflow instructions)
   {.opti-gsd/research/* if researched}
 
 Next: Run /opti-gsd:plan-phase 1 to plan the first phase
