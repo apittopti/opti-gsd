@@ -2,7 +2,7 @@
 description: Display available opti-gsd commands with descriptions.
 ---
 
-Display help information. Read version from the `VERSION` file in the opti-gsd installation directory (`~/.claude/VERSION` for global, `./.claude/VERSION` for local). If `.opti-gsd/` exists, also read `.opti-gsd/config.json` to show current configuration.
+Display help information. Read version from `package.json` in the opti-gsd installation directory (`~/.claude/package.json` for global, `./.claude/package.json` for local). If `.opti-gsd/` exists, also read `.opti-gsd/config.json` to show current configuration.
 
 ## Arguments
 
@@ -19,7 +19,7 @@ Display help information. Read version from the `VERSION` file in the opti-gsd i
 ╚══════════════════════════════════════════════════════════════╝
 ```
 
-**Read version from `~/.claude/VERSION` (global) or `./.claude/VERSION` (local). Author is "apittopti".**
+**Read version from `package.json` in the installation directory. Author is "apittopti".**
 
 If `.opti-gsd/` exists, show current configuration:
 
