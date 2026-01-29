@@ -1,14 +1,14 @@
 {
   "milestone": "v2.5.0",
   "branch": "gsd/v2.5.0",
-  "phase": null,
+  "phase": 1,
   "task": null,
-  "status": "milestone_started",
+  "status": "phase_complete",
   "phases": {
-    "complete": [],
+    "complete": ["1"],
     "in_progress": [],
-    "pending": ["1"]
+    "pending": []
   },
   "last_active": "2026-01-29T00:00:00Z",
-  "context": "Started milestone v2.5.0. Ready to create roadmap."
+  "context": "Phase 1 complete. TaskCreate/TaskUpdate embedded as mandatory steps in execute.md."
 }
