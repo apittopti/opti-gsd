@@ -29,7 +29,7 @@ const log = {
 const ignoreDirs = new Set([
   'node_modules', '.git', 'vendor', 'venv', '.venv', 'env', '.env',
   'dist', 'build', 'target', '__pycache__', '.next', '.nuxt',
-  'coverage', '.nyc_output', '.cache', '.gsd',
+  'coverage', '.nyc_output', '.cache', '.gsd', '.opti-gsd',
 ]);
 
 function getSourceDir() {

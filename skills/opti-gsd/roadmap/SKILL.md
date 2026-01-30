@@ -16,7 +16,7 @@ Create or view the project roadmap, and manage phases (add, insert, remove).
 - `/opti-gsd:roadmap insert [N] [title]` — Insert phase at position N
 - `/opti-gsd:roadmap remove [N]` — Remove phase N from roadmap
 
-## Subcommand Routing
+## Routing
 
 Parse `$ARGUMENTS` and route to the appropriate action:
 

@@ -229,7 +229,7 @@ File locking prevents gaming the tests.
 ### File Naming
 | Type | Convention | Example |
 |------|------------|---------|
-| Commands | lowercase with hyphens | plan-phase.md, add-feature.md |
+| Skills | lowercase directories | plan/SKILL.md, track/SKILL.md |
 | Agents | prefixed with opti-gsd- | opti-gsd-executor.md |
 | State files | lowercase JSON | config.json, state.json |
 | Plans | JSON format | plan.json |
@@ -312,24 +312,18 @@ The bin/cli.js provides:
    - .claude-plugin/plugin.json shows 2.0.0
    - These should be synchronized
 
-3. **Statusline Script Outdated**
-   - scripts/gsd-statusline.js references .gsd/ instead of .opti-gsd/
-   - Uses old STATE.md instead of state.json
+3. ~~**Statusline Script Outdated**~~ *(FIXED: updated to .opti-gsd/ and state.json)*
 
-4. **No Skills Directory**
-   - bin/cli.js copies skills/opti-gsd/ but directory does not exist
-   - Skills are mentioned in config but not implemented
+4. ~~**No Skills Directory**~~ *(FIXED: skills/opti-gsd/ now contains 15 consolidated skills)*
 
-5. **Documentation Gaps**
-   - Some commands referenced in help.md do not have dedicated command files
-   - /opti-gsd:skills and /opti-gsd:mcps listed but may be consolidated into /opti-gsd:tools
+5. ~~**Documentation Gaps**~~ *(FIXED: /opti-gsd:skills and /opti-gsd:mcps consolidated into /opti-gsd:tools)*
 
 ### Consistency Issues
-| Issue | Location | Impact |
+| Issue | Location | Status |
 |-------|----------|--------|
-| Old .gsd/ references | statusline script | Script will not work |
-| Missing skills dir | Plugin structure | Copy fails silently |
-| Version mismatch | package.json vs plugin.json | Confusion |
+| ~~Old .gsd/ references~~ | statusline script | FIXED |
+| ~~Missing skills dir~~ | Plugin structure | FIXED |
+| Version mismatch | package.json vs plugin.json | Needs sync |
 
 ---
 

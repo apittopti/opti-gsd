@@ -2,6 +2,7 @@
 name: push
 description: Push current milestone branch to remote with protected branch safety checks. Detects preview deployment URLs from Vercel, Netlify, Railway, or Fly.io and updates project state.
 disable-model-invocation: true
+argument-hint: [--wait | --no-wait]
 ---
 
 # push

@@ -15,7 +15,7 @@ Initialize opti-gsd in a project, create a new project with guided setup, config
 - `/opti-gsd:init claude-md` — Add opti-gsd instructions to CLAUDE.md
 - `/opti-gsd:init migrate [type]` — Migrate from old workflow formats
 
-## Subcommand Routing
+## Routing
 
 Parse `$ARGUMENTS` and route to the appropriate action:
 
