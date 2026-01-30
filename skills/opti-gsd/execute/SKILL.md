@@ -1,10 +1,35 @@
 ---
 name: execute
-description: Execute the current phase plan with wave-based parallelization, fresh context, and automatic retry on failures
+description: Execute phase plans, individual tasks, or quick ad-hoc tasks. Subcommands: (full phase), task, quick.
 disable-model-invocation: true
 ---
 
 # execute
+
+Execute phase plans, individual tasks, or quick ad-hoc tasks.
+
+## Usage
+
+- `/opti-gsd:execute` — Execute current phase plan (wave-based parallelization)
+- `/opti-gsd:execute task [N]` — Execute single task N from current plan
+- `/opti-gsd:execute quick [description]` — Fast-track ad-hoc task (skips research/checker/verifier)
+
+## Routing
+
+| Input | Subcommand | Description |
+|-------|-----------|-------------|
+| `(no args)` | Full phase execute | Execute current phase plan with waves |
+| `task [N]` | Single task | Execute single task N from current plan |
+| `quick [description]` | Quick task | Ad-hoc task with GSD guarantees |
+
+Parse the first argument:
+- If first argument is `task` → route to **Subcommand: task** (pass remaining args as N)
+- If first argument is `quick` → route to **Subcommand: quick** (pass remaining args as description)
+- If no arguments → route to **Subcommand: (full phase)**
+
+---
+
+# Subcommand: (full phase)
 
 Execute the current phase plan with wave-based parallelization and fresh context per task.
 
@@ -574,7 +599,7 @@ If no deployment configured, skip this step.
 → /opti-gsd:plan-phase {N+1} — Plan next phase
 → /opti-gsd:archive {N}      — Archive phase to free context
 
-💾 State saved. Safe to /compact or start new session if needed.
+State saved. Safe to /compact or start new session if needed.
 
 ---
 
@@ -642,7 +667,7 @@ Claude Code Tasks
 
 ---
 
-## Context Budget
+## Context Budget (Full Phase)
 
 Orchestrator budget: 15%
 - Loading: ~5%
@@ -688,3 +713,322 @@ The TDD Red-Green-Refactor loop runs INSIDE subagents as natural control flow. T
 
 **Philosophy:** Following GSD principles, there's no stop hook forcing loop continuation.
 Human judgment gates all decisions. Use /opti-gsd:recover if session interrupted.
+
+---
+
+# Subcommand: task
+
+Execute a single task from the current phase plan.
+
+## Arguments
+
+- `N` — Task number to execute (required)
+
+## Behavior
+
+Same as the full phase execute but for a single task only. Useful for:
+- Re-running a failed task after fixing issues
+- Testing a specific task in isolation
+- Debugging task execution
+
+### Step 1: Load Context
+
+Read:
+- `.opti-gsd/config.json`
+- `.opti-gsd/state.json`
+- `.opti-gsd/plans/phase-{current}/plan.json`
+
+### Step 2: Find Task
+
+Parse plan.json and find `<task id="{N}">`.
+
+If task not found, report error.
+
+### Step 3: Check Dependencies
+
+If task has `depends=""` attribute:
+- Verify dependent tasks are complete (check git log for commits)
+- If not complete, warn user
+
+### Step 4: Execute Task
+
+Build subagent prompt (same as full phase execute Step 6) and spawn opti-gsd-executor.
+
+### Step 5: Handle Result
+
+**TASK COMPLETE:**
+```bash
+git add {files}
+git commit -m "{type}({phase}-{task}): {description}"
+```
+
+Update state.json if this advances task counter.
+
+**TASK FAILED:**
+Report failure with details. Do not update state.
+
+**CHECKPOINT:**
+Present checkpoint, await decision.
+
+### Step 6: Report
+
+```markdown
+## Task {N} Result
+
+**Status:** {COMPLETE | FAILED | CHECKPOINT}
+**Files:** {list}
+**Commit:** {hash if complete}
+
+{Details based on status}
+```
+
+---
+
+## Use Cases
+
+1. **Retry failed task:**
+   ```
+   /opti-gsd:execute task 3
+   ```
+
+2. **Test in isolation:**
+   ```
+   /opti-gsd:execute task 1
+   ```
+
+3. **Skip ahead (with caution):**
+   ```
+   /opti-gsd:execute task 4  # Will warn about dependencies
+   ```
+
+---
+
+# Subcommand: quick
+
+Execute small, ad-hoc tasks with opti-gsd guarantees (atomic commits, state tracking) while skipping optional agents (research, plan-checker, verifier).
+
+Quick tasks are stored in `.opti-gsd/quick/` separate from planned phases.
+
+## Arguments
+
+- `description` — Brief description of the task (optional, will prompt if missing)
+
+## When to Use
+
+- Bug fixes
+- Small features
+- Config changes
+- One-off tasks
+- Anything that doesn't warrant full phase planning
+
+## Behavior
+
+### Step 0: Pre-flight Validation
+
+Check for required files:
+
+If `.opti-gsd/` doesn't exist:
+```
+⚠️ opti-gsd Not Initialized
+─────────────────────────────────────
+No .opti-gsd/ directory found.
+
+→ Run /opti-gsd:init to initialize an existing project
+→ Run /opti-gsd:new-project to start a new project
+```
+
+If `.opti-gsd/roadmap.md` doesn't exist:
+```
+⚠️ No Roadmap Found
+─────────────────────────────────────
+Quick mode requires an active project with roadmap.md.
+
+→ Run /opti-gsd:roadmap to create one
+```
+
+Quick tasks CAN run mid-phase. Only validate that the project is initialized and has a roadmap.
+
+### Step 1: Get Task Description
+
+If `description` argument provided, use it.
+
+Otherwise, prompt user:
+
+> **Quick Task**
+> What do you want to do?
+
+Generate slug from description: lowercase, hyphens, max 40 characters.
+
+If empty, re-prompt.
+
+### Step 2: Calculate Next Quick Task Number
+
+1. Ensure `.opti-gsd/quick/` directory exists (create if not)
+2. Find highest existing numbered directory
+3. Increment sequentially: `001`, `002`, `003`, ...
+4. Use three-digit format with leading zeros
+
+### Step 3: Create Quick Task Directory
+
+Create directory: `.opti-gsd/quick/{NNN}-{slug}/`
+
+Report to user:
+```
+## Quick Task {NNN}: {description}
+
+Creating plan...
+```
+
+### Step 4: Spawn Planner (Quick Mode)
+
+Spawn opti-gsd-planner via Task tool with quick mode context:
+
+```xml
+You are planning a QUICK TASK for opti-gsd. This is a lightweight ad-hoc task, not a full phase.
+
+<context>
+  <project>{.opti-gsd/project.md#overview - if exists, otherwise skip}</project>
+  <conventions>{.opti-gsd/codebase/conventions.md - if exists}</conventions>
+  <state>{.opti-gsd/state.json - current state}</state>
+</context>
+
+<quick_task>
+  <number>{NNN}</number>
+  <description>{description}</description>
+  <output_dir>.opti-gsd/quick/{NNN}-{slug}/</output_dir>
+</quick_task>
+
+<constraints>
+  <rule>Create a SINGLE plan with 1-3 focused tasks</rule>
+  <rule>No research phase needed</rule>
+  <rule>No plan-checker phase needed</rule>
+  <rule>Target ~30% context usage</rule>
+  <rule>Keep it simple and focused</rule>
+</constraints>
+
+Output the plan to: .opti-gsd/quick/{NNN}-{slug}/plan.json
+```
+
+Verify plan file exists after planner completes. Report path to user.
+
+### Step 5: Spawn Executor
+
+Spawn opti-gsd-executor via Task tool:
+
+```xml
+You are executing a QUICK TASK for opti-gsd. Complete all tasks in the plan.
+
+<plan>{contents of .opti-gsd/quick/{NNN}-{slug}/plan.json}</plan>
+<state>{.opti-gsd/state.json}</state>
+
+<constraints>
+  <rule>Execute all tasks in the plan</rule>
+  <rule>Create atomic commits for each task</rule>
+  <rule>Create a summary when done</rule>
+  <rule>Do NOT update roadmap.md — this is a quick task, not a phase</rule>
+</constraints>
+
+Output summary to: .opti-gsd/quick/{NNN}-{slug}/summary.md
+```
+
+Verify summary file exists. Extract commit hash(es) from executor output.
+
+### Step 6: Update state.json
+
+**6a.** Read current `state.json`
+
+**6b.** Add or update the `quick_tasks` array:
+
+```json
+{
+  "quick_tasks": [
+    {
+      "number": "NNN",
+      "description": "{description}",
+      "date": "{ISO date}",
+      "commit": "{short hash}",
+      "directory": ".opti-gsd/quick/{NNN}-{slug}/"
+    }
+  ]
+}
+```
+
+**6c.** Update `last_activity` field:
+
+```json
+{
+  "last_activity": "Quick task {NNN}: {description}"
+}
+```
+
+### Step 7: Final Commit and Completion
+
+Stage artifacts:
+```bash
+git add .opti-gsd/quick/{NNN}-{slug}/
+git add .opti-gsd/state.json
+```
+
+Commit:
+```bash
+git commit -m "docs(quick-{NNN}): {description}
+
+Co-Authored-By: Claude <noreply@anthropic.com>"
+```
+
+Retrieve short commit hash.
+
+### Step 8: Report
+
+```markdown
+## Quick Task {NNN} Complete!
+
+**Task:** {description}
+**Plan:** .opti-gsd/quick/{NNN}-{slug}/plan.json
+**Summary:** .opti-gsd/quick/{NNN}-{slug}/summary.md
+**Commit:** {short hash}
+
+→ /opti-gsd:status    — Check project state
+→ /opti-gsd:execute quick     — Run another quick task
+```
+
+---
+
+## Success Criteria (Quick)
+
+- [ ] Project validation passes (`.opti-gsd/` and `roadmap.md` exist)
+- [ ] User provides task description
+- [ ] Slug generated correctly (lowercase, hyphens, max 40 chars)
+- [ ] Next number calculated sequentially (three-digit format)
+- [ ] Directory created at `.opti-gsd/quick/{NNN}-{slug}/`
+- [ ] Plan file created by planner
+- [ ] Summary file created by executor
+- [ ] `state.json` updated with quick task entry
+- [ ] Artifacts committed to repository
+
+---
+
+## Key Differences: Full Execute vs Quick
+
+| Aspect | Full Execute | Quick |
+|--------|-------------|-------|
+| Planning | Full phase plan with waves | 1-3 focused tasks |
+| Research | Optional research phase | Skipped |
+| Plan Check | Plan-checker agent validates | Skipped |
+| Verification | Verifier agent checks | Skipped |
+| Storage | `.opti-gsd/plans/phase-{N}/` | `.opti-gsd/quick/{NNN}-{slug}/` |
+| Roadmap | Updated on completion | NOT updated |
+| State | Full phase tracking | `quick_tasks` array only |
+| Context budget | ~15% orchestrator | ~10% orchestrator |
+
+---
+
+## Context Budget (Quick)
+
+Orchestrator: ~10%
+- Validation: ~2%
+- Planner spawn: ~3%
+- Executor spawn: ~3%
+- State update + commit: ~2%
+
+All heavy work delegated to subagents with fresh context.

@@ -294,10 +294,30 @@ async function main() {
       log.success('Removed legacy commands/opti-gsd (migrated to skills/)');
     }
 
+    // Clean up old individual skill directories (consolidated in v2.6.0)
+    // 41 individual skills were consolidated into 15. Remove stale directories.
+    const skillsPath = path.join(installDir, 'skills', 'opti-gsd');
+    if (fs.existsSync(skillsPath)) {
+      const consolidatedSkills = new Set([
+        'codebase', 'config', 'debug', 'execute', 'help', 'init',
+        'milestone', 'plan', 'push', 'roadmap', 'session', 'status',
+        'tools', 'track', 'verify',
+      ]);
+      for (const entry of fs.readdirSync(skillsPath)) {
+        if (!consolidatedSkills.has(entry)) {
+          const staleDir = path.join(skillsPath, entry);
+          if (fs.statSync(staleDir).isDirectory()) {
+            removeRecursive(staleDir);
+          }
+        }
+      }
+      log.success('Cleaned up legacy individual skill directories');
+    }
+
     // Copy opti-gsd files
     log.info('Copying opti-gsd files...');
 
-    // Skills replaced commands in v2.6.0 — skills support auto-invocation and supporting files
+    // Skills consolidated in v2.6.0 — 15 skills with subcommand routing
     const dirsToInstall = ['skills', 'agents', 'docs'];
     for (const dir of dirsToInstall) {
       const srcPath = path.join(sourceDir, dir, 'opti-gsd');
