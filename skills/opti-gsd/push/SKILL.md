@@ -1,6 +1,6 @@
 ---
 name: push
-description: Push current branch to remote to trigger preview deployments.
+description: Push current milestone branch to remote with protected branch safety checks. Detects preview deployment URLs from Vercel, Netlify, Railway, or Fly.io and updates project state.
 disable-model-invocation: true
 ---
 

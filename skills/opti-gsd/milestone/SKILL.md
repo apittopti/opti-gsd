@@ -1,7 +1,8 @@
 ---
 name: milestone
-description: Manage milestone lifecycle - start new milestones or complete current ones. Subcommands: start, complete.
+description: Manage milestone lifecycle with branch creation, PR workflows, changelog generation, and version tagging. Subcommands: start [name] (create new milestone with branch), complete (finalize with PR, changelog, and archive).
 disable-model-invocation: true
+argument-hint: start [name] | complete
 ---
 
 # milestone

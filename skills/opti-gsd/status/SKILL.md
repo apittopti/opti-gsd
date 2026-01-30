@@ -1,6 +1,6 @@
 ---
 name: status
-description: Show current project state and suggest next action.
+description: Display current project state with phase progress, active tasks, workflow position, and next suggested action. Use when checking milestone status, what to do next, or phase completion percentage.
 ---
 
 Read the opti-gsd project state and display a comprehensive status report with visual progress bars.

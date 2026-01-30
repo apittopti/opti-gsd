@@ -1,7 +1,8 @@
 ---
 name: codebase
-description: Analyze an existing codebase to understand its structure before starting work.
+description: Analyze an existing codebase to map directory structure, identify frameworks, catalog patterns, and track technical debt. Use before initializing opti-gsd on an existing project.
 disable-model-invocation: true
+argument-hint: [--debt | --refresh]
 ---
 
 # codebase $ARGUMENTS

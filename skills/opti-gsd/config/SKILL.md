@@ -1,7 +1,8 @@
 ---
 name: config
-description: Configure opti-gsd settings including terminal statusline integration.
+description: Configure opti-gsd settings and integrations. Currently supports terminal statusline setup for Claude Code with Unicode progress bars.
 disable-model-invocation: true
+argument-hint: statusline
 ---
 
 # config $ARGUMENTS

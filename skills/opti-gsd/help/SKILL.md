@@ -1,6 +1,7 @@
 ---
 name: help
-description: Display available opti-gsd commands, check for updates, or switch workflow mode. Use when the user asks what commands are available or how to use opti-gsd.
+description: Display available opti-gsd skills and usage guide, check for updates, or switch workflow mode. Use when the user asks what commands are available, how to use opti-gsd, or wants to change between interactive and yolo modes.
+argument-hint: [advanced | whats-new | mode interactive|yolo]
 ---
 
 Display help information, check for updates, or switch workflow mode.

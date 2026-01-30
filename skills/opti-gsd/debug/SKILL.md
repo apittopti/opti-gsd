@@ -1,6 +1,7 @@
 ---
 name: debug
-description: Systematic bug investigation and recovery from interrupted states. Use when the user reports a bug, error, or unexpected behavior.
+description: Systematic bug investigation and recovery from interrupted execution states. Use when the user reports a bug, error, unexpected behavior, or needs to recover from a failed or stuck task.
+argument-hint: [issue-id | recover]
 ---
 
 # debug
