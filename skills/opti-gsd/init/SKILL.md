@@ -1,16 +1,37 @@
 ---
 name: init
-description: Initialize opti-gsd in an existing project (brownfield).
+description: Initialize opti-gsd in an existing or new project. Subcommands: init (brownfield), new (greenfield), claude-md (setup instructions), migrate (convert old formats).
 disable-model-invocation: true
 ---
 
-# init
+# init $ARGUMENTS
+
+Initialize opti-gsd in a project, create a new project with guided setup, configure CLAUDE.md, or migrate from old formats.
+
+## Usage
+- `/opti-gsd:init` — Initialize in existing project
+- `/opti-gsd:init new` — New project with guided setup
+- `/opti-gsd:init claude-md` — Add opti-gsd instructions to CLAUDE.md
+- `/opti-gsd:init migrate [type]` — Migrate from old workflow formats
+
+## Subcommand Routing
+
+Parse `$ARGUMENTS` and route to the appropriate action:
+
+| Arguments | Action | Description |
+|-----------|--------|-------------|
+| (none) or `existing` | Init Existing Project | Initialize opti-gsd in an existing project (brownfield) |
+| `new` | New Project | Create a new project with guided setup, research, and roadmap generation |
+| `claude-md` | Setup CLAUDE.md | Add opti-gsd workflow instructions to project CLAUDE.md |
+| `migrate [type]` | Migrate | Migrate from old workflow formats to current structure |
+
+If arguments don't match any subcommand, show the Usage section above as help.
+
+---
+
+## Action: Init Existing Project
 
 Initialize opti-gsd in an existing project (brownfield).
-
-## Behavior
-
-You are initializing opti-gsd in an existing codebase. Follow these steps:
 
 ### Step 1: Validate Environment
 
@@ -377,10 +398,10 @@ Display summary:
 
 Suggest next commands:
 - /opti-gsd:roadmap — Plan work (init is for brownfield projects, so roadmap is the natural next step)
-- Optional: /opti-gsd:research — Get domain best practices before planning
-- Optional: /opti-gsd:ci configure — Customize CI/CD settings
+- Optional: /opti-gsd:plan research — Get domain best practices before planning
+- Optional: /opti-gsd:tools ci — Customize CI/CD settings
 
-Note: /opti-gsd:new-project is for greenfield projects starting from scratch. Since /opti-gsd:init is for existing codebases, suggest roadmap instead.
+Note: /opti-gsd:init new is for greenfield projects starting from scratch. Since /opti-gsd:init is for existing codebases, suggest roadmap instead.
 
 ## Output
 
@@ -418,8 +439,561 @@ Created/Updated:
 ```
 
 **Next steps:**
-→ /opti-gsd:roadmap      — Plan your work (create phases)
-→ /opti-gsd:tools        — View/configure available tools (optional)
-→ /opti-gsd:research     — Research best practices (optional)
+-> /opti-gsd:roadmap      — Plan your work (create phases)
+-> /opti-gsd:tools        — View/configure available tools (optional)
+-> /opti-gsd:plan research — Research best practices (optional)
 
-💾 State saved. Safe to /compact or start new session if needed.
+State saved. Safe to /compact or start new session if needed.
+
+---
+
+## Action: New Project
+
+Create a new project with guided setup, research, and roadmap generation.
+
+### Step 1: Check Prerequisites
+
+If `.opti-gsd/` doesn't exist, run /opti-gsd:init first.
+
+### Step 2: Deep Questioning
+
+Gather project understanding through conversation. Ask these in natural flow, not as a checklist:
+
+**Core Questions:**
+1. What are you building? (one sentence)
+2. Who is it for? (target users)
+3. What's the core problem it solves?
+4. What does success look like?
+
+**Scope Questions:**
+5. What are the must-have features for v1?
+6. What's explicitly out of scope?
+7. Any hard constraints? (tech, time, budget, compliance)
+
+**Technical Questions:**
+8. Any tech stack preferences or requirements?
+9. What integrations are needed? (payments, auth, email, etc.)
+10. Any existing code or systems to integrate with?
+
+**Deployment Questions (optional):**
+11. Do you know where this will be deployed? (Vercel, Netlify, Railway, VPS, Docker, or "not decided yet")
+12. If known: Do you have a production domain in mind?
+
+Keep asking clarifying questions until you fully understand the project. Don't proceed with ambiguity.
+
+### Step 3: Write project.md
+
+Create `.opti-gsd/project.md`:
+
+```markdown
+# {Project Name}
+
+## Overview
+{One paragraph synthesizing what this project is}
+
+## Goals
+- {Goal 1: Specific, measurable}
+- {Goal 2: Specific, measurable}
+- {Goal 3: Specific, measurable}
+
+## Non-Goals
+- {What this project is NOT}
+- {Scope boundaries}
+
+## Target Users
+{Who uses this and why}
+
+## Tech Stack
+- Framework: {framework}
+- Database: {database}
+- Auth: {auth_solution}
+- Payments: {if applicable}
+
+## Deployment
+- Platform: {vercel | netlify | railway | vps | docker | not decided}
+- Domain: {if known, or "TBD"}
+- Notes: {any deployment constraints}
+
+## Constraints
+- {Hard constraint 1}
+- {Hard constraint 2}
+
+## Success Criteria
+- {How we know v1 is successful}
+```
+
+### Step 4: Research Decision
+
+Ask user:
+
+> "Would you like me to research best practices for this type of project before planning? This helps avoid common pitfalls but adds ~5 minutes."
+
+**If yes**, spawn 4 parallel opti-gsd-project-researcher agents:
+- Focus: stack (technology recommendations)
+- Focus: features (table stakes vs differentiators)
+- Focus: architecture (patterns and structure)
+- Focus: pitfalls (common mistakes to avoid)
+
+Then spawn opti-gsd-research-synthesizer to consolidate findings into `.opti-gsd/research/summary.md`.
+
+**If no**, proceed directly to stories.
+
+### Step 5: Capture Initial Stories
+
+Create initial user stories in `.opti-gsd/stories/` for v1 features:
+
+```markdown
+# US001: {Feature Title}
+
+**From:** Initial planning
+**Requested:** {date}
+**Status:** backlog
+
+## Request
+{What the user needs to be able to do}
+
+## Why
+{Why this is important for v1}
+
+## Acceptance Criteria
+- [ ] {Criterion 1}
+- [ ] {Criterion 2}
+- [ ] {Criterion 3}
+
+## Milestone
+v1.0
+
+## Notes
+{Any additional context}
+```
+
+Create one story file per major v1 feature. Keep them user-focused:
+- US001-user-registration.md
+- US002-user-login.md
+- US003-dashboard.md
+- etc.
+
+**v2 feature ideas** go to `.opti-gsd/features/` as low-priority items.
+
+### Step 6: Generate Roadmap
+
+Spawn opti-gsd-roadmapper agent with:
+- project.md
+- Stories from `.opti-gsd/stories/`
+- summary.md (if research was done)
+
+The roadmapper will:
+1. Group stories into phases by dependency
+2. Order phases logically
+3. Import acceptance criteria as success criteria
+4. Validate all stories are assigned to a phase
+
+### Step 7: Present Roadmap for Approval
+
+Show the generated roadmap to user:
+
+```markdown
+## Proposed Roadmap: v1.0
+
+### Phase 1: {Title}
+- Delivers: US001, US002
+- Success: {From acceptance criteria}
+
+### Phase 2: {Title}
+- Delivers: US003, US004
+- Success: {From acceptance criteria}
+
+{etc.}
+
+Does this phasing make sense? Any adjustments?
+```
+
+Iterate until user approves.
+
+### Step 8: Write roadmap.md
+
+Create `.opti-gsd/roadmap.md`:
+
+```markdown
+# Roadmap
+
+## Milestone: v1.0
+
+### Phase 1: {Title}
+- [ ] Not started
+- {Description}
+
+**Delivers:** US001, US002
+
+**Success Criteria:**
+- [ ] {From US001 acceptance criteria}
+- [ ] {From US002 acceptance criteria}
+
+---
+
+### Phase 2: {Title}
+- [ ] Not started
+- {Description}
+
+**Delivers:** US003, US004
+
+**Success Criteria:**
+- [ ] {From US003 acceptance criteria}
+- [ ] {From US004 acceptance criteria}
+
+{Continue for all phases}
+```
+
+### Step 9: Update state.json
+
+Update `.opti-gsd/state.json`:
+
+```json
+{
+  "milestone": "v1.0",
+  "phase": 1,
+  "task": null,
+  "status": "initialized",
+  "branch": null,
+  "last_active": "{current_timestamp}",
+  "phases": {
+    "complete": [],
+    "in_progress": [],
+    "pending": [1, 2, 3]
+  },
+  "context": "Project defined. Ready to plan Phase 1."
+}
+```
+
+### Step 10: Create Phase Directories
+
+```bash
+mkdir -p .opti-gsd/plans/phase-01
+mkdir -p .opti-gsd/plans/phase-02
+# etc. for each phase
+```
+
+### Step 11: Commit
+
+```bash
+git add .opti-gsd/
+git add CLAUDE.md
+git commit -m "chore: initialize opti-gsd project
+
+- Created project.md with goals and constraints
+- Created {N} user stories in .opti-gsd/stories/
+- Generated roadmap.md with {N} phases
+- Updated CLAUDE.md with workflow instructions
+- Research: {yes/no}"
+```
+
+### Step 12: Report
+
+```
+Project initialized!
+
+Project: {name}
+Phases: {count}
+Stories: {count} for v1
+
+Files created:
+  .opti-gsd/project.md
+  .opti-gsd/stories/*.md
+  .opti-gsd/roadmap.md
+  .opti-gsd/state.json
+  CLAUDE.md (workflow instructions)
+  {.opti-gsd/research/* if researched}
+
+Next: Run /opti-gsd:plan-phase 1 to plan the first phase
+```
+
+### Context Budget
+
+This command may use significant context for research. Target allocations:
+- Questioning: ~10%
+- Research (if enabled): ~40% (spawned as subagents)
+- Roadmapping: ~15%
+- File writing: ~5%
+
+Total orchestrator usage: ~30% (within budget)
+
+---
+
+## Action: Setup CLAUDE.md
+
+Add opti-gsd workflow instructions to the project's CLAUDE.md file.
+
+### Step 1: Check Current State
+
+Check if CLAUDE.md exists and if it already has opti-gsd section:
+
+```bash
+# Check if file exists
+if [ -f "CLAUDE.md" ]; then
+  # Check if opti-gsd section exists
+  grep -q "opti-gsd Workflow" CLAUDE.md && echo "exists" || echo "missing"
+else
+  echo "no_file"
+fi
+```
+
+### Step 2: Handle Each Case
+
+**If CLAUDE.md doesn't exist:**
+
+Create it with full instructions:
+
+```markdown
+# Project Instructions
+
+This project uses **opti-gsd** for spec-driven development workflow.
+
+## Workflow Requirements
+
+**IMPORTANT:** All development work must follow the opti-gsd workflow:
+
+1. **Never commit directly to master/main** — These are protected branches
+2. **Always use milestone branches** — Run `/opti-gsd:start-milestone [name]` first
+3. **Check status before starting** — Run `/opti-gsd:status` to understand current state
+4. **Follow the phase workflow** — Plan → Execute → Verify
+
+## Quick Reference
+
+| Command | Purpose |
+|---------|---------|
+| `/opti-gsd:status` | Check current state and next action |
+| `/opti-gsd:start-milestone [name]` | Start a new milestone branch |
+| `/opti-gsd:roadmap` | View or create project roadmap |
+| `/opti-gsd:plan-phase [N]` | Plan a phase |
+| `/opti-gsd:execute` | Execute current phase |
+| `/opti-gsd:verify` | Verify phase completion |
+
+## Protected Branches
+
+**NEVER push or commit directly to:**
+- `master`
+- `main`
+- `production`
+- `prod`
+
+All changes to these branches MUST go through a pull request.
+
+## Before Any Code Changes
+
+Ask yourself:
+1. Is there an active milestone? (`/opti-gsd:status`)
+2. Am I on a milestone branch? (not master/main)
+3. Is there a plan for this work? (`/opti-gsd:plan-phase`)
+
+If any answer is "no", set up the workflow first.
+```
+
+**If CLAUDE.md exists but missing opti-gsd section:**
+
+Append to the file:
+
+```markdown
+
+---
+
+## opti-gsd Workflow
+
+This project uses **opti-gsd** for spec-driven development.
+
+**Before any code changes:**
+1. Check status: `/opti-gsd:status`
+2. Ensure on milestone branch (never master/main)
+3. Follow: Plan → Execute → Verify
+
+**Protected branches:** master, main, production, prod — PR only!
+
+**Key commands:** `/opti-gsd:status`, `/opti-gsd:start-milestone`, `/opti-gsd:roadmap`, `/opti-gsd:plan-phase`, `/opti-gsd:execute`, `/opti-gsd:verify`
+```
+
+**If opti-gsd section already exists:**
+
+```
+CLAUDE.md already has opti-gsd workflow instructions.
+No changes needed.
+```
+
+### Step 3: Commit
+
+```bash
+git add CLAUDE.md
+git commit -m "docs: add opti-gsd workflow instructions to CLAUDE.md
+
+Co-Authored-By: Claude <noreply@anthropic.com>"
+```
+
+### Step 4: Report
+
+```
+CLAUDE.md Updated
+-------------------------------------------------------------
+Added opti-gsd workflow instructions to CLAUDE.md.
+
+Claude will now consider the opti-gsd workflow on every prompt.
+
+Key rules added:
+- Never commit to master/main directly
+- Always use milestone branches
+- Follow Plan -> Execute -> Verify workflow
+```
+
+### Context Budget
+
+Minimal: ~5%
+
+---
+
+## Action: Migrate
+
+Migrate from old workflow formats to current structure.
+
+### Arguments
+
+- `type` — Migration type: `requirements` (default), `all`
+
+### Step 1: Detect What Needs Migration
+
+Check for legacy files:
+
+```markdown
+## Migration Check
+
+**Legacy files found:**
+- [x] `.opti-gsd/requirements.md` — Convert to stories
+- [ ] `.opti-gsd/todos.md` — Convert to features directory (if exists)
+
+**Already current:**
+- [x] `.opti-gsd/stories/` exists
+- [x] `.opti-gsd/features/` exists
+```
+
+### Step 2: Migrate Requirements to Stories
+
+If `.opti-gsd/requirements.md` exists:
+
+1. Parse each requirement (REQ-ID format)
+2. Create a story file for each:
+
+**Before (requirements.md):**
+```markdown
+### AUTH-01: User Registration
+- **Phase:** 1
+- **Status:** pending
+- **Verification:** User can create account with email/password
+```
+
+**After (.opti-gsd/stories/US001-user-registration.md):**
+```markdown
+# US001: User Registration
+
+**From:** Migrated from AUTH-01
+**Requested:** {original date or migration date}
+**Status:** {pending -> backlog, complete -> delivered}
+
+## Request
+User can create account with email/password
+
+## Why
+Core authentication functionality
+
+## Acceptance Criteria
+- [ ] {Derived from verification field}
+
+## Milestone
+{From phase assignment if known}
+
+## Notes
+Migrated from requirements.md (AUTH-01)
+```
+
+3. Create mapping file `.opti-gsd/migrations/requirements-to-stories.md`:
+
+```markdown
+# Requirements -> Stories Migration
+
+**Date:** {timestamp}
+
+| Old ID | New ID | Title |
+|--------|--------|-------|
+| AUTH-01 | US001 | User Registration |
+| AUTH-02 | US002 | User Login |
+| DASH-01 | US003 | Dashboard Layout |
+```
+
+4. Update roadmap.md references:
+   - Replace `**Requirements:** AUTH-01, AUTH-02`
+   - With `**Delivers:** US001, US002`
+
+5. Archive requirements.md:
+   - Move to `.opti-gsd/archive/requirements.md.bak`
+
+### Step 3: Migrate TODOS to FEATURES
+
+If `.opti-gsd/todos.md` exists but `.opti-gsd/features/` doesn't:
+
+1. Create `.opti-gsd/features/` directory
+2. Convert each todo to a feature file: `.opti-gsd/features/F{NNN}.md`
+3. Update ID format (T001 -> F001)
+4. Archive todos.md
+
+### Step 4: Commit Migration
+
+```bash
+git add .opti-gsd/stories/
+git add .opti-gsd/migrations/
+git add .opti-gsd/roadmap.md
+git add .opti-gsd/archive/
+git rm .opti-gsd/requirements.md 2>/dev/null || true
+git commit -m "chore: migrate to stories-based workflow
+
+- Converted {N} requirements to user stories
+- Updated roadmap.md references
+- Archived requirements.md"
+```
+
+### Step 5: Report
+
+```markdown
+## Migration Complete
+
+**Converted:**
+- {N} requirements -> {N} user stories
+
+**Files created:**
+- .opti-gsd/stories/US001-*.md through US{N}-*.md
+
+**Files archived:**
+- .opti-gsd/archive/requirements.md.bak
+
+**roadmap.md updated:**
+- Replaced requirement references with story references
+
+**Mapping preserved:**
+- .opti-gsd/migrations/requirements-to-stories.md
+
+Your project now uses the simplified workflow:
+- Features (your enhancement ideas)
+- Stories (user needs with acceptance criteria)
+- Issues (bugs/problems)
+
+Run /opti-gsd:stories to see your migrated stories.
+```
+
+### Context Budget
+
+Minimal: ~5%
+
+---
+
+## Context Budget
+
+| Action | Budget |
+|--------|--------|
+| Init Existing Project | ~15% |
+| New Project | ~30% (with research subagents) |
+| Setup CLAUDE.md | ~5% |
+| Migrate | ~5% |
