@@ -12,8 +12,8 @@ This is the opti-gsd source repository. You are using opti-gsd to develop opti-g
 **Key rules:**
 - The installed version guides your workflow (commands, agents, skills)
 - The source version is what you're changing
-- After completing a milestone, the user should reinstall: `npx github:apittopti/opti-gsd init`
-- Never modify installed files directly — only modify source, then reinstall
+- After completing a milestone, the user should update: `/plugin update opti-gsd`
+- Never modify installed files directly — only modify source, then update plugin
 
 ## Workflow Requirements
 
@@ -31,8 +31,9 @@ This is the opti-gsd source repository. You are using opti-gsd to develop opti-g
 | /opti-gsd:status | Check current state and next suggested action |
 | /opti-gsd:roadmap | View/create project roadmap |
 | /opti-gsd:plan-phase | Generate executable plan for a phase |
-| /opti-gsd:execute | Execute current phase plan |
-| /opti-gsd:verify | Verify phase completion |
+| /opti-gsd:execute | Execute current phase plan (review built in between waves) |
+| /opti-gsd:review | Review results, provide feedback, get targeted fixes |
+| /opti-gsd:verify | Verify phase completion (review built in after results) |
 | /opti-gsd:add-feature | Capture features without interrupting work |
 | /opti-gsd:add-story | Capture user/client requests |
 | /opti-gsd:debug | Start systematic debugging session |

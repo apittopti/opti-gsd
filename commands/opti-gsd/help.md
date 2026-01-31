@@ -49,24 +49,68 @@ Project: Not initialized
 ┌──────────────────────────────────────────────────────────────┐
 │                    THE opti-gsd WORKFLOW                     │
 │                                                              │
-│     ┌──────┐     ┌─────────┐     ┌──────┐     ┌─────────┐   │
-│  ──►│ PLAN │────►│ EXECUTE │────►│ PUSH │────►│ VERIFY  │   │
-│     └──────┘     └─────────┘     └──────┘     └─────────┘   │
-│         │                                          │         │
-│         └──────────── repeat per phase ◄───────────┘         │
-│                                                              │
+│          LOCAL (your machine)            │  REMOTE (GitHub)  │
+│                                          │                   │
+│  ┌──────┐  ┌─────────┐  ┌────────┐      │  ┌──────┐         │
+│  │ PLAN │─►│ EXECUTE │─►│ REVIEW │──────┼─►│ PUSH │         │
+│  └──────┘  └─────────┘  └────────┘      │  └──┬───┘         │
+│      │          │    ▲    test here      │     │             │
+│      │          │    │    locally        │     ▼             │
+│      │          └────┘                   │  ┌─────────┐     │
+│      │        feedback                   │  │ VERIFY  │     │
+│      │        between                    │  └─────────┘     │
+│      │        waves                      │     │    ▲       │
+│      │                                   │     └────┘       │
+│      │                                   │   feedback       │
+│      └──────────── repeat per phase ◄────┼─────────────┘    │
+│                                          │                   │
 └──────────────────────────────────────────────────────────────┘
 ```
 
-| Step | Command | What it does |
-|------|---------|--------------|
-| 0 | /opti-gsd:roadmap | Define what you're building (phases) |
-| 1 | /opti-gsd:plan-phase | Generate execution plan for current phase |
-| 2 | /opti-gsd:execute | Run the plan (TDD, parallel tasks, auto-commit) |
-| 3 | /opti-gsd:push | Push to trigger preview deployment |
-| 4 | /opti-gsd:verify | Verify everything works |
+| Step | Command | Where | What it does |
+|------|---------|-------|--------------|
+| 0 | /opti-gsd:roadmap | local | Define what you're building (phases) |
+| 1 | /opti-gsd:plan-phase | local | Generate execution plan for current phase |
+| 2 | /opti-gsd:execute | local | Run the plan (TDD, parallel tasks, auto-commit) — **asks for your review between waves and after completion** |
+| 3 | /opti-gsd:review | local | **Test locally**, provide feedback, get fixes — also built into execute and verify |
+| 4 | /opti-gsd:push | remote | Push branch to GitHub, triggers CI + preview deployment |
+| 5 | /opti-gsd:verify | either | Automated verification — runs locally, can also test preview URL |
 
-**That's it.** Run /opti-gsd:status anytime to see where you are and what to do next.
+**Review is built in.** After every wave and after verification, you'll be asked "how does this look?"
+Say "looks good" to continue, or describe what needs fixing.
+
+Run /opti-gsd:status anytime to see where you are and what to do next.
+
+---
+
+## When Do I Test?
+
+**Local testing happens during REVIEW (step 3):**
+- After execute builds code, you're asked to review
+- Open your app locally (`localhost`), try it out, describe what's wrong
+- Fixes happen immediately, still local
+- Keep reviewing until you're satisfied
+
+**Push happens when YOU say so (step 4):**
+- Nothing goes to GitHub until you run `/opti-gsd:push`
+- Push triggers CI (linting, tests, builds) and preview deployments
+- The branch is pushed — no PR is created yet
+
+**Verify can test the preview (step 5):**
+- Runs automated checks (CI, artifacts, integration)
+- If a preview URL exists, can test against the deployed version
+- After automated checks, you review again — this time you can also test the preview
+
+**PR happens at the end of the milestone:**
+- After all phases are done and verified
+- Run `/opti-gsd:complete-milestone` to create the PR
+- Review and merge the PR on GitHub
+- Run `/opti-gsd:complete-milestone --finalize` to tag and archive
+
+```
+Per phase:   execute → review locally → push → verify
+End:         complete-milestone → PR → merge → finalize
+```
 
 ---
 
@@ -77,8 +121,9 @@ Project: Not initialized
 /opti-gsd:new-project     ← Interactive setup wizard
 /opti-gsd:roadmap         ← Define your phases
 /opti-gsd:plan-phase 1    ← Plan first phase
-/opti-gsd:execute         ← Execute (TDD built-in)
-/opti-gsd:verify 1        ← Verify it works
+/opti-gsd:execute         ← Execute (review built in — test locally here)
+/opti-gsd:push            ← Happy with it? Push to GitHub
+/opti-gsd:verify 1        ← Verify (review built in — test preview here)
 ```
 
 **Existing Project:**
