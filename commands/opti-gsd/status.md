@@ -183,19 +183,20 @@ BACKWARD FLOWS (rework needed):
 
 Show the primary action, with alternatives when choices exist:
 
-| State | DO THIS NOW | Alternatives |
-|-------|-------------|--------------|
+| State | DO THIS NOW | Note |
+|-------|-------------|------|
 | No .opti-gsd/ | /opti-gsd:new-project | or /opti-gsd:init (existing code) |
 | No roadmap | /opti-gsd:roadmap | — |
 | No plan for phase | /opti-gsd:plan-phase {N} | /opti-gsd:discuss-phase first |
 | Plan exists, not executed | /opti-gsd:execute | — |
 | Execution in progress | /opti-gsd:execute (continue) | /opti-gsd:recover if stuck |
-| **Phase executed** | /opti-gsd:review {N} | or /opti-gsd:push, /opti-gsd:verify |
+| **Phase executed** | **Test locally**, then /opti-gsd:review {N} | Everything is on your machine |
 | **In review** | /opti-gsd:review {N} (continue) | "looks good" to finish review |
-| Pushed, not verified | /opti-gsd:verify {N} | /opti-gsd:review {N} for more feedback |
+| **Review done** | /opti-gsd:push | Pushes branch to GitHub for CI + preview |
+| Pushed, not verified | /opti-gsd:verify {N} | Can test preview deployment too |
 | **Gaps found** | /opti-gsd:review {N} | or /opti-gsd:plan-fix, /opti-gsd:rollback |
-| Verified, more phases | /opti-gsd:plan-phase {N+1} | /opti-gsd:review {N}, /opti-gsd:archive {N} |
-| All phases done | /opti-gsd:complete-milestone | — |
+| Verified, more phases | /opti-gsd:plan-phase {N+1} | /opti-gsd:archive {N} to free context |
+| All phases verified | /opti-gsd:complete-milestone | Creates PR for merge into main |
 
 **When there are choices, show both:**
 

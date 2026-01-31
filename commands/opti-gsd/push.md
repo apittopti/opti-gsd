@@ -219,10 +219,14 @@ Preview Deployment:
 
 ```
 
-**Next steps:**
-→ /opti-gsd:verify        — Verify against preview deployment
-→ /opti-gsd:execute       — Continue with more tasks
-→ /opti-gsd:status        — Check current state
+**Branch is on GitHub. What's next?**
+→ /opti-gsd:verify        — Run verification (can test preview deployment if available)
+
+{If unverified phases remain:}
+→ /opti-gsd:verify {N}    — Verify the unverified phase(s)
+
+{If all phases verified:}
+→ /opti-gsd:complete-milestone — Create PR to merge into main
 
 If no deployment platform:
 ```
@@ -239,9 +243,9 @@ No preview deployment configured.
 
 ```
 
-**Next steps:**
-→ /opti-gsd:verify        — Verify locally
-→ /opti-gsd:execute       — Continue with more tasks
+**Branch is on GitHub. What's next?**
+→ /opti-gsd:verify        — Run verification locally
+→ /opti-gsd:complete-milestone — Create PR (if all phases verified)
 
 ---
 

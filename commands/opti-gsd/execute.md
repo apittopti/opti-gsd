@@ -720,11 +720,18 @@ This means the user doesn't need to manually run `/opti-gsd:verify` — it flows
 
 ```
 
-**Next steps:**
-→ /opti-gsd:review {N}       — More feedback? Review again anytime
-→ /opti-gsd:verify {N}       — Re-run verification {against preview if pushed}
-→ /opti-gsd:push             — Push to trigger preview deployment {if not pushed yet}
-→ /opti-gsd:plan-phase {N+1} — Plan next phase
+**What to do now:**
+
+1. **Test locally** — Try your app at localhost. Everything is on your machine.
+2. Tell me what needs fixing, or say "looks good"
+
+**When you're happy:**
+→ /opti-gsd:push             — Push to GitHub (triggers CI + preview deployment)
+→ /opti-gsd:verify {N}       — Then verify (automated checks + preview testing)
+
+**Other options:**
+→ /opti-gsd:review {N}       — Come back to review anytime later
+→ /opti-gsd:plan-phase {N+1} — Skip ahead to next phase
 → /opti-gsd:archive {N}      — Archive phase to free context
 
 💾 State saved. Safe to /compact or start new session if needed.
