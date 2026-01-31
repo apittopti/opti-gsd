@@ -265,13 +265,29 @@ After each wave completes, present results and ask for feedback BEFORE starting 
 
 **If user provides feedback:**
 
-1. Categorize each item:
+1. **Check against plan context** before categorizing:
+   - Read roadmap.md to know what's in future phases
+   - If feedback is about something planned for a later phase, tell the user:
+     ```
+     "Search functionality is planned for Phase 4: Search & Discovery.
+      Want to keep it there, or prioritize it now?"
+     ```
+   - If feedback is about something not planned anywhere, offer:
+     ```
+     "Dark mode isn't in the current plan. Want to:
+      → Add as feature for later (/opti-gsd:add-feature)
+      → Add as a new phase
+      → Include in this phase (scope expansion)"
+     ```
+   - Only create fix tasks for items that belong to the CURRENT phase
+
+2. Categorize items that DO belong to this phase:
    - **wrong_behavior** — Works but does the wrong thing
-   - **missing** — Something expected but not present
+   - **missing_this_phase** — Something expected in this phase but not present
    - **visual** — Looks wrong, bad layout, wrong text
    - **edge_case** — Doesn't handle a scenario
 
-2. Present categorization for confirmation:
+3. Present categorization for confirmation:
    ```markdown
    I'll fix these before Wave {W+1}:
    | # | Issue | Category | Affected Task |
@@ -665,12 +681,14 @@ Please check the results. You can:
 
 **If user provides feedback:**
 
-Follow the same review loop as Step 5b:
-1. Categorize feedback items
-2. Present for confirmation
-3. Generate fix tasks → execute with quality gates → commit
-4. Re-present results
-5. Loop until user says "looks good"
+Follow the same review loop as Step 5b (including plan-awareness):
+1. Check feedback against roadmap — is it about this phase, a future phase, or unplanned?
+2. For future-phase items: inform user and offer to reprioritize or capture
+3. For unplanned items: offer add-feature, add-phase, or include in current scope
+4. For current-phase items: categorize, present for confirmation
+5. Generate fix tasks → execute with quality gates → commit
+6. Re-present results
+7. Loop until user says "looks good"
 
 Review fixes at this stage are tracked as `review-plan-final.json` in the phase directory.
 

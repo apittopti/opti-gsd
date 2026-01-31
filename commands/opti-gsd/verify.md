@@ -568,9 +568,33 @@ Tip: Want me to hit the API endpoints and show responses?
 → "show me [page/endpoint/component]" — I'll check it for you
 ```
 
-#### 7c: Process Combined Feedback
+#### 7c: Process Combined Feedback (Plan-Aware)
 
-If the user provides feedback OR automated gaps were found, combine them into a single fix round:
+If the user provides feedback OR automated gaps were found, first check feedback against the plan context, then combine into a fix round.
+
+**Plan-awareness check** (before creating fix tasks):
+
+1. Read `.opti-gsd/roadmap.md` to get all phase descriptions
+2. For EACH user feedback item, check:
+   - Is this about the current phase? → Create fix task
+   - Is this about a future phase? → Inform user:
+     ```
+     "{feature} is planned for Phase {M}: {phase_title}.
+      → Keep as planned
+      → Prioritize now (moves to current phase)
+      → Adjust the future phase description"
+     ```
+   - Is this not planned anywhere? → Offer options:
+     ```
+     "{feature} isn't in the current plan.
+      → /opti-gsd:add-feature — Capture for future
+      → /opti-gsd:add-phase — Add as new phase
+      → Include in current phase (scope expansion — may affect timeline)"
+     ```
+
+3. Only items confirmed for THIS phase become fix tasks.
+
+**Then merge confirmed issues** — automated gaps + user feedback for this phase:
 
 1. **Merge all issues** — automated gaps + user feedback:
    ```markdown

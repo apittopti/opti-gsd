@@ -74,30 +74,91 @@ Phase {N} has not been executed yet.
 Describe any issues, or type "looks good" if satisfied.
 ```
 
-### Step 3: Collect and Categorize Feedback
+### Step 2b: Load Plan Context for Awareness
 
-Accept free-form user feedback. Categorize each item:
+Before processing any feedback, load the full plan context so you can tell
+the user when something isn't built yet because it's planned for later:
+
+1. Read `.opti-gsd/roadmap.md` — get ALL phases and their descriptions/goals
+2. Read `.opti-gsd/plans/phase-{N}/plan.json` — current phase tasks
+3. Read remaining phase descriptions from roadmap for phases {N+1}, {N+2}, etc.
+4. If `.opti-gsd/stories/` exists, load stories to understand acceptance criteria
+
+Build a **context map** (in memory):
+
+```
+Phase {N} (CURRENT): {goal} — tasks: [{T01 title}, {T02 title}, ...]
+Phase {N+1} (NEXT): {goal} — not yet planned
+Phase {N+2} (FUTURE): {goal} — not yet planned
+...
+Stories: [US001: {title}, US003: {title}, ...]
+Features (backlog): [F001: {title}, F003: {title}, ...]
+```
+
+This context map is used in Step 3 to detect when feedback is about future work or unplanned features.
+
+### Step 3: Collect and Categorize Feedback (Plan-Aware)
+
+Accept free-form user feedback. For EACH item, check against the context map:
+
+**First: Is this about something in the CURRENT phase?**
+- Check if the feedback relates to a task in plan.json for phase {N}
+- If yes → categorize normally and create fix task
+
+**Second: Is this about something in a FUTURE phase?**
+- Check if the feedback relates to goals/descriptions of phases {N+1}, {N+2}, etc.
+- If yes → tell the user it's coming later, don't create a fix task
+
+**Third: Is this about something NOT planned anywhere?**
+- Check roadmap, stories, and features backlog
+- If not found → offer to add it as a feature or insert a phase
+
+Categorize each item:
 
 | Category | Description | Example |
 |----------|-------------|---------|
 | **wrong_behavior** | Works but does the wrong thing | "Error message just says 'Error'" |
-| **missing** | Expected feature not present | "No forgot password link" |
+| **missing_this_phase** | Expected in this phase but not present | "No forgot password link" |
 | **visual** | Looks wrong | "Form should be centered" |
 | **edge_case** | Scenario not handled | "What if user enters no email?" |
 | **scope_change** | User changed requirements | "Actually I want OAuth, not email login" |
 | **performance** | Too slow or resource-heavy | "Search takes 3 seconds" |
+| **planned_later** | This is in a future phase | "Search doesn't work" (but search is Phase 4) |
+| **not_planned** | This isn't in any phase or backlog | "I want dark mode" |
 
-Present categorization:
+Present categorization with plan awareness:
+
 ```markdown
 ## Feedback Analysis
 
-| # | Issue | Category | Affected |
-|---|-------|----------|----------|
+### Fixable now (Phase {N}):
+| # | Issue | Category | Affected Task |
+|---|-------|----------|---------------|
 | 1 | Generic error messages | wrong_behavior | T02: Login page |
-| 2 | No forgot password link | missing | T02: Login page |
-| 3 | Form not centered | visual | T02: Login page |
+| 2 | Form not centered | visual | T02: Login page |
 
-Does this look right? Adjust or confirm.
+### Planned for later:
+| # | Issue | Planned In | Phase Goal |
+|---|-------|-----------|------------|
+| 3 | "Search doesn't work" | Phase 4: Search & Discovery | Full-text search with filters |
+| 4 | "No user profiles" | Phase 3: User Management | Profile pages with settings |
+
+💡 These are coming in future phases. Want to:
+→ Keep as planned — No action needed
+→ Prioritize — Move to current phase (/opti-gsd:insert-phase or update plan)
+→ Adjust scope — Modify the future phase description
+
+### Not currently planned:
+| # | Issue | Suggestion |
+|---|-------|-----------|
+| 5 | "I want dark mode" | Not in any phase or backlog |
+
+💡 Options:
+→ /opti-gsd:add-feature "Dark mode theme support" — Capture for future
+→ /opti-gsd:add-phase — Add as a new phase at end of roadmap
+→ /opti-gsd:insert-phase {N+1} — Insert as the next phase (urgent)
+
+Does this look right? Adjust categories or confirm to proceed with fixes.
 ```
 
 **Scope change handling:**
