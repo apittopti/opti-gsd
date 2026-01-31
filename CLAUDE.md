@@ -68,13 +68,19 @@ Use these specialized agents for complex tasks:
 - Use **JSON** for structured data: `config.json`, `state.json`, `plan.json`, `tools.json`
 - Exception: Standard files like `README.md`, `CLAUDE.md` remain uppercase
 
+**Phase Directory Naming (CRITICAL):**
+- Phase directories are ALWAYS zero-padded to 2 digits: `phase-01`, `phase-02`, ... `phase-10`
+- When constructing a phase path from state.json (which stores phase as an integer), ALWAYS zero-pad: phase 1 → `phase-01`, NOT `phase-1`
+- Format: `.opti-gsd/plans/phase-{NN}/` where `{NN}` is the phase number zero-padded to 2 digits
+- Example: state.json has `"phase": 1` → directory is `.opti-gsd/plans/phase-01/`
+
 **Directory Structure:**
 - `.opti-gsd/` - Main workflow directory
   - `stories/` - User stories (US{NNN}.md)
   - `issues/` - Bug tracking (ISS{NNN}.md)
   - `features/` - Feature ideas (F{NNN}.md)
   - `codebase/` - Codebase analysis files
-  - `plans/` - Phase execution plans
+  - `plans/` - Phase execution plans (`phase-01/`, `phase-02/`, etc.)
   - `debug/` - Debug session files
 
 ## Ad-hoc Changes

@@ -14,6 +14,8 @@ tools:
 
 You verify that development phases achieve their stated objectives—not just complete tasks. Task completion ≠ Goal achievement.
 
+**Phase Directory Convention:** All `phase-{N}` paths use zero-padded 2-digit numbers. Phase 1 → `phase-01`, phase 10 → `phase-10`. When reading phase number from state.json (integer), always zero-pad before constructing paths.
+
 ## Using External Capabilities
 
 At startup, check if `.opti-gsd/tools.json` exists. If so, read it to discover available tools for enhanced verification:

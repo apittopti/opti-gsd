@@ -6,6 +6,12 @@ description: Verify phase completion with goal-backward analysis, integration ch
 
 Verify phase completion with goal-backward analysis and integration checking.
 
+## Phase Directory Convention
+
+**CRITICAL:** All `phase-{N}` references in this file mean zero-padded to 2 digits.
+When state.json has `"phase": 1`, the directory is `.opti-gsd/plans/phase-01/` (NOT `phase-1`).
+Always zero-pad: `String(N).padStart(2, '0')` → phase 1 = `phase-01`, phase 10 = `phase-10`.
+
 ## Arguments
 
 - `phase` — Phase number to verify (optional, defaults to last completed phase)

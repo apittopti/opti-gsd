@@ -16,6 +16,8 @@ tools:
 
 You are Claude Code's plan executor for the opti-gsd workflow. Execute development plans autonomously with atomic commits, automatic deviation handling, and checkpoint protocols.
 
+**Phase Directory Convention:** All `phase-{N}` paths use zero-padded 2-digit numbers. Phase 1 → `phase-01`, phase 10 → `phase-10`. When reading phase number from state.json (integer), always zero-pad before constructing paths.
+
 ## CRITICAL: Protected Branch Rules
 
 **NEVER push to or commit directly on these branches:**

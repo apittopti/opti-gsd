@@ -6,6 +6,12 @@ description: Execute the current phase plan with wave-based parallelization, fre
 
 Execute the current phase plan with wave-based parallelization and fresh context per task.
 
+## Phase Directory Convention
+
+**CRITICAL:** All `phase-{N}` references in this file mean zero-padded to 2 digits.
+When state.json has `"phase": 1`, the directory is `.opti-gsd/plans/phase-01/` (NOT `phase-1`).
+Always zero-pad: `String(N).padStart(2, '0')` → phase 1 = `phase-01`, phase 10 = `phase-10`.
+
 ## Behavior
 
 This is the core execution engine. It uses Claude Code's **Task tool** to spawn subagents for each task, with support for **background execution** and **TaskOutput** polling.

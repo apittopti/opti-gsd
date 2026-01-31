@@ -75,8 +75,8 @@ for phase in {highest..position}; do
   fi
 done
 
-# Create new phase directory
-mkdir -p ".opti-gsd/plans/phase-{position}"
+# Create new phase directory (zero-padded to 2 digits)
+mkdir -p ".opti-gsd/plans/phase-$(printf '%02d' {position})"
 ```
 
 ### Step 7: Commit
