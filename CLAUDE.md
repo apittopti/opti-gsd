@@ -93,6 +93,19 @@ Even for small ad-hoc changes:
 
 ## Version Management
 
-**IMPORTANT: When completing a milestone (/opti-gsd:complete-milestone):**
+**CRITICAL: ALL three version files MUST be updated together on EVERY push to master.**
 
-Update `package.json` version field to match the milestone (e.g., `"2.1.0"` for milestone `v2.1.0`).
+Whenever you commit to master (whether milestone, bug fix, or any change), bump the patch version and update ALL three files:
+
+1. `package.json` — `"version"` field
+2. `.claude-plugin/plugin.json` — `"version"` field
+3. `.claude-plugin/marketplace.json` — `"version"` field in the plugins array entry
+
+All three MUST have identical version strings. If they don't match, the marketplace won't detect the update.
+
+**When to bump:**
+- **PATCH** (2.6.0 → 2.6.1): Bug fixes, small changes, any push to master
+- **MINOR** (2.6.0 → 2.7.0): New commands, features, or significant changes
+- **MAJOR** (2.6.0 → 3.0.0): Breaking changes
+
+**Never push to master without bumping the version.** The marketplace uses the version in `marketplace.json` to detect updates. Same version = no update shown to users.
