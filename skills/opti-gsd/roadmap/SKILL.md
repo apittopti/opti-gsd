@@ -103,15 +103,17 @@ Created: {date}
 
 ## Step 3: Update State
 
-Update state.json phases:
+Update state.json:
 ```json
 {
+  "status": "roadmap_created",
   "phases": {
     "total": {count},
     "complete": [],
     "current": 1,
     "pending": [2, 3, ...]
-  }
+  },
+  "last_active": "{timestamp}"
 }
 ```
 

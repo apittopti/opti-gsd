@@ -55,20 +55,21 @@ Execute each configured CI command:
 {config.ci.e2e}
 ```
 
-Record pass/fail for each.
+Record pass/fail for each. Skip commands that are null.
 
 ## Step 3: Run Task Verification
 
-For each task in the plan, execute its `<verify>` checks:
+For each task in the plan, execute its `verify` checks (the `verify` array from plan.json):
 
-- `type="test"` — run the command, check exit code
-- `type="lint"` — run linter on specific files
-- `type="console"` — check for console output
-- `type="browser"` — note for manual verification (if no browser tool)
+- `type: "test"` — run the `cmd`, check exit code
+- `type: "lint"` — run linter on specific files
+- `type: "build"` — run build command
+
+Record pass/fail for each check.
 
 ## Step 4: Requirement Coverage
 
-Check each must-have outcome from the plan:
+Check each `must_haves` entry from plan.json:
 - Is there code that implements it?
 - Do tests cover it?
 - Does it work as specified?
@@ -79,26 +80,36 @@ Create `.opti-gsd/plans/phase-{NN}/verification.json`:
 
 ```json
 {
-  "phase": {N},
-  "timestamp": "{timestamp}",
-  "status": "pass|partial|fail",
-  "ci": {
-    "lint": {"status": "pass|fail", "output": "..."},
-    "typecheck": {"status": "pass|fail", "output": "..."},
-    "test": {"status": "pass|fail", "output": "..."},
-    "build": {"status": "pass|fail", "output": "..."},
-    "e2e": {"status": "pass|fail|skip", "output": "..."}
+  "version": "3.0",
+  "phase": 2,
+  "verified_at": "2026-02-01T14:00:00Z",
+  "result": "pass",
+  "checks": {
+    "lint": { "status": "pass", "output": "" },
+    "typecheck": { "status": "pass", "output": "" },
+    "test": { "status": "pass", "output": "42 tests passed" },
+    "build": { "status": "pass", "output": "" },
+    "e2e": { "status": "skip", "reason": "not configured" }
   },
-  "tasks": {
-    "01": {"status": "pass|fail", "checks": [...]},
-    "02": {"status": "pass|fail", "checks": [...]}
+  "plan_compliance": {
+    "total_tasks": 3,
+    "verified": 3,
+    "failed": 0,
+    "details": [
+      { "id": "01", "status": "pass", "note": "" },
+      { "id": "02", "status": "pass", "note": "" },
+      { "id": "03", "status": "pass", "note": "Fixed after review round 1" }
+    ]
   },
-  "requirements": {
-    "covered": ["..."],
-    "gaps": ["..."]
-  }
+  "issues": []
 }
 ```
+
+Field reference:
+- `result`: `"pass"`, `"fail"`, or `"partial"`
+- `checks.{name}.status`: `"pass"`, `"fail"`, or `"skip"`
+- `plan_compliance.details[].status`: `"pass"` or `"fail"`
+- `issues`: array of unresolved issue strings
 
 ## Step 6: Present Results
 
@@ -115,12 +126,12 @@ CI Checks:
 Task Verification:
   ✓ Task 01: All checks passed
   ✓ Task 02: All checks passed
-  ✗ Task 03: E2E check failed — {reason}
+  ✗ Task 03: Test check failed — {reason}
 
 Requirements:
-  ✓ {outcome 1}
-  ✓ {outcome 2}
-  ✗ {outcome 3} — gap identified
+  ✓ {must_have 1}
+  ✓ {must_have 2}
+  ✗ {must_have 3} — gap identified
 
 ──────────────────────────────────────────────────────────────
 Overall: PARTIAL (1 gap found)
@@ -146,9 +157,9 @@ Update state.json: `"status": "verified"`, move phase to `phases.complete`.
 
 ```bash
 git add .opti-gsd/plans/phase-{NN}/verification.json .opti-gsd/state.json
-git commit -m "docs: verify phase {N} — {status}
+git commit -m "docs: verify phase {N} — {result}
 
 - CI: {pass_count}/{total_count} passed
-- Tasks: {task_pass}/{task_total} verified
-- Gaps: {gap_count}"
+- Tasks: {verified}/{total_tasks} verified
+- Issues: {issue_count}"
 ```

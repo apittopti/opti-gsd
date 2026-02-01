@@ -2,6 +2,7 @@
 name: opti-gsd-executor
 description: Executes a single task from a phase plan — implements code, runs tests, commits atomically
 tools: Read, Glob, Grep, Bash, Write, Edit, NotebookEdit, WebFetch
+model: sonnet
 permissionMode: acceptEdits
 ---
 
