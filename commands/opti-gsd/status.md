@@ -175,8 +175,8 @@ BACKWARD FLOWS (rework needed):
                               │
                  ┌────────────┴────────────┐
                  ▼                         ▼
-            /recover              /rollback (undo)
-            (diagnose)
+            /execute              /rollback (undo)
+            (resume)
 ```
 
 ### DO THIS NOW Detection
@@ -189,7 +189,7 @@ Show the primary action, with alternatives when choices exist:
 | No roadmap | /opti-gsd:roadmap | — |
 | No plan for phase | /opti-gsd:plan-phase {N} | /opti-gsd:discuss-phase first |
 | Plan exists, not executed | /opti-gsd:execute | — |
-| Execution in progress | /opti-gsd:execute (continue) | /opti-gsd:recover if stuck |
+| Execution in progress | /opti-gsd:execute (continue) | /opti-gsd:rollback if stuck |
 | **Phase executed** | **Test locally**, then /opti-gsd:review {N} | Everything is on your machine |
 | **In review** | /opti-gsd:review {N} (continue) | "looks good" to finish review |
 | **Review done** | /opti-gsd:push | Pushes branch to GitHub for CI + preview |
@@ -297,7 +297,7 @@ If loop state indicates a problem, show recovery info:
 Task 3 failed after 2 retries.
 
 DO THIS NOW:
-  /opti-gsd:recover     — Diagnose and fix the issue
+  /opti-gsd:execute     — Resume execution (auto-diagnoses state)
 
 Or:
   /opti-gsd:rollback 2-02  — Rollback to before Task 3

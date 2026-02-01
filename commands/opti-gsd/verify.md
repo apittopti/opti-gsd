@@ -215,7 +215,7 @@ Checking files modified in this phase...
 **Check for cclsp availability:**
 1. Read `.opti-gsd/tools.json`
 2. Look for "cclsp" in the MCP Servers section
-3. If available, use ToolSearch to load `mcp__cclsp__get_diagnostics`
+3. If available, call `mcp__cclsp__get_diagnostics` directly (MCP tools are auto-available when configured)
 
 **Check changed files:**
 1. Get list of files modified in phase from summary.md

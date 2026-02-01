@@ -182,7 +182,7 @@ git tag -l "gsd/backup/*"
 git reset --hard gsd/backup/{timestamp}
 ```
 
-Or use /opti-gsd:recover to diagnose and fix state.
+Or re-run /opti-gsd:execute to diagnose state and resume.
 
 ---
 

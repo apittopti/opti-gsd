@@ -68,7 +68,7 @@ If `.opti-gsd/` doesn't exist, create it.
 
 #### Step 2: Probe MCP Servers
 
-Use ToolSearch to discover available MCP tools:
+Probe for available MCP tools by attempting to call known tool names:
 
 ```javascript
 const mcpProbes = [
@@ -84,9 +84,9 @@ const mcpProbes = [
 ```
 
 For each probe:
-1. Call `ToolSearch` with the query
-2. If tools found, record as available
-3. List actual tool names returned
+1. Try calling the MCP tool directly (MCP tools are auto-available when their server is configured)
+2. If the tool responds, record as available
+3. List actual tool names discovered
 
 #### Step 3: Scan for Installed Plugins
 

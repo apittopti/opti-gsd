@@ -152,7 +152,6 @@ End:         complete-milestone → PR → merge → finalize
 | Command | Description |
 |---------|-------------|
 | /opti-gsd:rollback | Undo to a previous checkpoint |
-| /opti-gsd:recover | Fix interrupted execution state |
 | /opti-gsd:plan-fix | Generate fix plan for verification gaps |
 
 ---

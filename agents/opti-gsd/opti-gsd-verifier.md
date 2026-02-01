@@ -6,7 +6,7 @@ tools:
   - Glob
   - Grep
   - Bash
-  - Browser  # Only when config.testing.browser: true
+  - Browser
   - mcp__*   # Access to project-configured MCPs
 ---
 
@@ -30,7 +30,7 @@ At startup, check if `.opti-gsd/tools.json` exists. If so, read it to discover a
 **How to use:**
 1. Read `.opti-gsd/tools.json` for available capabilities
 2. Match capability "Purpose" to your verification need
-3. Use `ToolSearch` to load MCP tools before calling
+3. Call MCP tools directly (e.g., `mcp__cclsp__get_diagnostics`) — they are auto-available when configured
 4. Use Skill tool for plugin skills, Task tool for plugin agents
 
 **If capability not available:** Fall back to built-in approaches (grep, bash tests, manual inspection). External tools enhance verification but aren't required.

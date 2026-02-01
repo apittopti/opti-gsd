@@ -8,7 +8,7 @@ tools:
   - Bash
   - Glob
   - Grep
-  - Browser  # Only when config.testing.browser: true
+  - Browser
 ---
 
 # Opti-GSD Debugger Agent
@@ -29,7 +29,7 @@ At startup, check if `.opti-gsd/tools.json` exists. If so, read it to discover a
 
 **How to use:**
 1. Read `.opti-gsd/tools.json` for available capabilities
-2. Use `ToolSearch` to load MCP tools before calling
+2. Call MCP tools directly (e.g., `mcp__cclsp__get_diagnostics`) — they are auto-available when configured
 3. Fall back to grep/read if tools not available
 
 ## Core Philosophy

@@ -8,7 +8,7 @@ tools:
   - Bash
   - Glob
   - Grep
-  - Browser  # Only when config.testing.browser: true
+  - Browser
   - mcp__*   # Access to project-configured MCPs (github, supabase, etc.)
 ---
 
@@ -65,27 +65,18 @@ fi
    - This enables calculating tools used during task execution
 5. Verify prior commits exist if resuming
 6. Confirm working directory is clean
-7. **Initialize Claude Code Tasks** for visual progress tracking:
-   - For each task in plan.json, call `TaskCreate` with:
-     - `subject`: "T{id}: {title}"
-     - `description`: Task action summary from plan
-     - `activeForm`: "Executing T{id}: {title}"
-   - Store returned task IDs in memory for status updates
-   - Call `TaskList` to display initial progress overview
-   - Note: These are ephemeral visual tasks; plan.json remains the source of truth
 
 ### Using External Capabilities
 
 If `.opti-gsd/tools.json` exists, read it to discover available tools. Match capabilities to your current task based on their "Purpose" and "Use when" descriptions.
 
 **Examples:**
-- Need to navigate code? → Check for "cclsp" → ToolSearch to load → use `mcp__cclsp__find_definition`
+- Need to navigate code? → Check for "cclsp" → call `mcp__cclsp__find_definition` directly
 - Need to run browser tests? → Check for "Chrome" or "Browser" → use appropriate tools
-- Need to verify types? → Check for "cclsp" → use `mcp__cclsp__get_diagnostics`
+- Need to verify types? → Check for "cclsp" → call `mcp__cclsp__get_diagnostics` directly
 
-**Loading MCP tools:**
-1. Use `ToolSearch` with `select:tool_name` to load a specific tool
-2. Then call the tool directly
+**Using MCP tools:**
+MCP tools are auto-available when their server is configured. Call them directly — no discovery or loading step needed.
 
 **If no tools.json or capability not available:**
 - Use built-in approaches (Grep for code search, Bash for testing, etc.)
@@ -96,28 +87,22 @@ If `.opti-gsd/tools.json` exists, read it to discover available tools. Match cap
 ```
 FOR each task in plan:
   1. Announce: "Starting Task N: {description}"
-  2. Update Claude Code task status:
-     - Call TaskUpdate(taskId={stored_id}, status="in_progress")
-     - User sees task spinner in Claude Code UI
 
-  3. Check test_required:
+  2. Check test_required:
      IF test_required == true:
        → Execute TDD Red-Green-Refactor Loop (see below)
      ELSE:
        → Execute action directly
        → Run verification steps
 
-  4. Apply deviation rules as needed (auto-fix blockers)
+  3. Apply deviation rules as needed (auto-fix blockers)
 
-  5. IF task complete:
+  4. IF task complete:
        - git add {files}
        - git commit with conventional message
        - Update state.json
-       - Call TaskUpdate(taskId={stored_id}, status="completed")
      ELSE IF max attempts exhausted:
        - Log failure with error analysis
-       - Call TaskUpdate(taskId={stored_id}, status="completed")
-         Note: Mark completed even on failure (task is done, just failed)
        - Stop execution
        - Report to user with suggested fix
 ```
@@ -289,7 +274,6 @@ TASK COMPLETE
 Files: {list of modified files}
 Commit: {hash}
 Tools Used: {count} calls ({top 3 tools with counts})
-Claude Task: Updated to completed ✓
 Auto-fixes: {list if any}
 ```
 
@@ -307,7 +291,6 @@ TASK FAILED: {reason}
 
 Progress: {what was completed}
 Blocker: {specific issue}
-Claude Task: Updated to completed (failed)
 Suggested fix: {recommendation}
 ```
 

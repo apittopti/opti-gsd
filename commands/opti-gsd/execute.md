@@ -14,16 +14,15 @@ Always zero-pad: `String(N).padStart(2, '0')` → phase 1 = `phase-01`, phase 10
 
 ## Behavior
 
-This is the core execution engine. It uses Claude Code's **Task tool** to spawn subagents for each task, with support for **background execution** and **TaskOutput** polling.
+This is the core execution engine. It uses Claude Code's **Task tool** to spawn subagents for each task, with support for **background execution** and **Read** on output files for result retrieval.
 
-### Claude Code Task Integration
+### Progress Tracking
 
-opti-gsd integrates with Claude Code's built-in task system for real-time visual progress.
-This is implemented in **Step 4c** (create tasks) and **Step 5** (update tasks during execution).
+opti-gsd uses **TodoWrite** for real-time visual progress and **plan.json** as the persistent source of truth.
 
 **Two-Layer Architecture:**
 - **plan.json** — Persistent source of truth, workflow history, survives sessions
-- **Claude Code Tasks** — Ephemeral visual progress in CLI (Ctrl+T to view)
+- **TodoWrite** — Visual progress in CLI, updated as tasks complete
 
 ### Step 0: Validate Branch (CRITICAL - Protected Branch Check)
 
@@ -55,7 +54,7 @@ This is implemented in **Step 4c** (create tasks) and **Step 5** (update tasks d
    ```
    **STOP execution here. Do NOT offer to continue on master.**
 
-3. If `branching: milestone` is configured in `.opti-gsd/config.json`:
+3. If `branching.enabled` is `true` in `.opti-gsd/config.json`:
 
    **If no milestone set in state.json:**
    ```
@@ -124,11 +123,35 @@ Parse:
 - XML tasks for execution
 - Wave structure for parallelization
 
-### Step 3b: Determine Starting Point
+### Step 3b: Determine Starting Point (includes recovery)
 
 If resuming (task > 0 in state.json):
-- Verify prior commits exist
-- Start from next incomplete task
+
+1. **Verify git reality matches state.json:**
+   - Check git log for commits matching `{type}({phase}-T{N}):` pattern
+   - Count how many task commits actually exist for this phase
+   - If state.json claims more progress than git shows, warn:
+     ```
+     ⚠️ State ahead of git
+     ─────────────────────────────────────
+     state.json says Task {N} complete, but only {M} task commits found.
+
+     Options:
+     → Continue from Task {M+1} (trust git)
+     → /opti-gsd:rollback {phase} (start over)
+     ```
+   - If uncommitted work exists (`git status` shows changes), offer:
+     ```
+     Uncommitted changes found: {files}
+     → Commit as WIP and continue
+     → Discard and continue
+     → Stash and continue
+     ```
+
+2. **Map task to wave:** Find which wave contains the next task by scanning
+   plan.json's wave structure. Resume from that wave.
+
+3. **Start from next incomplete task** within the identified wave.
 
 If fresh start:
 - Begin with Wave 1
@@ -152,97 +175,75 @@ git tag -f "gsd/checkpoint/phase-{N}/pre" HEAD
 
 This enables /opti-gsd:rollback {N} to revert to before the phase started.
 
-### Step 4c: Create Claude Code Tasks (MANDATORY)
+### Step 4c: Initialize Progress Tracking (MANDATORY)
 
-**You MUST call TaskCreate for every task in plan.json before executing any waves.**
-This makes tasks visible in Claude Code's CLI task list (Ctrl+T).
+**Use TodoWrite to create the visual task list before executing any waves.**
 
 ```
+Build todos array from plan.json:
 FOR each task in plan.json:
-  TaskCreate(
-    subject="P{phase} T{task.id}: {task.title}",
-    description="{task.action}",
-    activeForm="{task.title in present participle form}"
-  )
-  → Store returned taskId mapped to task.id (e.g., T01 → taskId "1")
+  todos.push({
+    content: "P{phase} T{task.id}: {task.title}",
+    status: "pending",
+    activeForm: "{task.title in present participle form}"
+  })
+
+TodoWrite(todos=todos)
 ```
 
-**Example calls:**
+**Example:**
 ```python
-TaskCreate(
-  subject="P1 T01: Setup authentication schema",
-  description="Create user table with email, password_hash, created_at fields...",
-  activeForm="Setting up authentication schema"
-)
-# Returns taskId "1" → map T01 to "1"
-
-TaskCreate(
-  subject="P1 T02: Create API endpoints",
-  description="Add login and register endpoints...",
-  activeForm="Creating API endpoints"
-)
-# Returns taskId "2" → map T02 to "2"
+TodoWrite(todos=[
+  {"content": "P1 T01: Setup authentication schema", "status": "pending", "activeForm": "Setting up authentication schema"},
+  {"content": "P1 T02: Create API endpoints", "status": "pending", "activeForm": "Creating API endpoints"},
+  {"content": "P1 T03: Add validation", "status": "pending", "activeForm": "Adding validation"}
+])
 ```
 
-After this step, the user sees all tasks listed as `pending` in Ctrl+T.
-
-**Store the mapping** of plan task IDs to Claude Code task IDs for use in Step 5.
+After this step, the user sees all tasks listed as `pending` in the progress display.
 
 ### Step 5: Execute Waves with Background Tasks
 
 ```
 FOR each wave:
   1. Identify tasks in this wave
-  2. IF interactive mode AND wave > 1:
-       Ask: "Wave {W-1} complete. Continue to Wave {W}?"
 
-  3. FOR each task in wave:
-     a. Mark task as in_progress (MANDATORY):
-        TaskUpdate(
-          taskId="{claude_task_id for this task}",
-          status="in_progress"
-        )
+  2. FOR each task in wave:
+     a. Update TodoWrite — mark task as in_progress
      b. Build subagent prompt (see Step 6 below)
      c. Spawn via Task tool:
          Task(
            description="P{phase} T{id}: {short_title}",
            prompt="{subagent_prompt}",
            subagent_type="opti-gsd-executor",
-           run_in_background=true
+           run_in_background=true  # for multi-task waves
          )
-     d. Store returned agent_task_id for polling
-     e. Update state.json with background_tasks array
+     d. Store returned output_file path for result retrieval
+     e. Update state.json with current wave position
 
-  4. Poll for completion using TaskOutput:
-     WHILE any tasks pending:
-       FOR each agent_task_id in background_tasks:
-         result = TaskOutput(agent_task_id, block=false)
-         IF result.complete:
-           - Parse result (COMPLETE | FAILED | CHECKPOINT)
-           - Process result (see Step 7)
-           - Mark Claude Code task as completed (MANDATORY):
-             TaskUpdate(
-               taskId="{claude_task_id for this task}",
-               status="completed"
-             )
-           - Remove from background_tasks
-       IF still waiting:
-         Brief status update to user: "Tasks running: {count}"
+  3. Collect results:
+     - For single-task waves: use run_in_background=false (blocking)
+     - For multi-task waves: Read each output_file to get results
+       (Read blocks until the background task completes and writes output)
+     - FOR each completed task:
+       - Parse result (COMPLETE | FAILED | CHECKPOINT)
+       - Process result (see Step 7)
+       - Create per-task checkpoint tag:
+         git tag -f "gsd/checkpoint/phase-{N}/T{task_id}" HEAD
+       - Update TodoWrite — mark task as completed
 
-  5. All tasks in wave complete? → Step 5b (User Review Checkpoint)
+  4. All tasks in wave complete? → Step 5b (User Review Checkpoint)
 
-  6. After review checkpoint → Next wave
+  5. After review checkpoint → Next wave
 ```
 
-**IMPORTANT:** The TaskUpdate calls in steps 3a and 4 are MANDATORY. They drive the visual
-progress display in Claude Code's CLI. Without them, users see no task progress.
+**IMPORTANT:** Update TodoWrite after each task status change. This drives the visual
+progress display in Claude Code's CLI.
 
 **Why Background Tasks:**
-- User sees real-time progress (Ctrl+T to toggle task list)
-- Parallel execution is truly parallel
-- Can continue working while tasks run (Ctrl+B)
-- TaskOutput provides clean result retrieval
-- Task state persists across session interruptions
+- Each agent gets fresh context
+- Parallel execution is truly parallel for multi-task waves
+- Clean result retrieval via Read on output files
 
 ### Step 5b: User Review Checkpoint (Between Waves)
 
@@ -304,12 +305,12 @@ After each wave completes, present results and ask for feedback BEFORE starting 
    Look right? [Y/n]
    ```
 
-3. Generate and execute inline fix tasks:
+4. Generate and execute inline fix tasks:
    - Each fix is a fresh subagent (same quality gates: TDD if applicable, verification-before-completion)
    - Atomic commit per fix with prefix: `fix({phase}-R{round}): {description}`
    - Fixes execute sequentially within the review round
 
-4. After fixes complete, re-present the wave results:
+5. After fixes complete, re-present the wave results:
    ```markdown
    ## Wave {W} Fixes Applied
 
@@ -321,7 +322,7 @@ After each wave completes, present results and ask for feedback BEFORE starting 
    → More feedback — Another round of fixes
    ```
 
-5. Loop until user says "good" or presses Enter
+6. Loop until user says "good" or presses Enter
 
 **Review state tracking:**
 
@@ -339,7 +340,7 @@ Add to state.json during review:
 ```
 
 **Yolo mode behavior:**
-In yolo mode, still SHOW the wave results but auto-continue after 3 seconds unless user is typing. The review checkpoint is informational, not blocking. If user starts typing feedback, switch to interactive for that review.
+In yolo mode, display the wave results and continue immediately without prompting. The review checkpoint is informational, not blocking.
 
 **"skip reviews" flag:**
 If user says "skip reviews" at any checkpoint, set `review_checkpoints: false` in state.json for this execution run. Waves proceed without pausing. The final review at Step 8b still happens.
@@ -427,7 +428,7 @@ You are a focused implementation agent for opti-gsd. Complete ONLY this task.
   Use these MCP tools when they would help complete the task.
 </mcps>
 
-<browser enabled="{config.browser.enabled}" base_url="{config.base_url}" />
+<browser enabled="{Browser tool available}" base_url="{config.urls.local || 'http://localhost:3000'}" />
 
 <rules>
   <rule>If test_required=true: Execute TDD Red-Green-Refactor cycle</rule>
@@ -456,16 +457,10 @@ You are a focused implementation agent for opti-gsd. Complete ONLY this task.
 ### Step 7: Handle Results
 
 **TASK COMPLETE:**
-```bash
-git add {files}
-git commit -m "{type}({phase}-{task}): {description}
 
-{brief details}
-
-Co-Authored-By: Claude <noreply@anthropic.com>"
-```
-
-Update state.json task counter.
+The executor subagent handles the git commit. The orchestrator only updates tracking:
+- Update state.json task counter
+- Update TodoWrite to mark task as completed
 
 **TASK FAILED:**
 ```markdown
@@ -570,9 +565,60 @@ IF task_retries[task_id] >= execute_max_retries:
 | TDD (inside subagent) | Make tests pass | tdd_max_attempts (5) |
 | Orchestrator (outside) | Recover from task failure | execute_max_retries (2) |
 
-### Step 8: Phase Complete
+### Step 8: Final User Review (MANDATORY)
 
-When all tasks in all waves complete:
+After all waves complete but BEFORE writing metadata or declaring the phase done, present the full picture and ask for feedback. This is the user's chance to review the whole phase holistically.
+
+```markdown
+## Phase {N} Execution Complete — Your Review
+
+### Everything that was built:
+{For EACH task in plan.json, show user_observable}
+1. {user_observable from T01}
+2. {user_observable from T02}
+3. {user_observable from T03}
+...
+
+### Summary:
+- **Tasks completed:** {count}/{total}
+- **Tests added:** {test_count}
+- **Commits:** {commit_count}
+{If review fixes were applied during waves:}
+- **Review fixes applied:** {fix_count} across {round_count} rounds
+
+### Your turn:
+Please check the results. You can:
+→ "looks good" or Enter — Proceed (I'll run verification next)
+→ Describe what needs changing — I'll fix it now
+→ "verify" — Skip straight to automated verification
+```
+
+**If user provides feedback:**
+
+Follow the same review loop as Step 5b (including plan-awareness):
+1. Check feedback against roadmap — is it about this phase, a future phase, or unplanned?
+2. For future-phase items: inform user and offer to reprioritize or capture
+3. For unplanned items: offer add-feature, add-phase, or include in current scope
+4. For current-phase items: categorize, present for confirmation
+5. Generate fix tasks → execute with quality gates → commit
+6. Re-present results
+7. Loop until user says "looks good"
+
+Review fixes at this stage are tracked as `review-plan-final.json` in the phase directory.
+
+**After user approves (or says "verify"):**
+
+Automatically trigger verification:
+```markdown
+Great. Running verification now...
+```
+Then execute the verification flow (spawn verifier agent, same as /opti-gsd:verify).
+
+This means the user doesn't need to manually run `/opti-gsd:verify` — it flows naturally from the review.
+
+### Step 8b: Write Phase Metadata (after approval)
+
+Only after the user approves in Step 8 do we finalize phase metadata:
 
 **Create Post-Execution Checkpoint:**
 ```bash
@@ -597,12 +643,11 @@ This enables precise rollback: `pre` = before phase, `post` = after phase, `T{N}
 ## Auto-Fixes Applied
 - {AUTO-FIX descriptions if any}
 
+## Review Fixes Applied
+- {Review fix descriptions if any}
+
 ## Issues Discovered
 - {NEW ISSUE items if any}
-
-## Token Usage
-- Estimated: {estimated}k
-- Actual: {actual}k
 ```
 
 2. Update state.json:
@@ -657,57 +702,6 @@ If user confirms:
 
 If no deployment configured, skip this step.
 
-### Step 8b: Final User Review (MANDATORY)
-
-After all waves complete but BEFORE declaring the phase done, present the full picture and ask for feedback. This is the user's chance to review the whole phase holistically.
-
-```markdown
-## Phase {N} Execution Complete — Your Review
-
-### Everything that was built:
-{For EACH task in plan.json, show user_observable}
-1. {user_observable from T01}
-2. {user_observable from T02}
-3. {user_observable from T03}
-...
-
-### Summary:
-- **Tasks completed:** {count}/{total}
-- **Tests added:** {test_count}
-- **Commits:** {commit_count}
-{If review fixes were applied during waves:}
-- **Review fixes applied:** {fix_count} across {round_count} rounds
-
-### Your turn:
-Please check the results. You can:
-→ "looks good" or Enter — Proceed (I'll run verification next)
-→ Describe what needs changing — I'll fix it now
-→ "verify" — Skip straight to automated verification
-```
-
-**If user provides feedback:**
-
-Follow the same review loop as Step 5b (including plan-awareness):
-1. Check feedback against roadmap — is it about this phase, a future phase, or unplanned?
-2. For future-phase items: inform user and offer to reprioritize or capture
-3. For unplanned items: offer add-feature, add-phase, or include in current scope
-4. For current-phase items: categorize, present for confirmation
-5. Generate fix tasks → execute with quality gates → commit
-6. Re-present results
-7. Loop until user says "looks good"
-
-Review fixes at this stage are tracked as `review-plan-final.json` in the phase directory.
-
-**After user approves (or says "verify"):**
-
-Automatically trigger verification:
-```markdown
-Great. Running verification now...
-```
-Then execute the verification flow (spawn verifier agent, same as /opti-gsd:verify).
-
-This means the user doesn't need to manually run `/opti-gsd:verify` — it flows naturally from the review.
-
 ### Step 10: Report
 
 ```markdown
@@ -715,7 +709,6 @@ This means the user doesn't need to manually run `/opti-gsd:verify` — it flows
 
 **Tasks:** {count}/{count} completed
 **Commits:** {commit_list}
-**Duration:** {approximate}
 
 **Auto-Fixes:** {count if any}
 **Review Fixes:** {review_fix_count if any}
@@ -755,67 +748,58 @@ Wave 1: [Task 01, Task 02, Task 03]
         run_in_background=true
       )          )           )        ← Parallel background spawns
          ↓         ↓         ↓
-      task_id_1  task_id_2  task_id_3  ← Store IDs
+      output_1   output_2   output_3  ← Store output_file paths
          ↓         ↓         ↓
-      [User sees progress via Ctrl+T]
+      Read(output_1) Read(output_2) Read(output_3) ← Collect results
          ↓         ↓         ↓
-      TaskOutput  TaskOutput  TaskOutput  ← Poll for completion
-         ↓         ↓         ↓
-      [Commit]  [Commit]  [Commit]   ← Sequential commits
+      [Per-task checkpoint tags]      ← git tag for each
 
 Wave 2: [Task 04]
          ↓
-      Task(run_in_background=true)
+      Task(run_in_background=false)   ← Single task: use blocking mode
          ↓
-      TaskOutput(task_id_4, block=true)  ← Can block if single task
+      [Result returned directly]
          ↓
-      [Commit]
+      [Per-task checkpoint tag]
 ```
 
 **Key Benefits:**
-- Each agent gets fresh 100% context
-- User sees real-time progress in Claude Code's task list (Ctrl+T)
-- Truly parallel execution, not sequential spawns
-- Tasks persist if session interrupted (use /opti-gsd:recover)
-- TaskOutput provides clean result retrieval without context bloat
+- Each agent gets fresh context
+- Truly parallel execution for multi-task waves
+- Clean result retrieval via Read on output files
+- Per-task checkpoint tags enable granular rollback
 
 **Task Tool Calls:**
 ```python
-# Spawn background task - description appears in Claude's task list (Ctrl+T)
-Task(
-  description="P{phase} T{task_num}: {task_title}",  # e.g., "P1 T02: Create API endpoints"
+# Multi-task wave: spawn background tasks
+result = Task(
+  description="P{phase} T{task_num}: {task_title}",
   prompt="{subagent_prompt}",
   subagent_type="opti-gsd-executor",
   run_in_background=True
 )
-# Returns: task_id (e.g., "abc123") - store this for TaskOutput
+# Returns: output_file path — use Read(output_file) to get results
 
-# Poll for result
-TaskOutput(
-  task_id="{returned_task_id}",
-  block=False  # Non-blocking check, or True to wait
+# Single-task wave: use blocking mode
+result = Task(
+  description="P{phase} T{task_num}: {task_title}",
+  prompt="{subagent_prompt}",
+  subagent_type="opti-gsd-executor",
+  run_in_background=False  # Blocks until complete
 )
-```
-
-**What user sees in Ctrl+T:**
-```
-Claude Code Tasks
-─────────────────────────────────────
-[▸] P1 T01: Setup authentication     (running)
-[▸] P1 T02: Create API endpoints     (running)
-[✓] P1 T03: Add validation          (complete)
+# Returns: result directly
 ```
 
 ---
 
-## Context Budget
+## Context Budget (Guidelines)
 
-Orchestrator budget: 15%
+Target orchestrator budget: ~15%
 - Loading: ~5%
 - Coordination: ~5%
 - Committing: ~5%
 
-All heavy work delegated to subagents with fresh context.
+All heavy work delegated to subagents with fresh context. These are guidelines, not enforced limits.
 
 ---
 
@@ -830,10 +814,6 @@ Execute tracks state in state.json:
     "type": "execute",
     "phase": 1,
     "wave": 2,
-    "background_tasks": [
-      {"task_id": "abc123", "task_num": 1, "status": "running"},
-      {"task_id": "def456", "task_num": 2, "status": "running"}
-    ],
     "task_retries": {"T01": 0, "T02": 1},
     "last_error": "Type error in auth.ts",
     "started": "2026-01-19T10:30:00"
@@ -841,11 +821,8 @@ Execute tracks state in state.json:
 }
 ```
 
-**Background Task Tracking:**
-- `background_tasks` array tracks all spawned Task tool instances
-- Each entry has `task_id` (for TaskOutput), `task_num`, and `status`
-- On session interrupt, /opti-gsd:recover uses these IDs to check TaskOutput
-- Tasks persist in Claude Code's task system across sessions
+**Recovery on session interrupt:**
+If a session ends mid-execution, running `/opti-gsd:execute` again will trigger Step 3b's recovery logic — it compares state.json against git reality and resumes from the correct position.
 
 **Note on TDD Loop:**
 The TDD Red-Green-Refactor loop runs INSIDE subagents as natural control flow. The subagent only returns when:
@@ -853,4 +830,4 @@ The TDD Red-Green-Refactor loop runs INSIDE subagents as natural control flow. T
 - TDD attempts exhausted (TASK FAILED)
 
 **Philosophy:** Following GSD principles, there's no stop hook forcing loop continuation.
-Human judgment gates all decisions. Use /opti-gsd:recover if session interrupted.
+Human judgment gates all decisions. Re-run `/opti-gsd:execute` to resume after interruption.

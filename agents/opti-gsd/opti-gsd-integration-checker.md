@@ -26,7 +26,7 @@ At startup, check if `.opti-gsd/tools.json` exists. If so, read it to discover t
 
 **How to use:**
 1. Read `.opti-gsd/tools.json` for available capabilities
-2. Use `ToolSearch` to load MCP tools before calling
+2. Call MCP tools directly (e.g., `mcp__cclsp__find_references`) — they are auto-available when configured
 3. cclsp `find_references` is more accurate than grep for finding usages
 4. Fall back to grep if cclsp not available
 
