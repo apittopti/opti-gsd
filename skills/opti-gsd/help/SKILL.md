@@ -39,6 +39,7 @@ Utility Commands:
   /opti-gsd:debug       Systematic debugging session
   /opti-gsd:research    Research a technical topic
   /opti-gsd:quick       Quick ad-hoc task
+  /opti-gsd:migrate     Migrate v2 project to v3 format
   /opti-gsd:help        This help screen
 
 Tips:
