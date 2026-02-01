@@ -43,7 +43,7 @@ Read:
 - `.opti-gsd/roadmap.md` — phase goals and deliverables
 - `.opti-gsd/stories/` — story files for items in this phase
 - `.opti-gsd/issues/` — issue files for items in this phase
-- `.opti-gsd/codebase/conventions.md` — if exists
+- `.opti-gsd/codebase-analysis.md` — if exists (brownfield analysis from init)
 
 Do NOT load other phase plans, archived content, or unrelated stories.
 
@@ -89,46 +89,61 @@ Before writing the plan, verify:
 
 Create `.opti-gsd/plans/phase-{NN}/plan.json`:
 
-```markdown
----
-phase: {N}
-title: {Phase Title}
-wave_count: {count}
-task_count: {count}
-created: {timestamp}
----
-
-# Phase {N}: {Title}
-
-## Must-Haves (Goal-Backward)
-
-- [ ] {Observable outcome 1}
-- [ ] {Observable outcome 2}
-
-## Wave 1
-
-<task id="01" wave="1">
-  <files>
-    <file action="create">{path}</file>
-    <file action="modify">{path}</file>
-  </files>
-  <action>
-    {Specific implementation instructions}
-    - {Detail 1}
-    - {Detail 2}
-  </action>
-  <verify>
-    <check type="test" cmd="{command}">{description}</check>
-    <check type="lint" cmd="{command}">{description}</check>
-  </verify>
-  <done>{Measurable completion criteria}</done>
-</task>
-
-## Wave 2 (After Wave 1)
-
-<task id="03" wave="2" depends="01,02">
-  ...
-</task>
+```json
+{
+  "version": "3.0",
+  "phase": 2,
+  "title": "API Implementation",
+  "goal": "Implement REST API endpoints for user management",
+  "created": "2026-02-01T10:00:00Z",
+  "must_haves": [
+    "User CRUD endpoints functional",
+    "All endpoints have tests"
+  ],
+  "waves": [
+    {
+      "wave": 1,
+      "description": "Data models and database schema",
+      "tasks": [
+        {
+          "id": "01",
+          "title": "Create User model",
+          "files": [
+            { "path": "src/models/user.ts", "action": "create" },
+            { "path": "src/db/migrations/001_users.ts", "action": "create" }
+          ],
+          "action": "Create User model with fields: id, email, name, created_at. Create migration.",
+          "verify": [
+            { "type": "test", "cmd": "npm test -- --grep User", "description": "Model tests pass" },
+            { "type": "lint", "cmd": "npm run lint", "description": "No lint errors" }
+          ],
+          "done": "User model file exists and migration runs without errors"
+        }
+      ]
+    },
+    {
+      "wave": 2,
+      "description": "API endpoints (depends on models from wave 1)",
+      "tasks": [
+        {
+          "id": "02",
+          "title": "User CRUD endpoints",
+          "files": [
+            { "path": "src/routes/users.ts", "action": "create" },
+            { "path": "src/routes/users.test.ts", "action": "create" }
+          ],
+          "action": "Implement GET/POST/PUT/DELETE for users with validation",
+          "verify": [
+            { "type": "test", "cmd": "npm test", "description": "All tests pass" }
+          ],
+          "done": "4 endpoints working with tests"
+        }
+      ]
+    }
+  ],
+  "total_tasks": 2,
+  "total_waves": 2
+}
 ```
 
 ## Step 6: Update state.json
@@ -138,8 +153,7 @@ created: {timestamp}
   "phase": {N},
   "status": "planned",
   "phases": {
-    "current": {N},
-    "in_progress": [{N}]
+    "current": {N}
   },
   "execution": null,
   "last_active": "{timestamp}"
@@ -180,4 +194,4 @@ Tasks:
 When `--gaps` is used:
 1. Read `.opti-gsd/plans/phase-{NN}/verification.json` for failed items
 2. Create targeted tasks to close specific gaps only
-3. Mark plan with `gap_closure: true` in frontmatter
+3. Mark plan with `"gap_closure": true` in plan.json root

@@ -204,6 +204,7 @@ Or older format with XML task blocks stored as strings.
   "title": "Phase title from roadmap",
   "goal": "Phase goal from roadmap",
   "created": "2026-02-01T00:00:00Z",
+  "must_haves": ["Observable outcome from roadmap"],
   "waves": [
     {
       "wave": 1,
@@ -212,9 +213,13 @@ Or older format with XML task blocks stored as strings.
         {
           "id": "01",
           "title": "Create User model",
-          "files": ["src/models/user.ts"],
+          "files": [
+            { "path": "src/models/user.ts", "action": "create" }
+          ],
           "action": "Create User model...",
-          "verify": "Run tests",
+          "verify": [
+            { "type": "test", "cmd": "npm test", "description": "Run tests" }
+          ],
           "done": "Model exists"
         }
       ]
@@ -230,10 +235,16 @@ Or older format with XML task blocks stored as strings.
 2. Group tasks by their `wave` field into `waves[]` array
 3. If tasks have no `wave` field, put all in wave 1
 4. Add `"title"` and `"goal"` from roadmap.md (read the matching phase section)
-5. Add `"created"` — use file modification time or current time
-6. Add `"wave.description"` — generate from task titles in that wave
-7. Compute `"total_tasks"` and `"total_waves"`
-8. Keep all task fields (`id`, `title`, `files`, `action`, `verify`, `done`) intact
+5. Add `"must_haves"` — extract from roadmap phase deliverables
+6. Add `"created"` — use file modification time or current time
+7. Add `"wave.description"` — generate from task titles in that wave
+8. Compute `"total_tasks"` and `"total_waves"`
+9. Convert `files` from string array to object array:
+   - `"src/file.ts"` → `{ "path": "src/file.ts", "action": "create" }` (default to create for new tasks, modify for existing files)
+10. Convert `verify` from string to object array:
+   - `"Run tests"` → `[{ "type": "test", "cmd": "npm test", "description": "Run tests" }]`
+   - If verify was already an array of strings, wrap each in an object
+11. Keep `id`, `title`, `action`, `done` fields unchanged
 
 ### Handle XML-style plans:
 If a plan contains XML-like task blocks as strings (very old format):

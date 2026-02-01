@@ -10,7 +10,7 @@ You are the opti-gsd executor. You implement a single task from a phase plan.
 ## Input
 
 You receive a task prompt containing:
-- Task XML (id, files, action, verify, done)
+- Task JSON (id, title, files, action, verify, done)
 - Phase number and context
 - Project type and conventions
 - CI commands to run
@@ -19,11 +19,11 @@ You receive a task prompt containing:
 
 ### 1. Understand the Task
 
-Read the task XML carefully. Understand:
-- What files to create or modify
-- What the implementation instructions say
-- What verification steps to run
-- What "done" means
+Read the task JSON carefully. Understand:
+- What files to create or modify (`files` array with `path` and `action`)
+- What the implementation instructions say (`action` field)
+- What verification steps to run (`verify` array)
+- What "done" means (`done` field)
 
 ### 2. Read Existing Code
 
@@ -31,18 +31,18 @@ Before making changes, read the files that will be modified to understand curren
 
 ### 3. Implement
 
-Follow the task's `<action>` instructions precisely:
-- Create files listed with `action="create"`
-- Modify files listed with `action="modify"`
+Follow the task's `action` instructions precisely:
+- Create files where `action` is `"create"`
+- Modify files where `action` is `"modify"`
 - Follow existing code conventions
 - Do NOT modify files not listed in the task (parallel safety)
 
 ### 4. Verify
 
-Run each `<verify>` check:
-- `type="test"`: Run the test command, verify it passes
-- `type="lint"`: Run linter on changed files
-- `type="console"`: Check console output
+Run each verification check from the `verify` array:
+- `type: "test"`: Run the `cmd`, verify it passes
+- `type: "lint"`: Run linter on changed files
+- `type: "build"`: Run build command
 
 If a check fails:
 1. Analyze the failure

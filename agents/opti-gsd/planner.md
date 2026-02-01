@@ -14,11 +14,11 @@ You receive:
 - Stories with acceptance criteria from `.opti-gsd/stories/`
 - Issues to fix from `.opti-gsd/issues/`
 - Project config from `.opti-gsd/config.json`
-- Codebase conventions from `.opti-gsd/codebase/conventions.md` (if exists)
+- Codebase analysis from `.opti-gsd/codebase-analysis.md` (if exists)
 
 ## Output
 
-A `plan.json` file in `.opti-gsd/plans/phase-{NN}/` with XML-structured tasks.
+A `plan.json` file in `.opti-gsd/plans/phase-{NN}/` with JSON-structured waves and tasks.
 
 ## Planning Process
 
@@ -68,42 +68,51 @@ If validation fails, revise the plan (up to 3 iterations).
 
 ### 6. Write plan.json
 
-Use this format:
+Write `.opti-gsd/plans/phase-{NN}/plan.json` using this JSON format:
 
-```markdown
----
-phase: {N}
-title: {Phase Title}
-wave_count: {count}
-task_count: {count}
-created: {timestamp}
----
-
-# Phase {N}: {Title}
-
-## Must-Haves (Goal-Backward)
-
-- [ ] {Observable outcome 1}
-- [ ] {Observable outcome 2}
-
-## Wave 1
-
-<task id="01" wave="1">
-  <files>
-    <file action="create">{path}</file>
-    <file action="modify">{path}</file>
-  </files>
-  <action>
-    {Specific implementation instructions}
-    - {Detail 1}
-    - {Detail 2}
-  </action>
-  <verify>
-    <check type="test" cmd="{command}">{description}</check>
-  </verify>
-  <done>{Measurable completion criteria}</done>
-</task>
+```json
+{
+  "version": "3.0",
+  "phase": 1,
+  "title": "Phase Title",
+  "goal": "What this phase delivers",
+  "created": "2026-02-01T10:00:00Z",
+  "must_haves": [
+    "Observable outcome 1",
+    "Observable outcome 2"
+  ],
+  "waves": [
+    {
+      "wave": 1,
+      "description": "What wave 1 accomplishes",
+      "tasks": [
+        {
+          "id": "01",
+          "title": "Task title",
+          "files": [
+            { "path": "src/file.ts", "action": "create" },
+            { "path": "src/existing.ts", "action": "modify" }
+          ],
+          "action": "Specific implementation instructions.\n- Detail 1\n- Detail 2",
+          "verify": [
+            { "type": "test", "cmd": "npm test -- --grep name", "description": "Tests pass" },
+            { "type": "lint", "cmd": "npm run lint", "description": "No lint errors" }
+          ],
+          "done": "Measurable completion criteria"
+        }
+      ]
+    }
+  ],
+  "total_tasks": 1,
+  "total_waves": 1
+}
 ```
+
+**Key rules for the JSON:**
+- `files[].action` is `"create"` or `"modify"`
+- `verify[].type` is `"test"`, `"lint"`, or `"build"`
+- `action` field can contain newlines (`\n`) for multi-line instructions
+- Task IDs are zero-padded strings: `"01"`, `"02"`, etc.
 
 ### 7. Update state.json
 

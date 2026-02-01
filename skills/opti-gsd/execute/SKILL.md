@@ -87,7 +87,7 @@ Resuming from Wave {W}, Task {T}...
 
 Read `config.mode` from config.json:
 - `interactive` — pause for user review between waves
-- `yolo` — execute all waves without pausing (immediate continue)
+- `autonomous` — execute all waves without pausing (immediate continue)
 
 Ask user if not set:
 ```
@@ -122,7 +122,7 @@ For each task in the wave, spawn an executor subagent via the Task tool.
 **CRITICAL: Use the `opti-gsd/executor` custom agent.**
 
 The prompt for each executor MUST include:
-- The task XML from plan.json (files, action, verify, done)
+- The task JSON from plan.json (id, title, files, action, verify, done)
 - The phase number and task ID
 - The project type and relevant conventions
 - CI commands from config.json
@@ -194,7 +194,7 @@ Continue to Wave {W+1}? (yes / review / stop)
 ```
 
 If user says "review" — show detailed changes from this wave.
-In yolo mode — proceed immediately to next wave.
+In autonomous mode — proceed immediately to next wave.
 
 ## Step 6: Write Summary
 

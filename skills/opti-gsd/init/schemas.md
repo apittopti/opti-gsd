@@ -145,6 +145,10 @@ Read by: `/opti-gsd:execute`, `/opti-gsd:review`, `/opti-gsd:verify`
   "title": "API Implementation",
   "goal": "Implement REST API endpoints for user management",
   "created": "2026-02-01T10:00:00Z",
+  "must_haves": [
+    "User CRUD endpoints functional",
+    "All endpoints have tests"
+  ],
   "waves": [
     {
       "wave": 1,
@@ -153,17 +157,27 @@ Read by: `/opti-gsd:execute`, `/opti-gsd:review`, `/opti-gsd:verify`
         {
           "id": "01",
           "title": "Create User model",
-          "files": ["src/models/user.ts", "src/db/migrations/001_users.ts"],
+          "files": [
+            { "path": "src/models/user.ts", "action": "create" },
+            { "path": "src/db/migrations/001_users.ts", "action": "create" }
+          ],
           "action": "Create User model with fields: id, email, name, created_at. Create migration.",
-          "verify": "Run migration, check table exists",
+          "verify": [
+            { "type": "test", "cmd": "npm test -- --grep User", "description": "Model tests pass" }
+          ],
           "done": "User model file exists and migration runs without errors"
         },
         {
           "id": "02",
           "title": "Create Session model",
-          "files": ["src/models/session.ts", "src/db/migrations/002_sessions.ts"],
+          "files": [
+            { "path": "src/models/session.ts", "action": "create" },
+            { "path": "src/db/migrations/002_sessions.ts", "action": "create" }
+          ],
           "action": "Create Session model linked to User. Create migration.",
-          "verify": "Run migration, check foreign key",
+          "verify": [
+            { "type": "test", "cmd": "npm test -- --grep Session", "description": "Migration runs" }
+          ],
           "done": "Session model exists with user FK"
         }
       ]
@@ -175,9 +189,14 @@ Read by: `/opti-gsd:execute`, `/opti-gsd:review`, `/opti-gsd:verify`
         {
           "id": "03",
           "title": "User CRUD endpoints",
-          "files": ["src/routes/users.ts", "src/routes/users.test.ts"],
+          "files": [
+            { "path": "src/routes/users.ts", "action": "create" },
+            { "path": "src/routes/users.test.ts", "action": "create" }
+          ],
           "action": "Implement GET/POST/PUT/DELETE for users with validation",
-          "verify": "All tests pass",
+          "verify": [
+            { "type": "test", "cmd": "npm test", "description": "All tests pass" }
+          ],
           "done": "4 endpoints working with tests"
         }
       ]
@@ -197,15 +216,21 @@ Read by: `/opti-gsd:execute`, `/opti-gsd:review`, `/opti-gsd:verify`
 | `title` | string | Phase title from roadmap |
 | `goal` | string | What this phase delivers |
 | `created` | string | ISO 8601 timestamp |
+| `must_haves` | string[] | Observable outcomes that define phase success |
 | `waves` | array | Ordered list of execution waves |
 | `waves[].wave` | integer | Wave number (1-based) |
 | `waves[].description` | string | What this wave accomplishes |
 | `waves[].tasks` | array | Tasks in this wave (can run in parallel) |
 | `waves[].tasks[].id` | string | Task ID, zero-padded: `"01"`, `"02"`, etc. |
 | `waves[].tasks[].title` | string | Short task description |
-| `waves[].tasks[].files` | string[] | Files to create or modify |
-| `waves[].tasks[].action` | string | What to do (instructions for executor) |
-| `waves[].tasks[].verify` | string | How to verify it worked |
+| `waves[].tasks[].files` | object[] | Files to create or modify |
+| `waves[].tasks[].files[].path` | string | File path relative to project root |
+| `waves[].tasks[].files[].action` | string | `"create"` or `"modify"` |
+| `waves[].tasks[].action` | string | Implementation instructions for executor |
+| `waves[].tasks[].verify` | object[] | Verification checks to run |
+| `waves[].tasks[].verify[].type` | string | `"test"`, `"lint"`, or `"build"` |
+| `waves[].tasks[].verify[].cmd` | string | Command to run |
+| `waves[].tasks[].verify[].description` | string | What this check validates |
 | `waves[].tasks[].done` | string | Definition of done |
 | `total_tasks` | integer | Total task count across all waves |
 | `total_waves` | integer | Total wave count |
@@ -347,6 +372,7 @@ Pre-phase tag: `gsd/checkpoint/phase-{NN}/pre` — created before execution star
 ├── state.json                           # Workflow state (updated by skills)
 ├── roadmap.md                           # Delivery roadmap (created by roadmap)
 ├── codebase-analysis.md                 # Brownfield analysis (created by init)
+├── learnings.md                         # Error patterns and lessons (optional, grows over time)
 ├── stories/                             # User stories
 │   ├── US001.md
 │   └── US002.md

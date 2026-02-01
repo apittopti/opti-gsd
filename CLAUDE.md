@@ -45,6 +45,7 @@ This is the opti-gsd source repository. You are using opti-gsd to develop opti-g
 | `/opti-gsd:add-story` | Capture user story |
 | `/opti-gsd:add-issue` | Capture bug/issue |
 | `/opti-gsd:quick` | Quick ad-hoc task |
+| `/opti-gsd:migrate` | Migrate v2 project to v3 format |
 | `/opti-gsd:help` | Show all commands |
 
 ## Agents
