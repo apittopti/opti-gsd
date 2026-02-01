@@ -1,222 +1,274 @@
-# Execute Command Review — Full Flow Validation
+# Execute Command Review — Fresh Review (Revision 5)
 
 **Date:** 2026-02-01
-**Revision:** 4 — corrected finding #1 (TaskCreate/TaskUpdate/TaskOutput ARE real tools), retracted #9
+**Revision:** 5 — fresh review of current execute.md after fixes applied
 **Reviewer:** Claude (automated review)
 
 **Files Reviewed:**
-- `commands/opti-gsd/execute.md` (857 lines) — orchestrator
-- `agents/opti-gsd/opti-gsd-executor.md` (598 lines) — subagent
-- `commands/opti-gsd/recover.md` (111 lines) — recovery flow
-- `commands/opti-gsd/review.md` (314 lines) — standalone review
+- `commands/opti-gsd/execute.md` (855 lines) — orchestrator (post-fix state)
+- `agents/opti-gsd/opti-gsd-executor.md` (597 lines) — subagent (post-fix state)
 - `commands/opti-gsd/verify.md` (722 lines) — verification flow
 - `commands/opti-gsd/rollback.md` (204 lines) — rollback flow
+- `commands/opti-gsd/review.md` (314 lines) — standalone review
+- `commands/opti-gsd/plan-phase.md` (351 lines) — planning
+- `commands/opti-gsd/status.md` (305 lines) — status display
 - `hooks/hooks.json` — tool usage hook
 - `scripts/log-tool-usage.js` — tool logging
-- `.opti-gsd/state.json`, `config.json`, `roadmap.md`, `features/F002.md`
+- `.opti-gsd/config.json`, `state.json`
+
+---
+
+## What Was Fixed (from previous review)
+
+The following issues from revision 4 have been addressed in the current codebase:
+
+- **Step 8/8b reorder** — Step 8 is now "Final User Review (MANDATORY)" and Step 8b is "Write Phase Metadata (after approval)." Correct ordering.
+- **recover.md removed** — Recovery logic folded into execute.md Step 3b. Correct.
+- **Per-task checkpoint tags added** — Step 5 point 3 now creates them. But see finding #1 below.
+- **Double-commit fixed** — Step 7 no longer commits; executor owns commits. Correct.
+- **ToolSearch removed** — Replaced with direct MCP calls across all agent files. Correct.
+- **Redundant wave gate removed** — Step 5 point 2 no longer has the extra prompt. Correct.
+- **Config references fixed** — Step 0 uses `branching.enabled`, Step 6 uses `Browser tool available` and `config.urls.local`. Correct.
+- **Executor task tracking removed** — Executor no longer tries to call TaskCreate/TaskUpdate. Correct.
+- **Yolo mode fixed** — Immediate continue, no timed wait. Correct.
+- **Duplicate step numbering fixed** — Step 5b items properly numbered. Correct.
+- **Context budget softened** — Now labeled "Guidelines." Correct.
 
 ---
 
 ## Summary
 
-**19 valid findings** (4 high, 8 medium, 7 low). 2 findings retracted from original 21.
+**11 new findings** (3 high, 5 medium, 3 low). These are issues in the CURRENT state of the code that the previous review either didn't catch or that were introduced by the fixes.
 
-**CORRECTION:** Finding #1 (TaskCreate/TaskUpdate/TaskOutput "don't exist") was **wrong**. These are real Claude Code tools introduced in v2.1 (January 2026). The original execute.md was correct to use them. Finding #9 (synchronous polling) is also retracted — TaskOutput handles this natively.
-
-The most critical real issue: data integrity — Step 8 marks the phase complete and commits metadata *before* Step 8b's mandatory review. If the review produces fixes, the summary and state are stale.
-
-ToolSearch remains non-existent. The executor agent still can't call TaskCreate/TaskUpdate (not in its tool list, runs in isolated subagent context). These findings stand.
+The most critical: per-task checkpoint tags are broken with parallel execution (they tag HEAD, not the task's specific commit), and Step 8 auto-triggers verification before summary.md is written in Step 8b.
 
 ---
 
-## HIGH Severity (4)
+## HIGH Severity (3)
 
-### ~~1. Non-existent tools: TaskCreate, TaskUpdate, TaskOutput, TaskList~~ — RETRACTED
+### 1. Per-task checkpoint tags broken with parallel execution
 
-**This finding was wrong.** TaskCreate, TaskUpdate, TaskOutput, and TaskList are real Claude Code tools introduced in v2.1 (January 22, 2026). The original execute.md was correct to use them. The reviewer's session did not have access to these tools, leading to an incorrect conclusion.
+Step 5 point 3 (line 242-243):
+```
+git tag -f "gsd/checkpoint/phase-{N}/T{task_id}" HEAD
+```
 
-### 2. Step 8 marks phase complete BEFORE Step 8b mandatory review
+This tags HEAD after TaskOutput returns. But when Wave 1 spawns T01, T02, T03 in parallel, all three executors commit independently. By the time the orchestrator processes results sequentially via TaskOutput, HEAD contains commits from ALL parallel tasks.
 
-Step 8 (line 573) runs when "all tasks in all waves complete" and:
-- Writes `summary.md` with task list and commit hashes
-- Updates `state.json` with phase in `complete` array
-- Updates `roadmap.md` with `[x] Complete`
-- Commits all metadata: `docs: complete phase {N}`
+Result: `T01`, `T02`, `T03` tags all point to the same (or nearly the same) commit — the last one. Per-task rollback (`/opti-gsd:rollback 2-01`) would roll back to a point that still includes T02 and T03's changes.
 
-Step 8b (line 660) then says "BEFORE declaring the phase done, present the full picture and ask for feedback." But the phase is already declared done — state.json says complete, roadmap says complete, and it's committed.
+**Impact:** Per-task rollback is functionally broken for parallel tasks. Only sequential (single-task-per-wave) rollback works correctly.
+**Fix:** The executor already reports `Commit: {hash}` in its output. Parse the commit hash from the TaskOutput result and tag that specific commit:
+```
+git tag -f "gsd/checkpoint/phase-{N}/T{task_id}" {commit_hash_from_result}
+```
 
-If the user provides feedback in Step 8b and fixes are applied, the committed summary.md doesn't include those fix commits, state.json was already marked complete, and there's a "docs: complete phase" commit sitting before the fix commits.
+### 2. Step 8 auto-triggers verification before summary.md exists
 
-**Impact:** Data integrity failure. Summary doesn't reflect reality. Git history shows phase "completed" before fixes.
-**Fix:** Move Step 8b before Step 8. Only write summary/update state AFTER user approves.
+Step 8 (line 625-631):
+```
+After user approves (or says "verify"):
+  Automatically trigger verification...
+  Then execute the verification flow (spawn verifier agent, same as /opti-gsd:verify).
+```
 
-### 3. Per-task checkpoint tags referenced but never created
+Step 8b (line 635-692) writes summary.md AFTER Step 8.
 
-`rollback.md` (lines 22-24, 46), `recover.md` (line 55), and the flowchart all reference `gsd/checkpoint/phase-{N}/T{task}` tags. Execute.md line 582 even says "T{N} = after each task."
+But verify.md Step 1 (line 104-111) has a prerequisite check:
+```
+If phase summary doesn't exist:
+  ⚠️ Phase Not Executed
+  → Run /opti-gsd:execute to execute the phase first
+```
 
-But execute.md only creates:
-- `gsd/checkpoint/phase-{N}/pre` (line 150)
-- `gsd/checkpoint/phase-{N}/post` (line 579)
+The verifier will see no summary.md and refuse to run, telling the user to run execute — which they just did.
 
-The executor agent has zero `git tag` commands. Per-task tags are never created anywhere.
+**Impact:** Auto-verification from Step 8 always fails its prerequisite check.
+**Fix:** Either write summary.md before triggering verification (move the summary write from Step 8b to before the verify trigger in Step 8), or have the inline verification skip the summary prerequisite when called from within execute.
 
-**Impact:** `/opti-gsd:rollback 2-03` always fails. Only whole-phase rollback works.
-**Fix:** Add per-task tag creation after each task commit — either in the executor or the orchestrator's result handler.
+### 3. state.json `phases` structure conflict between execute and verify
 
-### 4. recover.md is architecturally misplaced (session-scoped IDs don't survive restarts)
-
-TaskOutput exists (finding #1 correction), but recover.md's core assumption is still flawed:
-
-**Task IDs don't survive sessions.** The `loop.background_tasks` array in state.json stores task IDs from the `Task` tool. These IDs are session-scoped — they exist only within the Claude Code session that created them. When a session ends (the exact scenario recover is meant to handle), those IDs are meaningless. There's nothing to poll.
-
-The *useful* part of recover — detecting mismatches between state.json and git reality — is standard git inspection. This belongs in the orchestrator's resume logic (execute.md Step 3b), not as a separate command.
-
-**Recommendation:** Fold recover's git-inspection logic into execute.md Step 3b. Recovery should rely on git state, not session-scoped task IDs.
-
-### 5. No handling for parallel task git conflicts
-
-Parallel subagents in the same wave each commit independently to the same repo. If two agents modify overlapping files — or if one agent's commit includes unstaged changes from another agent's work-in-progress — commits will be incorrect.
-
-**Fix:** Validate at plan time that tasks in the same wave don't share writable files (planner responsibility). Or have subagents return results without committing, and let the orchestrator serialize all commits.
-
----
-
-## MEDIUM Severity (9)
-
-### 6. Double-commit: orchestrator and executor both commit task changes
-
-Executor agent (line 113): `git add {files} → git commit`
-Orchestrator Step 7 (line 460): `git add {files} → git commit`
-
-The executor commits first. The orchestrator's commit will fail with "nothing to commit, working tree clean."
-
-**Fix:** Single owner for commits. Since the executor already commits with the correct format, remove the commit from Step 7 and have the orchestrator only update state.json.
-
-### 7. Step 0 config structure mismatch
-
-Step 0 (line 58) checks for `branching: milestone` in config.json. The actual config structure is:
+Execute Step 8b (line 669-678) writes:
 ```json
-"branching": {
-    "enabled": true,
-    "pattern": "gsd/v{milestone}"
+{
+  "phases": {
+    "complete": ["...", "{N}"],
+    "in_progress": [],
+    "pending": ["{N+1}", "..."]
+  }
 }
 ```
 
-There's no `milestone` value — it's a nested object with `enabled` and `pattern` fields. The check should be `branching.enabled === true`, not `branching: milestone`.
+Verify Step 7d (verify.md line 688-701) writes:
+```json
+{
+  "phases": {
+    "{N}": {
+      "status": "verified",
+      "review": { "rounds": 2, ... }
+    }
+  }
+}
+```
 
-### 8. Step 5 has redundant between-wave gates
+These are incompatible structures for the same `phases` key. The actual state.json uses the array format (`complete`/`in_progress`/`pending`). If verify writes its object format, it overwrites the arrays. If it merges, the shape is inconsistent — some phases are in arrays, one is a nested object.
 
-Step 5, point 2 (line 196): `IF interactive mode AND wave > 1: Ask "Wave {W-1} complete. Continue to Wave {W}?"`
-Step 5, point 5 (line 232): `All tasks in wave complete? → Step 5b (User Review Checkpoint)`
+Status.md, plan-phase.md, and execute.md all read the array format. Verify's write would break all of them.
 
-Both trigger between waves. Step 5b is a full review checkpoint with feedback collection. Point 2 is a simple continue prompt. In interactive mode, the user gets prompted twice between waves — first the review, then the continue question.
-
-**Fix:** Remove point 2. Step 5b already gates wave transitions and includes a "Continue to Wave {W+1}" option.
-
-### ~~9. Synchronous polling loop incompatible with Claude Code's execution model~~ — RETRACTED
-
-**This finding was wrong.** TaskOutput is a real Claude Code tool that handles polling natively. The synchronous loop described in execute.md using TaskOutput is the correct pattern.
-
-### 10. Step 6 subagent prompt references non-existent config fields
-
-Line 430: `<browser enabled="{config.browser.enabled}" base_url="{config.base_url}" />`
-
-Config.json has no `browser` section and no `base_url` field. The actual config has a `deployment` section with `platform` and `preview_url`.
-
-### 11. Duplicate task tracking ownership between orchestrator and executor
-
-Both claim to manage Claude Code task status. The orchestrator creates tasks (Step 4c) and updates them (Step 5). The executor also creates tasks (startup line 68-75) and updates them (lines 99-120). Since subagents run in isolated contexts, the executor's task management has no effect on the orchestrator's task list.
-
-**Fix:** Orchestrator owns all task tracking. Remove from executor.
-
-### 12. ToolSearch referenced across 6 files but doesn't exist
-
-Referenced in: opti-gsd-executor.md (lines 82, 87), opti-gsd-verifier.md, opti-gsd-debugger.md, opti-gsd-integration-checker.md, verify.md (line 218), tools.md. Not a Claude Code tool. MCP tools are auto-available — no discovery/loading step needed.
-
-### 13. Yolo mode "auto-continue after 3 seconds" is not implementable
-
-Step 5b (line 342): "auto-continue after 3 seconds unless user is typing." Claude Code can't detect typing or implement timed waits that auto-continue.
-
-**Fix:** In yolo mode, display results and continue immediately without prompting.
-
-### 14. Step 5b has duplicate step numbering
-
-Lines 296-304: step "3. Present categorization for confirmation"
-Lines 307-310: step "3. Generate and execute inline fix tasks"
-
-Two items numbered "3." — the second should be "4." This shifts all subsequent numbering.
+**Impact:** Running verify corrupts state.json for all other commands.
+**Fix:** Verify should store review metadata in a separate key (e.g., `phases_meta.{N}`) or extend the array format with a companion object. The `phases` key must remain array-based.
 
 ---
 
-## LOW Severity (7)
+## MEDIUM Severity (5)
 
-### 15. Step 3b resume logic doesn't describe wave mapping
+### 4. Deploy config field name mismatch across files
 
-Step 3b says "Start from next incomplete task" but doesn't describe how to determine which wave a task belongs to. The plan structures tasks within waves — resuming requires mapping the task number to its wave to know which wave to start from.
+Execute Step 9 (line 698) and verify Step 0 (line 44) both reference `deploy.target`:
+```
+If `deploy.target` is set (vercel, netlify, etc.)
+```
 
-### 16. Missing `loop` config defaults in config.json
+But config.json has:
+```json
+"deployment": {
+  "platform": null,
+  "preview_url": null
+}
+```
 
-Execute references `config.loop.tdd_max_attempts` (default 5) and `config.loop.execute_max_retries` (default 2) but config.json has no `loop` section.
+The field is `deployment.platform`, not `deploy.target`. Every deploy check in execute.md and verify.md uses the wrong key path.
 
-### 17. Token/Duration reporting is impractical
+**Fix:** Change `deploy.target` to `deployment.platform` in execute.md Step 9 and verify.md Step 0.
 
-Step 10 (line 718) reports `Duration: {approximate}` and summary template includes token usage. Claude Code agents can't access their own token consumption or wall-clock timing.
+### 5. plan-phase.md and discuss-phase.md still use old `branching: milestone` check
 
-### 18. Co-Authored-By hardcoded in orchestrator but absent from executor
+Execute.md Step 0 was fixed to use `branching.enabled`, but:
+- `plan-phase.md` line 54: `If branching: milestone is configured`
+- `discuss-phase.md` lines 21, 36: `branching: milestone`
 
-Step 7 (line 465) includes `Co-Authored-By: Claude <noreply@anthropic.com>`. The executor's commit convention (lines 267-276) doesn't include it. Inconsistent commit formats between the two.
+These still reference the old format. Since the actual config uses `branching.enabled: true`, these commands would never detect that branching is configured.
 
-### 19. Failed tasks marked as "completed" in task list
+**Impact:** plan-phase and discuss-phase skip milestone branch enforcement even when branching is enabled.
+**Fix:** Update both files to use `branching.enabled` like execute.md does.
 
-Executor line 119: `TaskUpdate(status="completed")` for failed tasks with note "task is done, just failed." Semantically misleading in the task list.
+### 6. Tool usage per-task attribution unreliable during parallel execution
 
-### 20. Executor tool list has conditional comment for Browser
+`log-tool-usage.js` (lines 50-60) determines the current task by:
+1. Checking `state.json` for `loop.current_task`
+2. Falling back to `background_tasks` — but only if exactly 1 task is running
 
-Line 11: `Browser  # Only when config.testing.browser: true`. Tool lists aren't conditional in Claude Code — tools are either available or not.
+During parallel execution, multiple tasks run simultaneously. The fallback requires `running.length === 1`, which fails with parallel waves. Tool calls from parallel subagents all get logged without task attribution (or with wrong attribution).
 
-### 21. Context budget percentages are unenforceable
+The executor's "Tools Used" reporting (reading tool-usage.json filtered by task) will show incomplete or no data for parallel tasks.
 
-Lines 811-818 specify "Orchestrator budget: 15%" with breakdowns. These are aspirational — there's no mechanism to enforce context budget limits. They serve as guidelines but read as hard constraints.
+**Impact:** Tool usage analytics are inaccurate for any wave with 2+ parallel tasks.
+**Fix:** The hook receives tool calls from subagent processes. Each subagent could set an environment variable with its task ID, and the hook could read it. Or accept that per-task attribution only works for sequential waves.
+
+### 7. Step 10 suggests manual verify when Step 8 already auto-ran it
+
+Step 8 (line 625-631) auto-triggers verification after user approval.
+Step 10 (line 745) then suggests:
+```
+→ /opti-gsd:verify {N}       — Then verify (automated checks + preview testing)
+```
+
+If verification already ran in Step 8, this is confusing — the user would think they still need to verify.
+
+**Fix:** Step 10 should adapt based on whether verification ran. If it did, show verification results instead of suggesting the command. If user said "looks good" (skipping verify), then the suggestion makes sense.
+
+### 8. verify.md has duplicate "Step 3" numbering
+
+verify.md has:
+- Step 3: Run CI Commands (line 156)
+- Step 3b: Code Intelligence Diagnostics (line 205)
+- Step 3c: Debt Balance Check (line 254)
+- Step 3: Run E2E Tests (line 320)
+
+Two sections are both labeled "Step 3." The E2E section should be Step 3d or Step 4.
 
 ---
 
-## Recover Command Assessment
+## LOW Severity (3)
 
-**Current state:** `recover.md` was a 111-line command built around `TaskOutput` polling of `loop.background_tasks`. While TaskOutput is a real tool (correction from finding #1), the fundamental problem remains: task IDs are session-scoped and don't survive the session restarts that recovery is designed for.
+### 9. Config.json missing `loop` and `urls` sections referenced by execute
 
-**What it tried to do:**
-1. Poll background task IDs from state.json → IDs don't survive sessions
-2. Use TaskOutput to check results → tool exists but IDs are stale
-3. Compare state.json to git reality → this part is useful
-4. Auto-fix state mismatches → this part is useful
+Step 6 prompt references `config.loop.tdd_max_attempts` (line 395) and `config.urls.local` (line 447). Config.json has neither `loop` nor `urls` sections. Both have fallback defaults (`|| 5` and `|| 'http://localhost:3000'`), so execution isn't blocked, but the config schema is incomplete.
 
-**Action taken:** Removed recover.md. Its git-inspection logic was folded into execute.md Step 3b, which now compares state.json against git reality on resume and handles mismatches.
+Step 7a (lines 531-539) shows `loop` should exist in config:
+```json
+{ "loop": { "tdd_max_attempts": 5, "execute_max_retries": 2 } }
+```
+
+**Fix:** Add `loop` and `urls` sections to config.json with their defaults, or document them as optional config additions.
+
+### 10. Recovery commit pattern matching fragile with review fix commits
+
+Step 3b recovery (line 131) counts commits matching `{type}({phase}-T{N}):`. But Step 5b review fixes use format `fix({phase}-R{round}):`. These also match the phase pattern but not the task pattern. If recovery logic does a simple `grep` for the phase number in commit messages, it could miscount by including review fix commits.
+
+**Fix:** Be explicit that recovery counts only commits matching `*({phase}-T*):` pattern, excluding `*({phase}-R*):` review fix commits.
+
+### 11. Step 3b recovery offers "Discard and continue" for uncommitted work
+
+Step 3b (line 147) offers to discard uncommitted changes. If a subagent crashed mid-task, these changes might be partially-complete work worth keeping. "Discard" is the most destructive option but presented alongside "commit" and "stash" without warning.
+
+**Fix:** Add a warning to the discard option: `→ Discard and continue (WARNING: changes will be lost)`
 
 ---
 
-## Strengths (unchanged from previous review)
+## Previously Fixed Issues (Confirmed Resolved)
 
-1. **Wave-based parallelism** — sound dependency management with intra-wave parallelism
-2. **Two-layer architecture** — persistent plan.json + ephemeral visual progress is a good concept
-3. **Protected branch enforcement** — defense in depth at orchestrator and executor level
-4. **Review checkpoints** — plan-aware feedback that detects future-phase requests
-5. **TDD Red-Green-Refactor** — well-designed with file permission locking
-6. **Git checkpoint tags** — pre/post for rollback safety (just needs per-task)
-7. **Error Learning System** — institutional memory from failures
-8. **Atomic writes** in log-tool-usage.js — correct concurrent access
-9. **Deviation handling matrix** — clear auto-fix vs human-decision separation
+These findings from revision 4 have been properly addressed:
+
+| # | Finding | Status |
+|---|---------|--------|
+| ~~1~~ | TaskCreate/TaskUpdate/TaskOutput retracted | Retracted (tools are real) |
+| 2 | Step 8/8b ordering | **Fixed** |
+| 3 | Per-task tags missing | **Fixed** (but see new #1) |
+| 4 | recover.md misplaced | **Fixed** (removed) |
+| 5 | Parallel git conflicts | **Open** (not addressed) |
+| 6 | Double-commit | **Fixed** |
+| 7 | Config structure mismatch | **Partially fixed** (execute fixed, plan-phase/discuss-phase not) |
+| 8 | Redundant wave gate | **Fixed** |
+| ~~9~~ | Synchronous polling retracted | Retracted (TaskOutput is correct) |
+| 10 | Non-existent config fields | **Fixed** |
+| 11 | Duplicate task tracking | **Fixed** |
+| 12 | ToolSearch | **Fixed** |
+| 13 | Yolo mode | **Fixed** |
+| 14 | Duplicate step numbering | **Fixed** |
+| 15 | Wave mapping in resume | **Fixed** |
+| 16 | Missing loop config | **Open** (config still lacks section) |
+| 17 | Token/Duration reporting | **Fixed** (Duration removed) |
+| 18 | Co-Authored-By inconsistency | **Open** (not addressed) |
+| 19 | Failed tasks "completed" | **Fixed** (executor no longer manages tasks) |
+| 20 | Conditional Browser comment | **Fixed** |
+| 21 | Context budget language | **Fixed** |
+
+---
+
+## Strengths
+
+1. **Step 8/8b ordering is now correct** — User review happens before metadata is committed. Data integrity preserved.
+2. **Wave-based parallelism** — Sound dependency management with intra-wave parallelism.
+3. **Two-layer architecture** — Persistent plan.json + ephemeral Claude Code Tasks. Clean separation.
+4. **Protected branch enforcement** — Defense in depth at orchestrator and executor level.
+5. **Review checkpoints** — Plan-aware feedback that detects future-phase requests. Well-designed.
+6. **TDD Red-Green-Refactor** — File permission locking prevents test manipulation.
+7. **Step 3b recovery** — Git-reality-based recovery is the right approach (replacing session-scoped task IDs).
+8. **Error Learning System** — Institutional memory from failures. Good feedback loop.
+9. **Clear single ownership** — Executor owns commits, orchestrator owns task tracking. No overlap.
 
 ---
 
 ## Recommendations (Priority Order)
 
-1. **Fix step ordering and data integrity** — Move Step 8b before Step 8. Only write summary/update state AFTER user approves the final review.
-2. **Fold recover into execute's resume logic** — Remove recover.md as a separate command. Add git-reality-check to execute.md Step 3b.
-3. **Add per-task checkpoint tags** — `git tag -f "gsd/checkpoint/phase-{N}/T{id}" HEAD` after each task commit.
-4. **Fix double-commit** — Remove orchestrator commit from Step 7; executor already commits.
-5. **Replace ToolSearch references** — ToolSearch doesn't exist. MCP tools are auto-available; call them directly. Affects 6 files.
-6. **Remove redundant wave gate** — Delete Step 5 point 2; Step 5b handles wave transitions.
-7. **Fix config structure references** — Step 0 branching check, Step 6 browser/base_url fields.
-8. **Single owner for task tracking** — Orchestrator owns TaskCreate/TaskUpdate. Remove task management from executor (runs in isolated subagent context, can't access orchestrator's tasks).
-9. **Fix yolo mode** — Immediate continue, no timed wait.
-10. **Fix duplicate step numbering** — Step 5b has two items numbered "3."
+1. **Fix per-task tags for parallel execution** — Parse commit hash from executor's TaskOutput result. Tag the specific commit, not HEAD.
+2. **Fix verification prerequisite conflict** — Write summary.md before triggering auto-verification in Step 8, or adjust verify to accept inline calls without summary.md.
+3. **Unify state.json `phases` structure** — Choose one format (arrays). Move verify's review metadata to a separate key.
+4. **Fix deploy config references** — `deploy.target` → `deployment.platform` in execute.md and verify.md.
+5. **Fix branching check in plan-phase/discuss-phase** — `branching: milestone` → `branching.enabled`.
+6. **Address parallel git conflicts** — Planner should validate that parallel tasks don't share writable files.
+7. **Fix verify.md duplicate Step 3** — Renumber E2E tests section.
+8. **Adapt Step 10 based on verification state** — Don't suggest verify if it already ran.
+9. **Add missing config sections** — `loop` and `urls` defaults in config.json.
+10. **Fix tool usage attribution** — Accept limitation for parallel waves, or pass task ID via environment.
