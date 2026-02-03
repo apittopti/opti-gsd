@@ -1,4 +1,5 @@
 {
+  "description": "opti-gsd tool usage analytics — logs all tool invocations for session analysis",
   "hooks": {
     "PostToolUse": [
       {

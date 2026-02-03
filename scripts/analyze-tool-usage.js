@@ -20,8 +20,12 @@ const path = require('path');
 // Built-in tools (non-MCP)
 const BUILTIN_TOOLS = new Set([
   'Read', 'Edit', 'Bash', 'Grep', 'Glob', 'Write',
-  'Task', 'WebFetch', 'WebSearch', 'TodoRead', 'TodoWrite',
-  'MultiEdit', 'LS', 'Agent', 'Batch'
+  'Task', 'TaskOutput', 'TaskStop',
+  'TaskCreate', 'TaskGet', 'TaskUpdate', 'TaskList',
+  'WebFetch', 'WebSearch', 'NotebookEdit',
+  'AskUserQuestion', 'EnterPlanMode', 'ExitPlanMode',
+  'Skill', 'ToolSearch',
+  'ListMcpResourcesTool', 'ReadMcpResourceTool'
 ]);
 
 /**
