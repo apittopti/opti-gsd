@@ -73,8 +73,10 @@ State.json stores phase as integer, directory uses zero-pad: phase 1 → `phase-
 
 **CRITICAL: ALL three version files MUST be updated together on EVERY push to master.**
 
+All paths are relative to the repository root (`C:\Optimotive-dev\opti-gsd\`):
+
 1. `package.json` — `"version"` field
-2. `.claude-plugin/plugin.json` — `"version"` field
+2. `plugins/opti-gsd/.claude-plugin/plugin.json` — `"version"` field
 3. `.claude-plugin/marketplace.json` — `"version"` field in plugins array
 
 All three MUST have identical version strings.
