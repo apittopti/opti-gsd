@@ -4,6 +4,7 @@ description: Verify phase completion with automated CI checks, testing, and requ
 disable-model-invocation: true
 context: fork
 agent: opti-gsd/verifier
+allowed-tools: Read, Glob, Grep, Bash, Write
 argument-hint: "[phase-number]"
 ---
 

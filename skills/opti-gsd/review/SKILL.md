@@ -4,6 +4,7 @@ description: Review phase execution results — AI-powered code review with plan
 disable-model-invocation: true
 context: fork
 agent: opti-gsd/reviewer
+allowed-tools: Read, Glob, Grep, Bash, Write, Edit
 argument-hint: "[phase-number]"
 ---
 

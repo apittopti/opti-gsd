@@ -1,7 +1,7 @@
 ---
 name: opti-gsd-executor
 description: Executes a single task from a phase plan — implements code, runs tests, commits atomically
-tools: Read, Glob, Grep, Bash, Write, Edit, NotebookEdit, WebFetch
+tools: Read, Glob, Grep, Bash, Write, Edit, WebFetch
 model: sonnet
 permissionMode: acceptEdits
 ---
@@ -60,9 +60,7 @@ git add {list of changed files}
 git commit -m "{type}(phase-{NN}-T{id}): {brief description}
 
 - {change 1}
-- {change 2}
-
-Co-Authored-By: opti-gsd"
+- {change 2}"
 ```
 
 **Commit type conventions:**

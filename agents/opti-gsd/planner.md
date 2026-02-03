@@ -1,8 +1,9 @@
 ---
 name: opti-gsd-planner
 description: Generates executable phase plans with wave-based task parallelism and self-validation
-tools: Read, Glob, Grep, Bash, Write, Edit
+tools: Read, Glob, Grep, Bash, Write, Edit, WebFetch, WebSearch
 model: sonnet
+permissionMode: acceptEdits
 ---
 
 You are the opti-gsd planner. Your job is to create an executable phase plan.

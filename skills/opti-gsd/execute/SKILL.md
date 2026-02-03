@@ -2,6 +2,7 @@
 name: execute
 description: Execute the current phase plan — spawns executor agents for wave-based parallel task execution
 disable-model-invocation: true
+allowed-tools: Read, Glob, Grep, Bash, Write, Edit, Task
 ---
 
 # Execute Phase Plan

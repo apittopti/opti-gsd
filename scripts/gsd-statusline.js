@@ -24,28 +24,14 @@ function progressBar(percent, width = 10) {
     return bar;
 }
 
-// Parse STATE.md for phase info
-function parseState(stateContent) {
-    const result = {
-        phase: 1,
-        totalPhases: 1,
-        milestone: '',
-        mode: ''
+// Parse state.json and config.json data
+function parseState(stateData, configData) {
+    return {
+        phase: stateData.phases?.current || stateData.phase || 1,
+        totalPhases: stateData.phases?.total || 1,
+        milestone: stateData.milestone || '',
+        mode: configData?.mode || ''
     };
-
-    const phaseMatch = stateContent.match(/current_phase:\s*(\d+)/);
-    if (phaseMatch) result.phase = parseInt(phaseMatch[1]);
-
-    const totalMatch = stateContent.match(/total_phases:\s*(\d+)/);
-    if (totalMatch) result.totalPhases = parseInt(totalMatch[1]);
-
-    const milestoneMatch = stateContent.match(/milestone:\s*(\S+)/);
-    if (milestoneMatch) result.milestone = milestoneMatch[1];
-
-    const modeMatch = stateContent.match(/mode:\s*(\w+)/);
-    if (modeMatch) result.mode = modeMatch[1];
-
-    return result;
 }
 
 // Main
@@ -65,28 +51,39 @@ process.stdin.on('end', () => {
     const cwd = data?.workspace?.current_dir || process.cwd();
 
     // Check for opti-gsd project
-    const gsdDir = path.join(cwd, '.gsd');
+    const gsdDir = path.join(cwd, '.opti-gsd');
     if (!fs.existsSync(gsdDir)) {
         console.log(`[${model}] gsd:--`);
         process.exit(0);
     }
 
-    // Read STATE.md
-    const stateFile = path.join(gsdDir, 'STATE.md');
+    // Read state.json
+    const stateFile = path.join(gsdDir, 'state.json');
     if (!fs.existsSync(stateFile)) {
         console.log(`[${model}] gsd:init`);
         process.exit(0);
     }
 
-    let stateContent = '';
+    let stateData = {};
     try {
-        stateContent = fs.readFileSync(stateFile, 'utf8');
+        stateData = JSON.parse(fs.readFileSync(stateFile, 'utf8'));
     } catch (e) {
         console.log(`[${model}] gsd:err`);
         process.exit(0);
     }
 
-    const state = parseState(stateContent);
+    // Read config.json for mode (mode is in config, not state)
+    let configData = {};
+    try {
+        const configFile = path.join(gsdDir, 'config.json');
+        if (fs.existsSync(configFile)) {
+            configData = JSON.parse(fs.readFileSync(configFile, 'utf8'));
+        }
+    } catch (e) {
+        // Config read failure is non-fatal
+    }
+
+    const state = parseState(stateData, configData);
 
     // Calculate progress
     const phaseProgress = state.totalPhases > 0

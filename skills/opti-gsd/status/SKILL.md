@@ -33,7 +33,7 @@ If `.opti-gsd/state.json` missing:
 
 ## Step 2: Load State
 
-1. Read `.opti-gsd/state.json`, `.opti-gsd/roadmap.md`
+1. Read `.opti-gsd/state.json`, `.opti-gsd/config.json`, `.opti-gsd/roadmap.md`
 2. Check for phase plans: `.opti-gsd/plans/phase-{NN}/plan.json`
 3. Check for verification: `.opti-gsd/plans/phase-{NN}/verification.json`
 4. Read `.opti-gsd/learnings.md` if exists

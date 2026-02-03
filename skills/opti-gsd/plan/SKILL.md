@@ -4,6 +4,7 @@ description: Generate an executable plan for the current phase with wave-based t
 disable-model-invocation: true
 context: fork
 agent: opti-gsd/planner
+allowed-tools: Read, Glob, Grep, Bash, Write, Edit, WebFetch, WebSearch
 argument-hint: "[phase-number] [--research] [--skip-research] [--gaps]"
 ---
 

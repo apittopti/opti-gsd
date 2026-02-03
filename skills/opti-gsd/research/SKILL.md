@@ -4,6 +4,7 @@ description: Research best practices, patterns, and approaches for a technical t
 disable-model-invocation: true
 context: fork
 agent: opti-gsd/researcher
+allowed-tools: Read, Glob, Grep, Bash, Write, WebFetch, WebSearch
 argument-hint: "<topic>"
 ---
 
