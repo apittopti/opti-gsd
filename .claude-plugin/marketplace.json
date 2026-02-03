@@ -11,10 +11,7 @@
   "plugins": [
     {
       "name": "opti-gsd",
-      "source": {
-        "source": "url",
-        "url": "https://github.com/apittopti/opti-gsd.git"
-      },
+      "source": ".",
       "description": "Spec-driven development with fresh context execution — plan, execute, review, verify",
       "version": "3.0.0",
       "strict": true
