@@ -120,7 +120,7 @@ Wave {W} — {task_count} task(s)
 
 For each task in the wave, spawn an executor subagent via the Task tool.
 
-**CRITICAL: Use the `opti-gsd/executor` custom agent.**
+**CRITICAL: Use the `executor` custom agent.**
 
 The prompt for each executor MUST include:
 - The task JSON from plan.json (id, title, files, action, verify, done)

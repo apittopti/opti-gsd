@@ -3,7 +3,7 @@ name: research
 description: Research best practices, patterns, and approaches for a technical topic
 disable-model-invocation: true
 context: fork
-agent: opti-gsd/researcher
+agent: researcher
 allowed-tools: Read, Glob, Grep, Bash, Write, WebFetch, WebSearch
 argument-hint: "<topic>"
 ---

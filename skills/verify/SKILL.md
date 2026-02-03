@@ -3,7 +3,7 @@ name: verify
 description: Verify phase completion with automated CI checks, testing, and requirement validation
 disable-model-invocation: true
 context: fork
-agent: opti-gsd/verifier
+agent: verifier
 allowed-tools: Read, Glob, Grep, Bash, Write
 argument-hint: "[phase-number]"
 ---
