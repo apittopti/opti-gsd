@@ -1,5 +1,4 @@
 ---
-name: complete
 description: Complete the current milestone — creates a pull request for merge into main
 disable-model-invocation: true
 ---

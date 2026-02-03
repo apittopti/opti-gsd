@@ -1,5 +1,4 @@
 ---
-name: add-story
 description: Capture a user story with acceptance criteria for phase planning
 disable-model-invocation: true
 argument-hint: "<story description>"

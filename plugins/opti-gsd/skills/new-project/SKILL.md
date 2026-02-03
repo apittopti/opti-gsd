@@ -1,5 +1,4 @@
 ---
-name: new-project
 description: Scaffold a new project with opti-gsd workflow from scratch
 disable-model-invocation: true
 ---

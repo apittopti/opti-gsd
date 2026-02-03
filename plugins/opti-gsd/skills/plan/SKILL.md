@@ -1,5 +1,4 @@
 ---
-name: plan
 description: Generate an executable plan for the current phase with wave-based task parallelism
 disable-model-invocation: true
 context: fork

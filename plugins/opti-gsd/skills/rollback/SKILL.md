@@ -1,5 +1,4 @@
 ---
-name: rollback
 description: Rollback to a checkpoint — phase-level or task-level granularity
 disable-model-invocation: true
 argument-hint: "[phase-task] e.g. '2' for phase or '2-01' for task"

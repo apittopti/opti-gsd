@@ -1,5 +1,4 @@
 ---
-name: add-feature
 description: Capture a feature idea for future planning without interrupting current work
 disable-model-invocation: true
 argument-hint: "<feature description>"

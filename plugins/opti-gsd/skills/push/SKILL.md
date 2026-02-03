@@ -1,5 +1,4 @@
 ---
-name: push
 description: Push current branch to remote for CI and preview deployment
 disable-model-invocation: true
 ---

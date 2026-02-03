@@ -1,5 +1,4 @@
 ---
-name: init
 description: Initialize opti-gsd in an existing project — analyzes codebase, creates config, state, and directory structure
 disable-model-invocation: true
 ---

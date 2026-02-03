@@ -1,5 +1,4 @@
 ---
-name: research
 description: Research best practices, patterns, and approaches for a technical topic
 disable-model-invocation: true
 context: fork

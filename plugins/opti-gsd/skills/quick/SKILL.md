@@ -1,5 +1,4 @@
 ---
-name: quick
 description: Quick ad-hoc task — make a small change outside the normal plan/execute flow
 disable-model-invocation: true
 argument-hint: "<what to do>"

@@ -1,5 +1,4 @@
 ---
-name: help
 description: Show all opti-gsd commands with descriptions and the recommended workflow
 disable-model-invocation: true
 ---

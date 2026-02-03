@@ -1,5 +1,4 @@
 ---
-name: migrate
 description: Migrate an existing opti-gsd project from v2 to v3 format — converts state, config, and plans
 disable-model-invocation: true
 ---

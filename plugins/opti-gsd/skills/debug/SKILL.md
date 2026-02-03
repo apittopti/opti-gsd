@@ -1,5 +1,4 @@
 ---
-name: debug
 description: Start a systematic debugging session — reproduce, isolate, fix, verify
 disable-model-invocation: true
 argument-hint: "[description of the bug]"

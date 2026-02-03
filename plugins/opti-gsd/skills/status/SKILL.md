@@ -1,5 +1,4 @@
 ---
-name: status
 description: Show current opti-gsd project state with progress bars and suggest the next action
 disable-model-invocation: true
 ---

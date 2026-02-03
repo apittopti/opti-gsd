@@ -1,5 +1,4 @@
 ---
-name: add-issue
 description: Capture a bug or issue for tracking and future phase planning
 disable-model-invocation: true
 argument-hint: "<issue description>"

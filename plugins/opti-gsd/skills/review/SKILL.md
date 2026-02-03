@@ -1,5 +1,4 @@
 ---
-name: review
 description: Review phase execution results — AI-powered code review with plan-aware feedback
 disable-model-invocation: true
 context: fork

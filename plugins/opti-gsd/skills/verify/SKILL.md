@@ -1,5 +1,4 @@
 ---
-name: verify
 description: Verify phase completion with automated CI checks, testing, and requirement validation
 disable-model-invocation: true
 context: fork

@@ -1,5 +1,4 @@
 ---
-name: roadmap
 description: Create, view, or modify the project roadmap with phased delivery plan
 disable-model-invocation: true
 argument-hint: "[view|add|insert|remove] [phase-number]"
