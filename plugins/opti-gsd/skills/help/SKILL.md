@@ -33,6 +33,12 @@ Capture Commands:
   /opti-gsd:add-story   Capture a user story
   /opti-gsd:add-issue   Capture a bug/issue
 
+Agent Team Commands (experimental):
+─────────────────────────────────────────────────────────────
+  /opti-gsd:team-execute  Execute with communicating teammates
+  /opti-gsd:team-debug    Debug with competing hypotheses
+  /opti-gsd:team-review   Multi-perspective code review
+
 Utility Commands:
 ─────────────────────────────────────────────────────────────
   /opti-gsd:debug       Systematic debugging session
@@ -46,5 +52,6 @@ Tips:
   • Run /opti-gsd:status to see what to do next
   • All code changes happen on milestone branches (never main)
   • /opti-gsd:execute spawns fresh-context agents for each task
+  • /opti-gsd:team-execute uses Agent Teams for cross-task coordination
   • Use /opti-gsd:rollback if something goes wrong
 ```
