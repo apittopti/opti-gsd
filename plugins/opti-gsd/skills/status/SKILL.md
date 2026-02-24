@@ -1,6 +1,7 @@
 ---
 description: Show current opti-gsd project state with progress bars and suggest the next action
 disable-model-invocation: true
+allowed-tools: Read, Glob, Bash
 ---
 
 # Show Project Status

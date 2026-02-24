@@ -1,6 +1,7 @@
 ---
 description: Capture a bug or issue for tracking and future phase planning
 disable-model-invocation: true
+allowed-tools: Read, Bash, Write, AskUserQuestion
 argument-hint: "<issue description>"
 ---
 

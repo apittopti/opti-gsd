@@ -1,6 +1,7 @@
 ---
 description: Scaffold a new project with opti-gsd workflow from scratch
 disable-model-invocation: true
+allowed-tools: Read, Glob, Bash, Write, Edit, AskUserQuestion
 ---
 
 # New Project

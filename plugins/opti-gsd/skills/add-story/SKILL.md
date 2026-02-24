@@ -1,6 +1,7 @@
 ---
 description: Capture a user story with acceptance criteria for phase planning
 disable-model-invocation: true
+allowed-tools: Read, Bash, Write, AskUserQuestion
 argument-hint: "<story description>"
 ---
 

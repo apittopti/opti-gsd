@@ -1,6 +1,7 @@
 ---
 description: Capture a feature idea for future planning without interrupting current work
 disable-model-invocation: true
+allowed-tools: Read, Bash, Write, AskUserQuestion
 argument-hint: "<feature description>"
 ---
 

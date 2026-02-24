@@ -1,6 +1,7 @@
 ---
 description: Quick ad-hoc task — make a small change outside the normal plan/execute flow
 disable-model-invocation: true
+allowed-tools: Read, Glob, Grep, Bash, Write, Edit
 argument-hint: "<what to do>"
 ---
 

@@ -89,9 +89,15 @@ Return the full verification report to the caller. **Do NOT update state.json** 
 
 ### 6. Commit
 
+**Only commit verification.json** — state.json is updated by the main context after user interaction.
+
 ```bash
-git add .opti-gsd/plans/phase-{NN}/verification.json .opti-gsd/state.json
-git commit -m "docs: verify phase {N} — {result}"
+git add .opti-gsd/plans/phase-{NN}/verification.json
+git commit -m "docs: verify phase {N} — {result}
+
+- CI: {pass_count}/{total_count} passed
+- Tasks: {verified}/{total_tasks} verified
+- Issues: {issue_count}"
 ```
 
 ## Output Format

@@ -1,6 +1,7 @@
 ---
 description: Push current branch to remote for CI and preview deployment
 disable-model-invocation: true
+allowed-tools: Read, Bash
 ---
 
 # Push Branch
