@@ -112,7 +112,58 @@ AskUserQuestion: "Plan ready. Execute now, revise, or stop? (execute / revise / 
 
 ## Gap Closure Mode
 
-When `--gaps` is used, include in the planner prompt:
-1. Read `.opti-gsd/plans/phase-{NN}/verification.json` for failed items
-2. Create targeted tasks to close specific gaps only
-3. Mark plan with `"gap_closure": true` in plan.json root
+When `--gaps` is used, the plan skill operates differently:
+
+### Gap Closure Validation (main context)
+
+1. Check `.opti-gsd/plans/phase-{NN}/verification.json` exists — if not:
+   ```
+   ⚠️ No Verification Results
+   ─────────────────────────────────────
+   Cannot plan gap closure without verification results.
+   → Run /opti-gsd:verify first.
+   ```
+2. Read verification.json and extract failed items:
+   - `checks` entries with `"status": "fail"`
+   - `plan_compliance.details` entries with `"status": "fail"`
+   - `issues` array entries
+3. If no failures found:
+   ```
+   ✓ No Gaps Found
+   ─────────────────────────────────────
+   Verification passed — nothing to fix.
+   ```
+
+### Gap Closure Planner Prompt
+
+Include in the planner agent prompt:
+- The full verification.json content
+- The original plan.json (so planner knows what was already attempted)
+- Specific instruction: **only create tasks to fix the identified gaps, not re-implement the whole phase**
+- The planner should set `"gap_closure": true` in plan.json root
+
+### Gap Closure Plan Format
+
+The gap closure plan.json includes an extra field:
+```json
+{
+  "version": "3.0",
+  "phase": 2,
+  "gap_closure": true,
+  "title": "Phase 2 Gap Closure",
+  "goal": "Fix {N} gaps from verification",
+  "original_plan": "phase-02/plan.json",
+  "gaps": [
+    { "source": "check:typecheck", "description": "5 type errors in users.ts" },
+    { "source": "task:03", "description": "Test check failed — missing assertion" }
+  ],
+  "waves": [ ... ],
+  "total_tasks": 1,
+  "total_waves": 1
+}
+```
+
+### After Gap Closure
+
+The gap closure plan follows the normal flow: execute → review → verify.
+If verification passes this time, the phase moves to `verified`.

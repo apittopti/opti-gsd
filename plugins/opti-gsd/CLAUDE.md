@@ -24,7 +24,7 @@ This is the opti-gsd source repository. You are using opti-gsd to develop opti-g
 2. Ensure on milestone branch (never master/main)
 3. Follow the flow above
 
-## Skills (v3.0)
+## Skills (v3.1)
 
 | Skill | Use For |
 |-------|---------|
@@ -44,6 +44,7 @@ This is the opti-gsd source repository. You are using opti-gsd to develop opti-g
 | `/opti-gsd:add-feature` | Capture feature idea |
 | `/opti-gsd:add-story` | Capture user story |
 | `/opti-gsd:add-issue` | Capture bug/issue |
+| `/opti-gsd:config` | View or update project configuration |
 | `/opti-gsd:quick` | Quick ad-hoc task |
 | `/opti-gsd:migrate` | Migrate v2 project to v3 format |
 | `/opti-gsd:help` | Show all commands |

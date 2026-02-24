@@ -103,16 +103,34 @@ There are uncommitted changes in the working directory.
 ```
 **Do NOT proceed until the user responds.**
 
-**If previous execution progress exists** (check state.json `execution` field):
+**If previous execution progress exists** (check state.json `execution` field is not null and `status` is `"executing"`):
+
+Display the recovery summary:
 ```
 ⚠️ Previous Execution In Progress
 ─────────────────────────────────────
 Phase {N} execution was interrupted.
-Completed: Tasks {list}
-Remaining: Tasks {list}
-
-Resuming from Wave {W}, Task {T}...
+Completed: Tasks {list from execution.tasks_done}
+Failed:    Tasks {list from execution.tasks_failed}
+Remaining: Tasks {list from execution.tasks_pending}
+Last wave:  {execution.wave}
 ```
+
+**Use the `AskUserQuestion` tool** to ask:
+`Resume execution or start over? (resume / restart)`
+
+**Do NOT proceed until the user responds.**
+
+**If user says "resume":**
+1. Skip all waves that are fully completed (all tasks in `execution.tasks_done`)
+2. For the interrupted wave: only spawn executors for tasks NOT in `tasks_done`
+3. Failed tasks (`tasks_failed`) are retried unless user says otherwise
+4. Continue from the next incomplete wave onward
+
+**If user says "restart":**
+1. Clear execution state: set `execution` to null
+2. Proceed from Wave 1 as a fresh execution
+3. Note: previous checkpoint tags still exist for rollback
 
 ## Step 3: Determine Mode
 
@@ -174,17 +192,27 @@ Example for parallel wave:
 
 For each completed task:
 
-1. **Parse commit hash** from executor output — look for `Commit: {hash}`
-2. **Tag checkpoint with the specific commit hash:**
+1. **Parse commit hash** from executor output — look for `Commit: {hash}` (a 7-40 character hex string)
+2. **If commit hash found**, tag the checkpoint:
    ```bash
    git tag -f "gsd/checkpoint/phase-{NN}/T{id}" {commit_hash}
    ```
    This ensures per-task rollback works even with parallel execution.
-3. **Record result** — success/failure, files changed, tests passed
+3. **If commit hash NOT found** (executor crashed or forgot to report it):
+   - Check if the executor made any commits by looking at recent git log:
+     ```bash
+     git log --oneline -3
+     ```
+   - If a matching commit exists (message contains `phase-{NN}-T{id}`), use that hash
+   - If no commit found, mark the task as **failed** and proceed to failure handling (Step 5e)
+   - **Do NOT silently skip tagging** — every completed task must have a checkpoint
+4. **Record result** — success/failure, files changed, tests passed
 
-### 5d: Update Progress
+### 5d: Update and Persist Progress
 
-Update state.json after each wave:
+**CRITICAL:** Update AND commit state.json after each wave completes. This ensures progress survives crashes.
+
+Update state.json:
 ```json
 {
   "status": "executing",
@@ -195,6 +223,12 @@ Update state.json after each wave:
     "tasks_pending": ["03"]
   }
 }
+```
+
+Commit immediately:
+```bash
+git add .opti-gsd/state.json
+git commit -m "chore: execution progress — wave {W} complete"
 ```
 
 ### 5e: Handle Failures

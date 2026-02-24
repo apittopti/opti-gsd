@@ -23,6 +23,7 @@ Core Commands:
   /opti-gsd:execute     Execute phase plan (wave parallelism)
   /opti-gsd:review      AI-powered code review
   /opti-gsd:verify      Automated verification checks
+  /opti-gsd:config      View or update project configuration
   /opti-gsd:push        Push branch for CI/preview
   /opti-gsd:complete    Complete milestone, create PR
   /opti-gsd:rollback    Rollback to checkpoint
