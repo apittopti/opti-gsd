@@ -1,6 +1,7 @@
 ---
 description: Create, view, or modify the project roadmap with phased delivery plan
 disable-model-invocation: true
+allowed-tools: Read, Glob, Grep, Bash, Write, Edit, AskUserQuestion
 argument-hint: "[view|add|insert|remove] [phase-number]"
 ---
 
@@ -18,9 +19,15 @@ Create, view, or modify the project delivery roadmap.
 
 ## Step 0: Validate
 
-Check `.opti-gsd/` exists and `state.json` is readable.
+1. Check `.opti-gsd/` exists and `state.json` is readable. If not:
+   ```
+   ⚠️ opti-gsd Not Initialized
+   ─────────────────────────────────────
+   No .opti-gsd/ directory found.
+   → Run /opti-gsd:init to initialize the project first.
+   ```
 
-Check branch safety — block on protected branches:
+2. Check branch safety — block on protected branches:
 ```bash
 current_branch=$(git branch --show-current)
 ```
@@ -65,17 +72,16 @@ Phase 3: {title}
 → /opti-gsd:roadmap add   — Add a new phase
 ```
 
+After displaying, **use the `AskUserQuestion` tool** to prompt:
+`What next? (plan / add phase / stop)`
+
 ## Step 2: Create New Roadmap
 
-If no roadmap exists, interview the user:
+If no roadmap exists, **use the `AskUserQuestion` tool** to interview the user:
 
-```
-Let's create your delivery roadmap.
+`Let's create your delivery roadmap. What's the goal of this project/milestone? What features or changes need to be delivered? Any dependencies or ordering constraints?`
 
-What's the goal of this project/milestone?
-What features or changes need to be delivered?
-Any dependencies or ordering constraints?
-```
+**Do NOT proceed until the user responds.**
 
 Based on answers, create `.opti-gsd/roadmap.md`:
 

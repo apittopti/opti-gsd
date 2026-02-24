@@ -1,9 +1,7 @@
 ---
 description: Generate an executable plan for the current phase with wave-based task parallelism
 disable-model-invocation: true
-context: fork
-agent: planner
-allowed-tools: Read, Glob, Grep, Bash, Write, Edit, WebFetch, WebSearch
+allowed-tools: Read, Glob, Grep, Bash, Write, Edit, WebFetch, WebSearch, AskUserQuestion
 argument-hint: "[phase-number] [--research] [--skip-research] [--gaps]"
 ---
 
@@ -18,22 +16,50 @@ Generate an executable plan for the current (or specified) phase.
 - `--skip-research` — skip research step
 - `--gaps` — plan gap closure for failed verification items only
 
-## Phase Directory Convention
+## Phase Number Normalization
 
-**CRITICAL:** Phase directories are ALWAYS zero-padded to 2 digits.
-Phase 1 = `phase-01`, phase 10 = `phase-10`.
-Format: `.opti-gsd/plans/phase-{NN}/`
+**CRITICAL:** ALWAYS zero-pad phase numbers to 2 digits when building directory paths.
+```bash
+# Convert phase number to directory name
+printf "phase-%02d" {N}
+```
+- Phase `1` → `phase-01`, phase `10` → `phase-10`
+- state.json stores phase as integer, directory uses zero-pad
 
 ## Step 0: Validate
 
-1. Check `.opti-gsd/` exists, `state.json` readable, `roadmap.md` exists
-2. Check branch — block on protected branches (`master`, `main`, `production`, `prod`)
-3. If `branching.enabled` in config.json, verify milestone branch is active
+1. Check `.opti-gsd/` exists and `state.json` is readable
+2. Check `.opti-gsd/roadmap.md` exists — if not:
+   ```
+   ⚠️ No Roadmap
+   ─────────────────────────────────────
+   Cannot plan without a roadmap.
+   → Run /opti-gsd:roadmap first.
+   ```
+3. Check state.json `status` — **block if** `status` is `"initialized"` (no roadmap yet):
+   ```
+   ⚠️ Wrong Workflow Stage
+   ─────────────────────────────────────
+   Current status: {status}
+   Planning requires a roadmap first.
+   → Run /opti-gsd:roadmap
+   ```
+   **Allow if** status is `roadmap_created`, `planned` (re-plan), `executed`, `reviewed`, `verified` (next phase), or `milestone_complete`.
+4. Check branch — block on protected branches (`master`, `main`, `production`, `prod`)
+5. If `branching.enabled` in config.json, verify milestone branch is active
 
 ## Step 1: Determine Phase
 
 If phase number provided, use it. Otherwise read `phases.current` from state.json.
-Validate phase exists in roadmap.md.
+
+**Validate phase exists in roadmap.md** — search for a `## Phase {N}:` heading. If not found:
+```
+⚠️ Phase {N} Not in Roadmap
+─────────────────────────────────────
+Roadmap does not contain Phase {N}.
+Available phases: {list from roadmap}
+→ Run /opti-gsd:roadmap to view or modify the roadmap.
+```
 
 ## Step 2: Load Context
 
@@ -185,9 +211,18 @@ Tasks:
   01. {title} — {file_count} files
   02. {title} — {file_count} files
   03. {title} — {file_count} files
-
-→ /opti-gsd:execute    — Start executing tasks
 ```
+
+After presenting the plan, **use the `AskUserQuestion` tool** to prompt the user:
+```
+AskUserQuestion: "Plan ready. Execute now, revise, or stop? (execute / revise / stop)"
+```
+
+- If user says **"execute"** — tell them to run `/opti-gsd:execute`
+- If user says **"revise"** — ask what to change, regenerate the plan
+- If user says **"stop"** — end, plan is saved for later
+
+**Do NOT end without prompting the user.**
 
 ## Gap Closure Mode
 

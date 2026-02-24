@@ -37,7 +37,7 @@ If `.opti-gsd/state.json` missing:
 3. Check for verification: `.opti-gsd/plans/phase-{NN}/verification.json`
 4. Read `.opti-gsd/learnings.md` if exists
 
-**Phase directory convention:** Always zero-pad to 2 digits. Phase 1 = `phase-01`, phase 10 = `phase-10`.
+**Phase Number Normalization:** ALWAYS zero-pad phase numbers to 2 digits when building directory paths: `printf "phase-%02d" {N}`. Phase 1 = `phase-01`, phase 10 = `phase-10`.
 
 ## Step 3: Display Status
 

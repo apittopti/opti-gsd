@@ -1,9 +1,7 @@
 ---
 description: Verify phase completion with automated CI checks, testing, and requirement validation
 disable-model-invocation: true
-context: fork
-agent: verifier
-allowed-tools: Read, Glob, Grep, Bash, Write
+allowed-tools: Read, Glob, Grep, Bash, Write, AskUserQuestion
 argument-hint: "[phase-number]"
 ---
 
@@ -11,21 +9,35 @@ argument-hint: "[phase-number]"
 
 Run automated verification checks against the completed phase.
 
+## Phase Number Normalization
+
+**CRITICAL:** ALWAYS zero-pad phase numbers to 2 digits when building directory paths.
+```bash
+printf "phase-%02d" {N}
+```
+
 ## Step 0: Validate
 
-1. Check `.opti-gsd/` exists, state.json readable
+1. Check `.opti-gsd/` exists and `state.json` is readable
 2. Determine phase (from argument or state.json)
-3. Verify phase has been executed — check for `.opti-gsd/plans/phase-{NN}/summary.md`
+3. Check state.json `status` — **block if** `status` is `"initialized"`, `"roadmap_created"`, or `"planned"`:
+   ```
+   ⚠️ Wrong Workflow Stage
+   ─────────────────────────────────────
+   Current status: {status}
+   Verification requires an executed phase.
+   → Run /opti-gsd:execute first.
+   ```
+   **Allow if** status is `executed`, `reviewed` (verify after review), or `verified` (re-verify).
+4. Verify phase has been executed — check `.opti-gsd/plans/phase-{NN}/summary.md` exists
 
-If not executed:
+If summary.md missing:
 ```
 ⚠️ Phase Not Executed
 ─────────────────────────────────────
-Phase {N} has no execution summary.
+Phase {N} has no execution summary at .opti-gsd/plans/phase-{NN}/summary.md
 → Run /opti-gsd:execute to execute the phase first.
 ```
-
-**Phase directory convention:** Always zero-pad: phase 1 = `phase-01`.
 
 ## Step 1: Load Context
 
@@ -137,21 +149,21 @@ Requirements:
 Overall: PARTIAL (1 gap found)
 ```
 
+After presenting results, **you MUST use the `AskUserQuestion` tool** to prompt the user for their decision. Do NOT end without asking.
+
 **If all pass:**
 ```
 ✓ Phase {N} Verified
-→ /opti-gsd:plan       — Plan next phase
-→ /opti-gsd:complete   — Complete milestone (if last phase)
 ```
 
 Update state.json: `"status": "verified"`, move phase to `phases.complete`.
 
+**Call AskUserQuestion** with: `Phase {N} verified. What next? (plan next phase / complete milestone / stop)`
+
 **If gaps found:**
-```
-⚠️ Gaps Found
-→ /opti-gsd:plan --gaps  — Plan targeted fixes
-→ /opti-gsd:review       — Review and fix manually
-```
+**Call AskUserQuestion** with: `Verification found {N} gaps. Fix them now or investigate? (plan --gaps / review / stop)`
+
+**Do NOT proceed until the user responds.**
 
 ## Step 7: Commit
 

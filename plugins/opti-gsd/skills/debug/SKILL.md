@@ -1,6 +1,7 @@
 ---
 description: Start a systematic debugging session — reproduce, isolate, fix, verify
 disable-model-invocation: true
+allowed-tools: Read, Glob, Grep, Bash, Write, Edit, AskUserQuestion
 argument-hint: "[description of the bug]"
 ---
 
@@ -10,14 +11,11 @@ Systematic debugging workflow: reproduce → isolate → fix → verify.
 
 ## Step 1: Understand the Bug
 
-If `$ARGUMENTS` provided, use that as the bug description. Otherwise ask:
-```
-Describe the bug:
-  - What's happening?
-  - What should happen instead?
-  - Steps to reproduce?
-  - Any error messages?
-```
+If `$ARGUMENTS` provided, use that as the bug description. Otherwise **use the `AskUserQuestion` tool** to ask:
+
+`Describe the bug: What's happening? What should happen instead? Steps to reproduce? Any error messages?`
+
+**Do NOT proceed until the user responds.**
 
 ## Step 2: Reproduce
 

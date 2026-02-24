@@ -1,6 +1,7 @@
 ---
 description: Complete the current milestone — creates a pull request for merge into main
 disable-model-invocation: true
+allowed-tools: Read, Glob, Grep, Bash, Write, Edit, AskUserQuestion
 ---
 
 # Complete Milestone
@@ -9,11 +10,16 @@ Finalize the current milestone and create a pull request.
 
 ## Step 1: Validate
 
-1. Check all phases are verified (all in `phases.complete`)
-2. Check current branch is the milestone branch
-3. Check no uncommitted changes
+1. Check `.opti-gsd/` exists and `state.json` is readable
+2. **Check all phases are verified** — compare `phases.complete` against `phases.total`. Every phase from 1 to `phases.total` must appear in `phases.complete`. Also verify each phase has a `verification.json` with `"result": "pass"`:
+   ```bash
+   # For each phase, check verification exists and passed
+   # .opti-gsd/plans/phase-{NN}/verification.json → result == "pass"
+   ```
+3. Check current branch is the milestone branch
+4. Check no uncommitted changes
 
-If phases remain:
+If phases remain unverified:
 ```
 ⚠️ Incomplete Phases
 ─────────────────────────────────────
@@ -21,6 +27,16 @@ The following phases are not yet verified:
   Phase {N}: {status}
 
 → Complete all phases before finishing the milestone.
+→ Run /opti-gsd:verify {N} to verify a phase.
+```
+
+If status is not `verified`:
+```
+⚠️ Wrong Workflow Stage
+─────────────────────────────────────
+Current status: {status}
+All phases must be verified before completing.
+→ Run /opti-gsd:status to see what's pending.
 ```
 
 ## Step 2: Final Check
@@ -35,7 +51,12 @@ Run all CI commands one more time:
 
 If any fail, report and stop.
 
-## Step 3: Push Branch
+## Step 3: Confirm and Push Branch
+
+Before pushing, **use the `AskUserQuestion` tool** to confirm:
+`All CI checks passed. Push branch and create PR? (yes / stop)`
+
+**Do NOT push until the user confirms.**
 
 ```bash
 git push -u origin $(git branch --show-current)

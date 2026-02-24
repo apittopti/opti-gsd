@@ -130,6 +130,35 @@ Updated by: `/opti-gsd:roadmap`, `/opti-gsd:execute`, `/opti-gsd:review`, `/opti
 | `verified` | Phase verified, ready for next | `/opti-gsd:plan` (next phase) or `/opti-gsd:complete` |
 | `milestone_complete` | All phases done | Start new milestone |
 
+### State Transition Validation
+
+Each skill validates that the current status is appropriate before running. The source of truth is **both** the status string and the required artifact files.
+
+| Skill | Blocks If Status Is | Required Artifacts |
+|-------|--------------------|--------------------|
+| `/opti-gsd:roadmap` | (none — always allowed after init) | `.opti-gsd/` directory |
+| `/opti-gsd:plan` | `initialized` | `roadmap.md` |
+| `/opti-gsd:execute` | `initialized`, `roadmap_created` | `plans/phase-{NN}/plan.json` with `total_tasks > 0` |
+| `/opti-gsd:review` | `initialized`, `roadmap_created`, `planned` | `plans/phase-{NN}/summary.md` |
+| `/opti-gsd:verify` | `initialized`, `roadmap_created`, `planned` | `plans/phase-{NN}/summary.md` |
+| `/opti-gsd:complete` | anything except `verified` for all phases | `plans/phase-{NN}/verification.json` with `result: "pass"` for all phases |
+
+**Re-entry is allowed:** Skills can be re-run at later statuses (e.g., re-plan after verify, re-review after fixes). The blocking rules only prevent running a skill too early.
+
+### Phase Number Normalization
+
+**CRITICAL:** Phase numbers MUST be zero-padded to 2 digits in ALL directory and tag paths.
+
+```bash
+printf "phase-%02d" {N}
+```
+
+- `state.json` stores phase as integer: `"phase": 1`
+- Directory path uses zero-pad: `.opti-gsd/plans/phase-01/`
+- Checkpoint tags use zero-pad: `gsd/checkpoint/phase-01/T01`
+
+**All skills must normalize** any phase number (from arguments, state.json, or user input) to the zero-padded format before constructing paths.
+
 ---
 
 ## plan.json

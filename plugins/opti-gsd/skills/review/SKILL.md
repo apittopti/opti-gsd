@@ -1,9 +1,7 @@
 ---
 description: Review phase execution results — AI-powered code review with plan-aware feedback
 disable-model-invocation: true
-context: fork
-agent: reviewer
-allowed-tools: Read, Glob, Grep, Bash, Write, Edit
+allowed-tools: Read, Glob, Grep, Bash, Write, Edit, AskUserQuestion
 argument-hint: "[phase-number]"
 ---
 
@@ -11,17 +9,33 @@ argument-hint: "[phase-number]"
 
 Review the executed phase with plan-aware code review. Provides categorized feedback and targeted fixes.
 
+## Phase Number Normalization
+
+**CRITICAL:** ALWAYS zero-pad phase numbers to 2 digits when building directory paths.
+```bash
+printf "phase-%02d" {N}
+```
+
 ## Step 0: Validate
 
-1. Check `.opti-gsd/` exists
+1. Check `.opti-gsd/` exists and `state.json` is readable
 2. Determine phase (from argument or state.json)
-3. Verify phase has been executed (summary.md exists)
+3. Check state.json `status` — **block if** `status` is `"initialized"`, `"roadmap_created"`, or `"planned"`:
+   ```
+   ⚠️ Wrong Workflow Stage
+   ─────────────────────────────────────
+   Current status: {status}
+   Review requires an executed phase.
+   → Run /opti-gsd:execute first.
+   ```
+   **Allow if** status is `executed`, `reviewed` (re-review), or `verified`.
+4. Verify phase has been executed — check `.opti-gsd/plans/phase-{NN}/summary.md` exists
 
-If not executed:
+If summary.md missing:
 ```
 ⚠️ Phase Not Executed
 ─────────────────────────────────────
-Phase {N} has not been executed yet.
+Phase {N} has no execution summary at .opti-gsd/plans/phase-{NN}/summary.md
 → Run /opti-gsd:execute to execute the phase first.
 ```
 
@@ -82,11 +96,29 @@ Issues Found:
 ─────────────────────────────────────────────────────────────
 ```
 
-## Step 4: Handle User Response
+## Step 4: Prompt User for Decision
 
-After presenting review:
+After presenting the categorized review, **you MUST use the `AskUserQuestion` tool** to ask the user what to do next. Do NOT end without prompting.
 
-**If user says "looks good" or approves:**
+If there are **Must Fix** items:
+```
+AskUserQuestion: "There are {N} must-fix issues. Fix them now, or stop to investigate? (fix / quick fix / stop)"
+```
+
+If there are **no Must Fix** items (only Should Fix / Nice to Have / clean):
+```
+AskUserQuestion: "Review complete — no blockers found. What next? (verify / quick fix suggestions / stop)"
+```
+
+Options explained:
+- **"verify"** — skip fixes, proceed to `/opti-gsd:verify`
+- **"fix"** — apply fixes inline in this review session (for Must Fix items)
+- **"quick fix"** — tell the user to run `/opti-gsd:quick {description}` for targeted Should Fix / Nice to Have items outside the review flow
+- **"stop"** — end, user investigates manually
+
+**Do NOT proceed until the user responds.** This is a hard gate.
+
+**If user says "verify" or "approve" or "looks good":**
 ```
 ✓ Review Approved
 ─────────────────────────────────────
@@ -96,7 +128,7 @@ After presenting review:
 
 Update state.json: `"status": "reviewed"`
 
-**If user gives feedback or says "fix":**
+**If user says "fix" or gives feedback:**
 Apply targeted fixes for the identified issues:
 1. Fix must-fix items
 2. Fix should-fix items if user agrees
@@ -109,7 +141,7 @@ Apply targeted fixes for the identified issues:
    - {fix 2}"
    ```
 4. Re-review the fixes
-5. Present updated review
+5. Present updated review and **ask again using AskUserQuestion**
 
 **If user requests specific changes:**
 Apply the requested changes, commit, and re-review.

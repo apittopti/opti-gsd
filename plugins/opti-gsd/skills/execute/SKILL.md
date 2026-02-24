@@ -1,7 +1,7 @@
 ---
 description: Execute the current phase plan — spawns executor agents for wave-based parallel task execution
 disable-model-invocation: true
-allowed-tools: Read, Glob, Grep, Bash, Write, Edit, Task
+allowed-tools: Read, Glob, Grep, Bash, Write, Edit, Task, AskUserQuestion
 ---
 
 # Execute Phase Plan
@@ -10,12 +10,48 @@ Orchestrate execution of the current phase plan. This skill spawns executor suba
 
 **This skill runs in main context** (not forked) because it needs to spawn subagents via the Task tool. Subagents cannot spawn other subagents.
 
-## Phase Directory Convention
+## Phase Number Normalization
 
-**CRITICAL:** Phase directories are ALWAYS zero-padded to 2 digits.
-Phase 1 = `phase-01`. Format: `.opti-gsd/plans/phase-{NN}/`
+**CRITICAL:** ALWAYS zero-pad phase numbers to 2 digits when building directory paths.
+```bash
+printf "phase-%02d" {N}
+```
+- Phase `1` → `phase-01`, phase `10` → `phase-10`
+- state.json stores phase as integer, directory uses zero-pad
 
-## Step 0: Validate Branch
+## Step 0: Validate
+
+### 0a: Check State
+
+Read `.opti-gsd/state.json`. **Block if** `status` is `"initialized"` or `"roadmap_created"`:
+```
+⚠️ Wrong Workflow Stage
+─────────────────────────────────────
+Current status: {status}
+Execution requires a plan.
+→ Run /opti-gsd:plan first.
+```
+**Allow if** status is `planned`, `executing` (resume), `executed` (re-execute), `reviewed`, or `verified`.
+
+### 0b: Validate Plan Exists
+
+Check `.opti-gsd/plans/phase-{NN}/plan.json` exists. **Block if missing** (even if status says planned — the file is the source of truth):
+```
+⚠️ No Plan Found
+─────────────────────────────────────
+No plan.json for phase {N} at .opti-gsd/plans/phase-{NN}/plan.json
+→ Run /opti-gsd:plan to create a plan first.
+```
+
+**Validate plan is non-empty:** Check `total_tasks > 0` and every wave has `tasks.length > 0`. Block if empty:
+```
+⚠️ Empty Plan
+─────────────────────────────────────
+Plan for phase {N} has 0 tasks. Cannot execute.
+→ Run /opti-gsd:plan to regenerate.
+```
+
+### 0c: Validate Branch
 
 ```bash
 current_branch=$(git branch --show-current)
@@ -36,15 +72,7 @@ git checkout {branch_pattern}
 
 ## Step 1: Load Plan
 
-Read `.opti-gsd/plans/phase-{NN}/plan.json`.
-
-If no plan exists:
-```
-⚠️ No Plan Found
-─────────────────────────────────────
-No plan.json for phase {N}.
-→ Run /opti-gsd:plan to create a plan first.
-```
+Read `.opti-gsd/plans/phase-{NN}/plan.json` (already validated in Step 0b).
 
 Parse the plan to extract:
 - Tasks with IDs, waves, files, actions, verification steps
@@ -60,17 +88,20 @@ git status --porcelain
 git log --oneline -20
 ```
 
-**If uncommitted changes exist:**
+**If uncommitted changes exist**, display the warning then **use the `AskUserQuestion` tool** to get the user's choice:
 ```
 ⚠️ Uncommitted Changes Detected
 ─────────────────────────────────────
 There are uncommitted changes in the working directory.
+```
 
-Options:
+**Call AskUserQuestion** with options:
+```
   A) Commit and continue — commit current changes, resume execution
   B) Stash and continue — stash changes, start fresh
   C) Discard and continue — WARNING: changes will be lost
 ```
+**Do NOT proceed until the user responds.**
 
 **If previous execution progress exists** (check state.json `execution` field):
 ```
@@ -89,12 +120,13 @@ Read `config.mode` from config.json:
 - `interactive` — pause for user review between waves
 - `autonomous` — execute all waves without pausing (immediate continue)
 
-Ask user if not set:
+If not set, use the `AskUserQuestion` tool to ask the user:
 ```
 Execution mode:
   A) Interactive — review between waves (recommended)
   B) Yolo — execute all waves without stopping
 ```
+**You MUST use the AskUserQuestion tool here** — do not assume a default or continue without the user's answer.
 
 ## Step 4: Pre-Execution Checkpoint
 
@@ -167,34 +199,43 @@ Update state.json after each wave:
 
 ### 5e: Handle Failures
 
-If a task fails:
+If a task fails, display the error then **use the `AskUserQuestion` tool** to get the user's choice:
 ```
 ⚠️ Task {id} Failed
 ─────────────────────────────────────
 {error_summary}
+```
 
-Options:
+**Call AskUserQuestion** with options:
+```
   A) Retry — re-run the task
   B) Skip — continue to next wave (task marked failed)
   C) Stop — pause execution, investigate manually
 ```
+**Do NOT proceed until the user responds.**
 
 On retry: re-spawn executor for the failed task (max 2 retries).
 
 ### 5f: Inter-Wave Review (Interactive Mode)
 
-In interactive mode, after each wave completes:
+In interactive mode, after each wave completes, display the wave summary then **use the `AskUserQuestion` tool to wait for the user's response before proceeding**:
+
 ```
 Wave {W} Complete
 ─────────────────────────────────────
 ✓ Task 01: {summary}
 ✓ Task 02: {summary}
-
-Continue to Wave {W+1}? (yes / review / stop)
 ```
 
-If user says "review" — show detailed changes from this wave.
-In autonomous mode — proceed immediately to next wave.
+**You MUST call AskUserQuestion** with the prompt: `Continue to Wave {W+1}? (yes / review / stop)`
+
+**Do NOT proceed to the next wave until the user responds.** This is a hard gate — the model must block here.
+
+- If user says **"yes"** — proceed to next wave
+- If user says **"review"** — show detailed changes from this wave, then ask again
+- If user says **"stop"** — halt execution, update state.json with progress so far
+
+In autonomous mode — proceed immediately to next wave without asking.
 
 ## Step 6: Write Summary
 

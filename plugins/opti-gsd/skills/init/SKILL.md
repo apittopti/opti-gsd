@@ -1,6 +1,7 @@
 ---
 description: Initialize opti-gsd in an existing project — analyzes codebase, creates config, state, and directory structure
 disable-model-invocation: true
+allowed-tools: Read, Glob, Grep, Bash, Write, Edit, AskUserQuestion
 ---
 
 # Initialize opti-gsd
@@ -146,6 +147,8 @@ Generated: {date}
 
 ## Step 5: Confirm with User
 
+Display the detected configuration, then **use the `AskUserQuestion` tool** to confirm:
+
 ```
 Setting up opti-gsd for: {detected_name}
 Type: {detected_type} ({brownfield|greenfield})
@@ -156,9 +159,11 @@ Detected CI commands:
   typecheck: {detected or "none"}
   test:      {detected or "none"}
   build:     {detected or "none"}
-
-Does this look right? (yes / adjust)
 ```
+
+**Call AskUserQuestion** with: `Does this look right? (yes / adjust)`
+
+**Do NOT proceed until the user responds.** If user says "adjust", ask what to change.
 
 ## Step 6: Create Directory Structure
 
@@ -238,10 +243,10 @@ Check if CLAUDE.md exists and contains opti-gsd section:
 grep -q "opti-gsd" CLAUDE.md 2>/dev/null
 ```
 
-If missing, ask:
-```
-Add opti-gsd workflow instructions to CLAUDE.md? (yes/no)
-```
+If missing, **use the `AskUserQuestion` tool** to ask:
+`Add opti-gsd workflow instructions to CLAUDE.md? (yes / no)`
+
+**Do NOT proceed until the user responds.**
 
 If yes, append:
 
@@ -293,3 +298,9 @@ Analysis: .opti-gsd/codebase-analysis.md
 → Run /opti-gsd:roadmap to create your delivery roadmap
 → Run /opti-gsd:status to see current state
 ```
+
+After displaying the report, **use the `AskUserQuestion` tool** to prompt:
+`Ready to create your roadmap? (roadmap / stop)`
+
+- If user says **"roadmap"** — tell them to run `/opti-gsd:roadmap`
+- If user says **"stop"** — end

@@ -1,12 +1,22 @@
 ---
 description: Rollback to a checkpoint — phase-level or task-level granularity
 disable-model-invocation: true
+allowed-tools: Read, Glob, Grep, Bash, Write, Edit, AskUserQuestion
 argument-hint: "[phase-task] e.g. '2' for phase or '2-01' for task"
 ---
 
 # Rollback
 
 Rollback to a previous checkpoint. Supports phase-level and per-task granularity.
+
+## Phase Number Normalization
+
+**CRITICAL:** ALWAYS zero-pad phase numbers to 2 digits when building tag names.
+```bash
+printf "phase-%02d" {N}
+```
+- Argument `2` → tag prefix `gsd/checkpoint/phase-02/`
+- Argument `2-01` → tag `gsd/checkpoint/phase-02/T01`
 
 ## Arguments
 
@@ -18,6 +28,14 @@ Rollback to a previous checkpoint. Supports phase-level and per-task granularity
 
 ```bash
 git tag -l "gsd/checkpoint/*" --sort=-creatordate
+```
+
+If no checkpoint tags exist:
+```
+⚠️ No Checkpoints Found
+─────────────────────────────────────
+No gsd/checkpoint/* tags exist.
+Checkpoints are created during /opti-gsd:execute.
 ```
 
 Display available checkpoints:
@@ -35,6 +53,8 @@ Available Checkpoints:
 
 ## Step 2: Confirm Rollback
 
+Display the warning, then **use the `AskUserQuestion` tool** to confirm:
+
 ```
 ⚠️ Rollback to: {tag}
 ─────────────────────────────────────
@@ -43,12 +63,36 @@ All changes after this point will be LOST.
 
 Commits that will be undone:
 {list of commits between tag and HEAD}
-
-Continue? (yes/no)
 ```
 
-## Step 3: Execute Rollback
+**Call AskUserQuestion** with: `This will undo {N} commits. Continue? (yes / no)`
 
+**Do NOT proceed with the rollback until the user confirms.** This is a destructive operation.
+
+## Step 3: Validate and Execute Rollback
+
+**Validate the checkpoint tag exists before proceeding:**
+```bash
+git rev-parse --verify "{tag}" 2>/dev/null
+```
+
+If the tag does not exist:
+```
+⚠️ Checkpoint Not Found
+─────────────────────────────────────
+Tag '{tag}' does not exist.
+→ Run /opti-gsd:rollback (no args) to list available checkpoints.
+```
+
+**Check for uncommitted changes first:**
+```bash
+git status --porcelain
+```
+
+If uncommitted changes exist, **use AskUserQuestion** to warn:
+`There are uncommitted changes that will be lost. Continue anyway? (yes / no)`
+
+**Execute rollback:**
 ```bash
 git reset --hard {tag}
 ```
