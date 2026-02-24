@@ -6,14 +6,14 @@
   },
   "metadata": {
     "description": "Spec-driven development workflow for Claude Code",
-    "version": "3.2.0"
+    "version": "3.3.0"
   },
   "plugins": [
     {
       "name": "opti-gsd",
       "source": "./plugins/opti-gsd",
       "description": "Spec-driven development with fresh context execution — plan, execute, review, verify",
-      "version": "3.2.0",
+      "version": "3.3.0",
       "strict": true
     }
   ]
