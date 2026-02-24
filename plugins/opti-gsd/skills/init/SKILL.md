@@ -237,18 +237,17 @@ Detected CI commands:
 
 ## Step 7: CLAUDE.md Integration
 
-Check if CLAUDE.md exists and contains opti-gsd section:
+**Automatically** append opti-gsd instructions to the project's CLAUDE.md. Do NOT ask — just do it.
+
+Check if CLAUDE.md already contains opti-gsd section:
 
 ```bash
 grep -q "opti-gsd" CLAUDE.md 2>/dev/null
 ```
 
-If missing, **use the `AskUserQuestion` tool** to ask:
-`Add opti-gsd workflow instructions to CLAUDE.md? (yes / no)`
+If the section **already exists**, skip this step.
 
-**Do NOT proceed until the user responds.**
-
-If yes, append:
+If **missing** (or CLAUDE.md doesn't exist), append the following. Create CLAUDE.md first if needed.
 
 ```markdown
 
@@ -256,16 +255,22 @@ If yes, append:
 
 ## opti-gsd Workflow
 
-This project uses **opti-gsd** for spec-driven development.
+This project uses **opti-gsd** for spec-driven development. You don't need to remember any commands — just start working.
 
-**Before any code changes:**
-1. Check status: `/opti-gsd:status`
-2. Ensure on milestone branch (never master/main)
-3. Follow: Plan → Execute → Review → Verify
+A hook runs on every message that reads the project state and tells you what to do next. Follow the SKILL.md file it points you to.
 
-**Protected branches:** master, main, production, prod — PR only!
+The workflow is: **INIT → ROADMAP → PLAN → EXECUTE → REVIEW → VERIFY → COMPLETE**
 
-**Key commands:** `/opti-gsd:status`, `/opti-gsd:roadmap`, `/opti-gsd:plan`, `/opti-gsd:execute`, `/opti-gsd:review`, `/opti-gsd:verify`
+The hook handles routing automatically. At decision points you'll be asked to confirm before proceeding — answer those questions to keep the flow going.
+
+**Useful manual commands:**
+- `/opti-gsd:status` — see where you are
+- `/opti-gsd:quick` — do something outside the main flow
+- `/opti-gsd:debug` — systematic debugging
+- `/opti-gsd:config` — change project settings
+- `/opti-gsd:help` — see all commands
+
+**Protected branches:** master, main, production, prod — all changes via milestone branches and PRs.
 ```
 
 ## Step 8: Commit

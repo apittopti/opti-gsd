@@ -46,7 +46,32 @@ Set milestone in state.json:
 }
 ```
 
-## Step 5: Initial Commit
+## Step 5: CLAUDE.md
+
+Create a project `CLAUDE.md` with opti-gsd workflow instructions (since this is a new project, no need to check for existing content):
+
+```markdown
+## opti-gsd Workflow
+
+This project uses **opti-gsd** for spec-driven development. You don't need to remember any commands — just start working.
+
+A hook runs on every message that reads the project state and tells you what to do next. Follow the SKILL.md file it points you to.
+
+The workflow is: **INIT → ROADMAP → PLAN → EXECUTE → REVIEW → VERIFY → COMPLETE**
+
+The hook handles routing automatically. At decision points you'll be asked to confirm before proceeding — answer those questions to keep the flow going.
+
+**Useful manual commands:**
+- `/opti-gsd:status` — see where you are
+- `/opti-gsd:quick` — do something outside the main flow
+- `/opti-gsd:debug` — systematic debugging
+- `/opti-gsd:config` — change project settings
+- `/opti-gsd:help` — see all commands
+
+**Protected branches:** master, main, production, prod — all changes via milestone branches and PRs.
+```
+
+## Step 6: Initial Commit
 
 ```bash
 git add -A
@@ -57,7 +82,7 @@ git commit -m "chore: scaffold {name} with opti-gsd
 - Ready for roadmap planning"
 ```
 
-## Step 6: Report
+## Step 7: Report
 
 ```
 ✓ Project Created
