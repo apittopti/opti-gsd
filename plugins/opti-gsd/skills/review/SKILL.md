@@ -1,13 +1,15 @@
 ---
 description: Review phase execution results — AI-powered code review with plan-aware feedback
 disable-model-invocation: true
-allowed-tools: Read, Glob, Grep, Bash, Write, Edit, AskUserQuestion
+allowed-tools: Read, Glob, Grep, Bash, Write, Edit, Task, AskUserQuestion
 argument-hint: "[phase-number]"
 ---
 
 # Review Phase Results
 
 Review the executed phase with plan-aware code review. Provides categorized feedback and targeted fixes.
+
+**This skill runs in main context** for user interaction. Heavy review work (loading diffs, running CI, analyzing changes) is delegated to the `reviewer` subagent via the Task tool.
 
 ## Phase Number Normalization
 
@@ -16,7 +18,7 @@ Review the executed phase with plan-aware code review. Provides categorized feed
 printf "phase-%02d" {N}
 ```
 
-## Step 0: Validate
+## Step 0: Validate (main context)
 
 1. Check `.opti-gsd/` exists and `state.json` is readable
 2. Determine phase (from argument or state.json)
@@ -39,38 +41,27 @@ Phase {N} has no execution summary at .opti-gsd/plans/phase-{NN}/summary.md
 → Run /opti-gsd:execute to execute the phase first.
 ```
 
-## Step 1: Load Context
+## Step 1: Spawn Reviewer Agent (via Task tool)
 
-Read:
-- `.opti-gsd/plans/phase-{NN}/plan.json` — what was supposed to happen
-- `.opti-gsd/plans/phase-{NN}/summary.md` — what actually happened
-- `.opti-gsd/config.json` — CI commands, project type
+**CRITICAL: Use the `reviewer` custom agent** via the Task tool (`subagent_type: "reviewer"`).
 
-Get the diff since phase start:
-```bash
-git diff gsd/checkpoint/phase-{NN}/pre..HEAD --stat
-git diff gsd/checkpoint/phase-{NN}/pre..HEAD
-```
+The prompt for the reviewer MUST include:
+- The phase number (already validated and zero-padded)
+- The project root path
 
-## Step 2: Review Changes
+The reviewer agent will autonomously:
+1. Load context (plan.json, summary.md, config.json)
+2. Get the diff since phase start (`git diff gsd/checkpoint/phase-{NN}/pre..HEAD`)
+3. Run CI commands (lint, typecheck, test)
+4. Review each task for completeness, correctness, quality
+5. Categorize findings into Must Fix / Should Fix / Nice to Have / Out of Scope
+6. Return the full categorized review report
 
-For each task in the plan:
+**The reviewer agent does NOT update state.json or prompt the user** — it only analyzes and reports back.
 
-1. **Check completeness** — were all files created/modified as planned?
-2. **Check correctness** — does the implementation match the plan's action?
-3. **Check quality** — code style, patterns, potential bugs
-4. **Check tests** — do verification steps pass?
+## Step 2: Present Review and Prompt User (main context)
 
-Run CI commands if available:
-```bash
-{config.ci.lint}
-{config.ci.typecheck}
-{config.ci.test}
-```
-
-## Step 3: Categorize Feedback
-
-Sort findings into categories:
+After the reviewer agent completes, present its categorized findings:
 
 ```
 Phase {N} Review
@@ -83,7 +74,6 @@ Issues Found:
 
 🔴 Must Fix (blocks verification):
   1. {description} — {file}:{line}
-  2. {description} — {file}:{line}
 
 🟡 Should Fix (quality concerns):
   1. {description} — {file}:{line}
@@ -96,9 +86,7 @@ Issues Found:
 ─────────────────────────────────────────────────────────────
 ```
 
-## Step 4: Prompt User for Decision
-
-After presenting the categorized review, **you MUST use the `AskUserQuestion` tool** to ask the user what to do next. Do NOT end without prompting.
+**Use the `AskUserQuestion` tool** to prompt the user:
 
 If there are **Must Fix** items:
 ```
@@ -112,11 +100,24 @@ AskUserQuestion: "Review complete — no blockers found. What next? (verify / qu
 
 Options explained:
 - **"verify"** — skip fixes, proceed to `/opti-gsd:verify`
-- **"fix"** — apply fixes inline in this review session (for Must Fix items)
+- **"fix"** — spawn a new reviewer agent to apply fixes (see Step 3)
 - **"quick fix"** — tell the user to run `/opti-gsd:quick {description}` for targeted Should Fix / Nice to Have items outside the review flow
 - **"stop"** — end, user investigates manually
 
 **Do NOT proceed until the user responds.** This is a hard gate.
+
+## Step 3: Apply Fixes via Reviewer Agent (if requested)
+
+If user says "fix", spawn the `reviewer` agent again via Task tool with:
+- The list of issues to fix (from Step 2 output)
+- Instructions to apply fixes, commit, and re-run CI
+- Commit message format: `fix(phase-{NN}-R{round}): {summary}`
+
+After the fix agent completes, present updated review and **ask again using AskUserQuestion**.
+
+Repeat until user approves or stops.
+
+## Step 4: Approve and Update State (main context)
 
 **If user says "verify" or "approve" or "looks good":**
 ```
@@ -127,31 +128,3 @@ Options explained:
 ```
 
 Update state.json: `"status": "reviewed"`
-
-**If user says "fix" or gives feedback:**
-Apply targeted fixes for the identified issues:
-1. Fix must-fix items
-2. Fix should-fix items if user agrees
-3. Commit fixes:
-   ```bash
-   git add {changed_files}
-   git commit -m "fix(phase-{NN}-R{round}): {summary}
-
-   - {fix 1}
-   - {fix 2}"
-   ```
-4. Re-review the fixes
-5. Present updated review and **ask again using AskUserQuestion**
-
-**If user requests specific changes:**
-Apply the requested changes, commit, and re-review.
-
-## Step 5: Update State
-
-After review is approved:
-```json
-{
-  "status": "reviewed",
-  "last_active": "{timestamp}"
-}
-```

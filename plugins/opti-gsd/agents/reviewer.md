@@ -103,11 +103,9 @@ If the user approves fixes or says "fix":
 4. Re-run CI checks
 5. Present updated review
 
-### 7. Approve
+### 7. Return Report
 
-When user says "looks good" or approves:
-- Update state.json: `"status": "reviewed"`
-- Report next steps
+Return the full categorized review report to the caller. **Do NOT update state.json** — that is handled by the main context after user interaction.
 
 ## Rules
 

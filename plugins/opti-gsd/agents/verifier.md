@@ -83,10 +83,9 @@ Field reference:
 - `plan_compliance.details[].status`: `"pass"` or `"fail"`
 - `issues`: array of unresolved issue strings (empty when result is "pass")
 
-### 5. Update State
+### 5. Return Results
 
-If all pass: update state.json `"status": "verified"`, move phase to `phases.complete`.
-If gaps: keep status as "executed" and report gaps.
+Return the full verification report to the caller. **Do NOT update state.json** — that is handled by the main context after user interaction.
 
 ### 6. Commit
 

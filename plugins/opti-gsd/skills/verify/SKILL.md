@@ -1,13 +1,15 @@
 ---
 description: Verify phase completion with automated CI checks, testing, and requirement validation
 disable-model-invocation: true
-allowed-tools: Read, Glob, Grep, Bash, Write, AskUserQuestion
+allowed-tools: Read, Glob, Grep, Bash, Write, Task, AskUserQuestion
 argument-hint: "[phase-number]"
 ---
 
 # Verify Phase
 
 Run automated verification checks against the completed phase.
+
+**This skill runs in main context** for user interaction. Heavy verification work (running CI, checking compliance, writing results) is delegated to the `verifier` subagent via the Task tool.
 
 ## Phase Number Normalization
 
@@ -16,7 +18,7 @@ Run automated verification checks against the completed phase.
 printf "phase-%02d" {N}
 ```
 
-## Step 0: Validate
+## Step 0: Validate (main context)
 
 1. Check `.opti-gsd/` exists and `state.json` is readable
 2. Determine phase (from argument or state.json)
@@ -39,91 +41,28 @@ Phase {N} has no execution summary at .opti-gsd/plans/phase-{NN}/summary.md
 → Run /opti-gsd:execute to execute the phase first.
 ```
 
-## Step 1: Load Context
+## Step 1: Spawn Verifier Agent (via Task tool)
 
-Read:
-- `.opti-gsd/plans/phase-{NN}/plan.json` — tasks and verification steps
-- `.opti-gsd/plans/phase-{NN}/summary.md` — execution results
-- `.opti-gsd/config.json` — CI commands, deployment config
+**CRITICAL: Use the `verifier` custom agent** via the Task tool (`subagent_type: "verifier"`).
 
-## Step 2: Run CI Commands
+The prompt for the verifier MUST include:
+- The phase number (already validated and zero-padded)
+- The project root path
 
-Execute each configured CI command:
+The verifier agent will autonomously:
+1. Load context (plan.json, summary.md, config.json)
+2. Run all CI commands (lint, typecheck, test, build, e2e)
+3. Run per-task verification checks from plan.json
+4. Check requirement coverage against `must_haves`
+5. Write `.opti-gsd/plans/phase-{NN}/verification.json` with results
+6. Commit verification results
+7. Return the verification report (pass/fail/partial with details)
 
-```bash
-# Lint
-{config.ci.lint}
+**The verifier agent does NOT update state.json status or prompt the user** — it only verifies and reports back.
 
-# Type check
-{config.ci.typecheck}
+## Step 2: Present Results and Prompt User (main context)
 
-# Unit tests
-{config.ci.test}
-
-# Build
-{config.ci.build}
-
-# E2E (if configured)
-{config.ci.e2e}
-```
-
-Record pass/fail for each. Skip commands that are null.
-
-## Step 3: Run Task Verification
-
-For each task in the plan, execute its `verify` checks (the `verify` array from plan.json):
-
-- `type: "test"` — run the `cmd`, check exit code
-- `type: "lint"` — run linter on specific files
-- `type: "build"` — run build command
-
-Record pass/fail for each check.
-
-## Step 4: Requirement Coverage
-
-Check each `must_haves` entry from plan.json:
-- Is there code that implements it?
-- Do tests cover it?
-- Does it work as specified?
-
-## Step 5: Write Results
-
-Create `.opti-gsd/plans/phase-{NN}/verification.json`:
-
-```json
-{
-  "version": "3.0",
-  "phase": 2,
-  "verified_at": "2026-02-01T14:00:00Z",
-  "result": "pass",
-  "checks": {
-    "lint": { "status": "pass", "output": "" },
-    "typecheck": { "status": "pass", "output": "" },
-    "test": { "status": "pass", "output": "42 tests passed" },
-    "build": { "status": "pass", "output": "" },
-    "e2e": { "status": "skip", "reason": "not configured" }
-  },
-  "plan_compliance": {
-    "total_tasks": 3,
-    "verified": 3,
-    "failed": 0,
-    "details": [
-      { "id": "01", "status": "pass", "note": "" },
-      { "id": "02", "status": "pass", "note": "" },
-      { "id": "03", "status": "pass", "note": "Fixed after review round 1" }
-    ]
-  },
-  "issues": []
-}
-```
-
-Field reference:
-- `result`: `"pass"`, `"fail"`, or `"partial"`
-- `checks.{name}.status`: `"pass"`, `"fail"`, or `"skip"`
-- `plan_compliance.details[].status`: `"pass"` or `"fail"`
-- `issues`: array of unresolved issue strings
-
-## Step 6: Present Results
+After the verifier agent completes, present its report:
 
 ```
 Phase {N} Verification
@@ -146,32 +85,21 @@ Requirements:
   ✗ {must_have 3} — gap identified
 
 ──────────────────────────────────────────────────────────────
-Overall: PARTIAL (1 gap found)
+Overall: {PASS|FAIL|PARTIAL}
 ```
 
-After presenting results, **you MUST use the `AskUserQuestion` tool** to prompt the user for their decision. Do NOT end without asking.
+**Use the `AskUserQuestion` tool** to prompt the user. Do NOT end without asking.
 
 **If all pass:**
-```
-✓ Phase {N} Verified
-```
 
 Update state.json: `"status": "verified"`, move phase to `phases.complete`.
 
 **Call AskUserQuestion** with: `Phase {N} verified. What next? (plan next phase / complete milestone / stop)`
 
 **If gaps found:**
+
+Keep status as `executed` (or `reviewed` if it was).
+
 **Call AskUserQuestion** with: `Verification found {N} gaps. Fix them now or investigate? (plan --gaps / review / stop)`
 
 **Do NOT proceed until the user responds.**
-
-## Step 7: Commit
-
-```bash
-git add .opti-gsd/plans/phase-{NN}/verification.json .opti-gsd/state.json
-git commit -m "docs: verify phase {N} — {result}
-
-- CI: {pass_count}/{total_count} passed
-- Tasks: {verified}/{total_tasks} verified
-- Issues: {issue_count}"
-```
