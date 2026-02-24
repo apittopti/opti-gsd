@@ -1,6 +1,17 @@
 {
-  "description": "opti-gsd tool usage analytics — logs all tool invocations for session analysis",
+  "description": "opti-gsd workflow automation and analytics",
   "hooks": {
+    "UserPromptSubmit": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/workflow-router.js\" \"${CLAUDE_PLUGIN_ROOT}\" || true"
+          }
+        ]
+      }
+    ],
     "PostToolUse": [
       {
         "matcher": "*",

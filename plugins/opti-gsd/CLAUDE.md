@@ -19,10 +19,24 @@ This is the opti-gsd source repository. You are using opti-gsd to develop opti-g
 
 **Flow:** INIT → ROADMAP → PLAN → EXECUTE → REVIEW → VERIFY → COMPLETE
 
-**Before making code changes:**
-1. Run `/opti-gsd:status` to see current state
-2. Ensure on milestone branch (never master/main)
-3. Follow the flow above
+### Automatic Routing
+
+A `UserPromptSubmit` hook fires on every user message. It reads `.opti-gsd/state.json`, determines the current workflow step, and outputs a directive pointing to the correct skill's SKILL.md.
+
+**How it works:**
+1. Hook runs `scripts/workflow-router.js` → reads state → outputs next action
+2. Claude reads the referenced SKILL.md and follows its instructions
+3. Skills use `AskUserQuestion` at all decision points — user stays in control
+4. If the user is mid-step (responding to a question), Claude continues instead of restarting
+
+**The user never needs to remember slash commands.** They just describe what they want to do, and the workflow guides Claude to the right step.
+
+### Manual Override
+
+Users can still invoke skills directly (`/opti-gsd:plan`, etc.) or use utility commands:
+- `/opti-gsd:quick` — ad-hoc task outside the flow
+- `/opti-gsd:debug` — systematic debugging
+- `/opti-gsd:add-feature` / `add-story` / `add-issue` — capture items for later
 
 ## Skills (v3.1)
 
