@@ -165,13 +165,144 @@ Detected CI commands:
 
 **Do NOT proceed until the user responds.** If user says "adjust", ask what to change.
 
+## Step 5b: UI/UX Design System (Web Projects Only)
+
+**Only for web application projects** (nextjs, react, vue, angular, svelte, astro). Skip this step for APIs, CLIs, libraries, or non-web projects.
+
+**Use AskUserQuestion** to present:
+
+```
+UI/UX Design System
+─────────────────────────────────────
+Set up a design system for consistent, high-quality UI?
+
+1. Color scheme (enter brand hex or choose preset):
+   A) Blue (#236295)    B) Green (#16a34a)   C) Purple (#7c3aed)
+   D) Red (#dc2626)     E) Orange (#ea580c)  F) Custom (provide hex)
+
+2. Animation style:
+   A) Full — Framer Motion (blur-fade, border-beam, number-ticker)
+   B) Subtle — CSS transitions only (hover, smooth state changes)
+   C) None
+
+3. Theme style:
+   A) Glassmorphism — Frosted glass, backdrop blur, layered shadows
+   B) Flat — Clean borders, subtle shadows
+   C) Minimal — Ultra-clean, whitespace-focused
+
+4. Dark mode: Yes / No
+
+5. Component library: shadcn/ui (recommended) / Skip
+
+Or type "skip" to skip UI setup entirely.
+```
+
+**Do NOT proceed until the user responds.** If "skip", proceed without UI config.
+
+### Save UI Config
+
+Write `.opti-gsd/ui-config.json`:
+
+```json
+{
+  "version": "1.0",
+  "enabled": true,
+  "colorScheme": {
+    "primary": "{hex}",
+    "secondary": "{computed — lighter variant of primary}",
+    "accent": "{computed — vibrant variant of primary}"
+  },
+  "animations": "{full|subtle|none}",
+  "componentLibrary": "{shadcn|none}",
+  "themeStyle": "{glassmorphism|flat|minimal}",
+  "darkMode": true,
+  "typography": {
+    "sans": "{Plus Jakarta Sans|Inter|system}",
+    "mono": "{JetBrains Mono|system}"
+  }
+}
+```
+
+**Color computation:** Given a primary hex, generate secondary (20% lighter, slightly desaturated) and accent (10% lighter, more saturated). If user chose a preset, use the full preset palette.
+
+**Preset palettes:**
+| Preset | Primary | Secondary | Accent |
+|--------|---------|-----------|--------|
+| Blue | #236295 | #37a2db | #2CA5E0 |
+| Green | #16a34a | #22d3ee | #10b981 |
+| Purple | #7c3aed | #a78bfa | #8b5cf6 |
+| Red | #dc2626 | #f87171 | #ef4444 |
+| Orange | #ea580c | #fb923c | #f97316 |
+
+### Generate UI Guide
+
+Write `.opti-gsd/ui-guide.md` — a comprehensive design system reference. This is the **single source of truth** that tells Claude how to build UI for this project.
+
+The guide MUST include these sections, customized to the user's choices:
+
+**1. Overview table** — all settings at a glance
+
+**2. Color palette** — brand colors, usage rules (primary for CTAs/links, secondary for highlights, accent for gradients/decoration)
+
+**3. CSS variables** — convert the hex colors to HSL values, provide both light and dark mode variable pairs for: background, foreground, card, primary, secondary, muted, accent, destructive, success, warning, border, input, ring, sidebar colors, chart colors
+
+**4. Tailwind config extensions** — custom colors (brand + semantic), border-radius, font families, box-shadows, keyframes, animations
+
+**5. Component library setup:**
+- If shadcn: dependencies to install (`@radix-ui/*`, `class-variance-authority`, `clsx`, `tailwind-merge`, `tailwindcss-animate`), base components (Button with variant CVA, Card with shadow/hover, Dialog, Input, Select, Tabs, Toast), utility `cn()` function
+- If none: suggest creating base components with CVA pattern anyway
+
+**6. Theme style patterns:**
+- If **glassmorphism**: define `glassCard` (bg-white/90 dark:bg-white/[0.04] backdrop-blur-xl), `glassCardHover` (hover lift + shadow), `accentBar` (gradient using brand colors), multi-layer shadows (shadow-glass, shadow-glass-hover, dark variants)
+- If **flat**: clean card styles (border + shadow-sm), subtle hover (shadow-md), no backdrop-blur
+- If **minimal**: borderless or hair-thin borders, whitespace for hierarchy, typography-driven, minimal shadows
+
+Include a `lib/styles.ts` template with reusable style constants for the chosen theme.
+
+**7. Animation components:**
+- If **full**: provide complete component specs for:
+  - `BlurFade` — scroll-triggered opacity + blur + translateY using framer-motion `useInView`, configurable delay/duration/offset
+  - `BorderBeam` — CSS offset-path animated gradient border, configurable colors/size/duration
+  - `NumberTicker` — spring-physics counter using framer-motion `useSpring`, scroll-triggered
+  - Dependencies: `framer-motion`
+  - Usage patterns: staggered delays (`0.1 + idx * 0.08`), wrap cards in BlurFade, BorderBeam inside cards
+- If **subtle**: Tailwind keyframes (fade-in, scale-in, slide-in-right), transition utility classes, hover effects (`hover:-translate-y-0.5 transition-all duration-200`)
+- If **none**: only essential micro-interactions (button press scale `active:scale-[0.98]`)
+
+**8. Dark mode setup** (if enabled):
+- `next-themes` with `attribute="class"`, ThemeProvider wrapper
+- CSS variable pairs (every `:root` variable needs a `.dark` override)
+- Rule: always use semantic tokens (`bg-card`, `text-foreground`), never hardcode colors
+- Rule: every component MUST work in both modes
+
+**9. Typography:**
+- If custom fonts: `@fontsource-variable/{font}` installation, Tailwind `fontFamily` config, CSS `--font-sans` / `--font-mono` variables
+- If system fonts: `system-ui, -apple-system, sans-serif` stack
+
+**10. Page patterns** — code examples for:
+- Standard page layout (header with title + action button, content area)
+- Dashboard card grid (responsive grid with staggered animations)
+- Form page (card with header, form fields, actions)
+- Data table page (card with filters, table, pagination)
+
+**Quality reference:** Use these patterns from production projects:
+- Multi-layer composite shadows for depth
+- Gradient accent bars using brand colors
+- Staggered animation delays for lists
+- Spring physics for number animations
+- Scroll-triggered reveals
+- Hover lift effects with smooth transitions
+- `cn()` utility for all class composition
+
 ## Step 6: Create Directory Structure
 
 ```
 .opti-gsd/
 ├── config.json
 ├── state.json
-├── codebase-analysis.md   (brownfield only)
+├── ui-config.json          (web projects only, if UI setup chosen)
+├── ui-guide.md             (web projects only, if UI setup chosen)
+├── codebase-analysis.md    (brownfield only)
 ├── roadmap.md              (empty placeholder)
 ├── stories/
 ├── issues/

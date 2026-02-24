@@ -46,6 +46,12 @@ Set milestone in state.json:
 }
 ```
 
+## Step 4b: UI/UX Design System
+
+**For web application projects** (nextjs, react, vue, angular, svelte, astro), run the UI setup from init Step 5b — ask about color scheme, animations, theme style, dark mode, and component library. Save `ui-config.json` and generate `ui-guide.md` following the same rules as the init skill.
+
+**For non-web projects**, skip this step.
+
 ## Step 5: CLAUDE.md
 
 Create a project `CLAUDE.md` with opti-gsd workflow instructions (since this is a new project, no need to check for existing content):

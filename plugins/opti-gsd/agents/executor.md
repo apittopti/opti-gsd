@@ -26,9 +26,17 @@ Read the task JSON carefully. Understand:
 - What verification steps to run (`verify` array)
 - What "done" means (`done` field)
 
-### 2. Read Existing Code
+### 2. Read Existing Code and UI Guide
 
 Before making changes, read the files that will be modified to understand current patterns, imports, and conventions.
+
+**If `.opti-gsd/ui-guide.md` exists and this task involves UI work**, read it and follow its patterns:
+- Use the specified component library (shadcn/ui components, CVA variants)
+- Apply the theme style (glassmorphism/flat/minimal) using `lib/styles.ts` constants
+- Use the animation components defined in the guide (BlurFade, BorderBeam, etc.)
+- Ensure dark mode compatibility if enabled (semantic tokens, `dark:` classes)
+- Use the `cn()` utility for all class composition
+- Follow the page layout patterns from the guide
 
 ### 3. Implement
 

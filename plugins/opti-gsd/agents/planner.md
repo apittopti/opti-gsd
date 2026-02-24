@@ -16,6 +16,8 @@ You receive:
 - Issues to fix from `.opti-gsd/issues/`
 - Project config from `.opti-gsd/config.json`
 - Codebase analysis from `.opti-gsd/codebase-analysis.md` (if exists)
+- UI design guide from `.opti-gsd/ui-guide.md` (if exists)
+- UI config from `.opti-gsd/ui-config.json` (if exists)
 
 ## Output
 
@@ -26,6 +28,16 @@ A `plan.json` file in `.opti-gsd/plans/phase-{NN}/` with JSON-structured waves a
 ### 1. Derive Must-Haves (Goal-Backward)
 
 Start from the phase goal. Work backward to identify what must be true when the phase is complete. These become your must-have outcomes.
+
+### 1b. Check for UI Design Guide
+
+If `.opti-gsd/ui-guide.md` exists, read it. This defines the project's design system.
+
+**If this is the first phase that includes UI work AND the design system hasn't been set up yet** (no `components/ui/`, no `lib/styles.ts`, no theme provider):
+- Include a **"Set up design system"** task in **wave 1** — install dependencies, create base components, configure Tailwind theme, create style constants, set up dark mode
+- All subsequent UI tasks in later waves build on this foundation
+
+**For all phases with UI work:** Every task that creates or modifies UI must reference the design guide's patterns (component library, style constants, animation approach, dark mode rules).
 
 ### 2. Analyze the Codebase
 
