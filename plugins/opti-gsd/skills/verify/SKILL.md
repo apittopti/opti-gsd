@@ -88,18 +88,27 @@ Requirements:
 Overall: {PASS|FAIL|PARTIAL}
 ```
 
-**Use the `AskUserQuestion` tool** to prompt the user. Do NOT end without asking.
-
 **If all pass:**
 
 Update state.json: `"status": "verified"`, move phase to `phases.complete`.
 
-**Call AskUserQuestion** with: `Phase {N} verified. What next? (plan next phase / complete milestone / stop)`
+Present:
+```
+✓ Phase {N} Verified
+─────────────────────────────────
+All checks passed. Auto-proceeding to next step...
+```
+
+**Automatically determine the next action** — do NOT prompt the user:
+- If there are more phases in the roadmap → proceed to plan the next phase
+- If this was the last phase in the milestone → proceed to `/opti-gsd:complete`
 
 **If gaps found:**
 
 Keep status as `executed` (or `reviewed` if it was).
 
-**Call AskUserQuestion** with: `Verification found {N} gaps. Fix them now or investigate? (plan --gaps / review / stop)`
-
-**Do NOT proceed until the user responds.**
+**Only in this case**, use the `AskUserQuestion` tool to prompt the user:
+```
+AskUserQuestion: "Verification found {N} gaps. Fix them now or investigate? (plan --gaps / review / stop)"
+```
+Gaps require human judgement — this is the one place the pipeline pauses for input.

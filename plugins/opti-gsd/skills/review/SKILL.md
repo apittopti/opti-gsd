@@ -86,25 +86,15 @@ Issues Found:
 ─────────────────────────────────────────────────────────────
 ```
 
-**Use the `AskUserQuestion` tool** to prompt the user:
+**Auto-fix and proceed:**
 
 If there are **Must Fix** items:
-```
-AskUserQuestion: "There are {N} must-fix issues. Fix them now, or stop to investigate? (fix / quick fix / stop)"
-```
+- Automatically proceed to Step 3 to apply fixes — do NOT prompt the user.
 
 If there are **no Must Fix** items (only Should Fix / Nice to Have / clean):
-```
-AskUserQuestion: "Review complete — no blockers found. What next? (verify / quick fix suggestions / stop)"
-```
+- Automatically proceed to Step 4 (approve and verify) — do NOT prompt the user.
 
-Options explained:
-- **"verify"** — skip fixes, proceed to `/opti-gsd:verify`
-- **"fix"** — spawn a new reviewer agent to apply fixes (see Step 3)
-- **"quick fix"** — tell the user to run `/opti-gsd:quick {description}` for targeted Should Fix / Nice to Have items outside the review flow
-- **"stop"** — end, user investigates manually
-
-**Do NOT proceed until the user responds.** This is a hard gate.
+Should Fix and Nice to Have items are logged in the review output but do NOT block the pipeline. They can be addressed later via `/opti-gsd:quick` if desired.
 
 ## Step 3: Apply Fixes via Reviewer Agent (if requested)
 
@@ -113,18 +103,19 @@ If user says "fix", spawn the `reviewer` agent again via Task tool with:
 - Instructions to apply fixes, commit, and re-run CI
 - Commit message format: `fix(phase-{NN}-R{round}): {summary}`
 
-After the fix agent completes, present updated review and **ask again using AskUserQuestion**.
+After the fix agent completes, present updated review summary.
 
-Repeat until user approves or stops.
+If Must Fix items remain after **2 fix rounds**, prompt the user with `AskUserQuestion` — something may need manual intervention. Otherwise, auto-proceed to Step 4.
 
 ## Step 4: Approve and Update State (main context)
 
-**If user says "verify" or "approve" or "looks good":**
+Present:
 ```
-✓ Review Approved
+✓ Review Complete
 ─────────────────────────────────────
-→ /opti-gsd:verify    — Run automated verification
-→ /opti-gsd:push      — Push for CI/preview
+→ Auto-proceeding to verification...
 ```
 
 Update state.json: `"status": "reviewed"`
+
+**Immediately proceed to the verify skill** — do NOT prompt the user or wait for input. Verification is the next automatic step in the pipeline.

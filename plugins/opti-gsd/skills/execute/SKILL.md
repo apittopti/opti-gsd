@@ -314,7 +314,7 @@ After ALL waves complete, write `.opti-gsd/plans/phase-{NN}/summary.md`:
 }
 ```
 
-## Step 8: Final User Review
+## Step 8: Execution Summary and Auto-Review
 
 Present execution summary to the user:
 
@@ -329,18 +329,10 @@ Task Results:
   ✓ 02: {title}
   ✓ 03: {title}
 
-Please review the changes. You can:
-  → Browse the code changes
-  → Run tests manually
-  → Check the application
-
-When ready:
-  → /opti-gsd:review    — Get an AI-powered code review
-  → /opti-gsd:verify    — Run automated verification checks
-  → /opti-gsd:rollback  — Undo if something went wrong
+→ Auto-proceeding to review...
 ```
 
-**DO NOT auto-trigger verification.** The user decides when to verify.
+**Immediately proceed to the review skill** — do NOT prompt the user or wait for input. The review and verify steps are part of the standard execution pipeline and run automatically.
 
 ## Step 9: Commit State
 
