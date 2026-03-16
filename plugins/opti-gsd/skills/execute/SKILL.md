@@ -138,13 +138,7 @@ Read `config.mode` from config.json:
 - `interactive` — pause for user review between waves
 - `autonomous` — execute all waves without pausing (immediate continue)
 
-If not set, use the `AskUserQuestion` tool to ask the user:
-```
-Execution mode:
-  A) Interactive — review between waves (recommended)
-  B) Yolo — execute all waves without stopping
-```
-**You MUST use the AskUserQuestion tool here** — do not assume a default or continue without the user's answer.
+If not set, **default to `autonomous`**. Do NOT prompt the user — autonomous mode is the standard workflow. Users who want interactive mode can set it via `/opti-gsd:config`.
 
 ## Step 4: Pre-Execution Checkpoint
 

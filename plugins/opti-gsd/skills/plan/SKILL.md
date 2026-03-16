@@ -99,14 +99,11 @@ Tasks:
   03. {title} — {file_count} files
 ```
 
-**Use the `AskUserQuestion` tool** to prompt the user:
-```
-AskUserQuestion: "Plan ready. Execute now, revise, or stop? (execute / revise / stop)"
-```
+**Automatically proceed to execution** — do NOT prompt the user. The plan has been saved and the next step is always to execute it.
 
-- If user says **"execute"** — tell them to run `/opti-gsd:execute`
-- If user says **"revise"** — ask what to change, then re-spawn the planner agent with revision instructions
-- If user says **"stop"** — end, plan is saved for later
+Display: `→ Auto-proceeding to execute...`
+
+Then immediately proceed to the execute skill.
 
 **Do NOT end without prompting the user.**
 
